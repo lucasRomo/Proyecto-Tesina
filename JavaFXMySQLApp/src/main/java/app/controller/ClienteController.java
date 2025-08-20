@@ -9,6 +9,9 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
+import javafx.event.ActionEvent;
+import javafx.stage.Stage;
+import javafx.scene.control.Button;
 
 public class ClienteController {
 
@@ -28,7 +31,7 @@ public class ClienteController {
     }
 
     @FXML
-    public void handleGuardarCliente() {
+    public void handleGuardarCliente(ActionEvent event) {
         if (validarCamposCliente()) {
             // 1. Validar si el documento ya existe
             if (personaDAO.existeNumeroDocumento(personaData.getNumeroDocumento())) {
@@ -52,6 +55,9 @@ public class ClienteController {
                 if (clienteDAO.insertarCliente(nuevoCliente)) {
                     mostrarAlerta("Éxito", "Cliente registrado exitosamente.");
                     limpiarCampos();
+                    Stage stage = (Stage)((Button)event.getSource()).getScene().getWindow();
+                    stage.close();
+
                 } else {
                     mostrarAlerta("Error", "Error al registrar el cliente. Fallo en la tabla Cliente.");
                 }

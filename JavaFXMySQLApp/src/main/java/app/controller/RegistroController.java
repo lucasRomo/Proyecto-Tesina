@@ -1,5 +1,6 @@
 package app.controller;
 
+import app.MainApp;
 import app.model.Direccion;
 import app.model.TipoDocumento;
 import app.model.dao.DireccionDAO;
@@ -73,7 +74,7 @@ public class RegistroController {
                     );
 
                     Stage stage = (Stage)((Button)event.getSource()).getScene().getWindow();
-                    stage.setScene(new Scene(root));
+                    stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT));
                     stage.setTitle("Datos del Cliente");
                     stage.show();
                 } else {
@@ -86,12 +87,30 @@ public class RegistroController {
     }
 
     private boolean validarCamposPersonales() {
-        if (nombreField.getText().isEmpty() || apellidoField.getText().isEmpty() ||
-                tipoDocumentoComboBox.getValue() == null || numeroDocumentoField.getText().isEmpty() ||
-                emailField.getText().isEmpty() || telefonoField.getText().isEmpty()) {
-            mostrarAlerta("Advertencia", "Por favor, complete todos los campos personales obligatorios.");
+        if (this.nombreField.getText().isEmpty() || this.apellidoField.getText().isEmpty() ||
+                this.tipoDocumentoComboBox.getValue() == null || this.numeroDocumentoField.getText().isEmpty() ||
+                this.emailField.getText().isEmpty() || this.telefonoField.getText().isEmpty()) {
+
+            this.mostrarAlerta("Advertencia", "Por favor, complete todos los campos personales obligatorios.");
             return false;
         }
+
+        if (!this.validarSoloLetras(this.nombreField.getText())) {
+            this.mostrarAlerta("Advertencia", "El nombre no puede contener números. Por favor, ingrese caracteres válidos.");
+            return false;
+        }
+
+        if (!this.validarSoloLetras(this.apellidoField.getText())) {
+            this.mostrarAlerta("Advertencia", "El apellido no puede contener números. Por favor, ingrese caracteres válidos.");
+            return false;
+        }
+
+        if (!this.validarSoloNumeros(this.telefonoField.getText())) {
+            this.mostrarAlerta("Advertencia", "El teléfono solo puede contener números.");
+            return false;
+
+        }
+
         return true;
     }
 
@@ -103,6 +122,18 @@ public class RegistroController {
             return false;
         }
         return true;
+    }
+
+    private boolean validarSoloLetras(String texto) {
+        // La expresión regular [a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+ verifica que la cadena
+        // solo contenga letras (mayúsculas y minúsculas), letras acentuadas, la ñ
+        // y espacios en blanco.
+        return texto.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+");
+    }
+
+    private boolean validarSoloNumeros(String texto) {
+        // La expresión regular "\\d+" verifica que la cadena solo contenga dígitos (0-9).
+        return texto.matches("\\d+");
     }
 
     private void mostrarAlerta(String titulo, String mensaje) {

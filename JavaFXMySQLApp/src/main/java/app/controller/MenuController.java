@@ -1,12 +1,13 @@
 package app.controller;
 
+import app.MainApp;
+import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 
 public class MenuController {
@@ -18,7 +19,7 @@ public class MenuController {
             Parent root = FXMLLoader.load(getClass().getResource("/registroCliente.fxml"));
             Stage stage = new Stage();
             stage.setTitle("Registro de Cliente");
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT));
             stage.show();
 
 
