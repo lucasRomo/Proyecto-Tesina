@@ -1,5 +1,8 @@
 D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\controller\ClienteController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\controller\HasheadorController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
 D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\controller\RegistrarNuevoEmpleadoController.java
 D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\controller\RegistroController.java
 D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\MainApp.java
 D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\model\Cliente.java
@@ -10,3 +13,5 @@ D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 
 D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\model\PersonaDAO.java
 D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\model\TipoDocumento.java
 D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\model\TipoDocumentoDAO.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\model\Usuario.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 2.0 (GitHub)\JavaFXMySQLApp\src\main\java\app\model\UsuarioDAO.java

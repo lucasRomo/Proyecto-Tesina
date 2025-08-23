@@ -1,1 +1,6 @@
 app\MainApp.class
+app\model\Usuario.class
+app\controller\HasheadorController.class
+app\controller\RegistrarNuevoEmpleadoController.class
+app\model\UsuarioDAO.class
+app\controller\IniciodeSesionController.class

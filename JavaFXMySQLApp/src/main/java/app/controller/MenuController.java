@@ -28,4 +28,38 @@ public class MenuController {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    public void handleIniciodeSesionButton(ActionEvent event) {
+        try {
+            // Carga la nueva ventana de registro
+            Parent root = FXMLLoader.load(getClass().getResource("/menuInicial2.fxml"));
+            Stage stage = new Stage();
+            stage.setTitle("Registro de Cliente");
+            stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT));
+            stage.show();
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void handleRegistrodeNuevoEmpleadoButton(ActionEvent event) {
+        try {
+            // Carga la nueva ventana de registro
+            Parent root = FXMLLoader.load(getClass().getResource("/menuinicial3.fxml"));
+            Stage stage = new Stage();
+            stage.setTitle("Registro de Cliente");
+            stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT));
+            stage.show();
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

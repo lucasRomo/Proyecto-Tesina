@@ -5,18 +5,18 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.2.1" fx:controller="app.controller.MenuController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-    </padding>
+<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml" fx:controller="app.controller.MenuController" >
 
-    <Label text="Imprenta">
+    <Label text="El Sur Centro De Copiado">
         <font>
             <Font name="System Bold" size="24.0" />
         </font>
     </Label>
 
-    <Button fx:id="registroButton" onAction="#handleRegistroButton" prefWidth="200.0" text="Registrarse" />
-
+    <children>
+        <Button text="Iniciar Sesion" onAction="#handleIniciodeSesionButton"/>
+        <Button text="Registrar Nuevo Empleado" onAction="#handleRegistrodeNuevoEmpleadoButton"/>
+    </children>
 </VBox>
