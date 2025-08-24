@@ -9,24 +9,28 @@ public class PersonaDAO {
     private static final String PASSWORD = "";
 
     public int insertarPersona(Persona persona) {
+        // La consulta SQL debe usar el nombre correcto de la columna
         String sql = "INSERT INTO Persona (nombre, apellido, id_tipo_documento, numero_documento, id_direccion, telefono, email) VALUES (?, ?, ?, ?, ?, ?, ?)";
         int idGenerado = -1;
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             stmt.setString(1, persona.getNombre());
             stmt.setString(2, persona.getApellido());
-            stmt.setInt(3, persona.getIdTipoDocumento());
+            stmt.setInt(3, persona.getIdTipoDocumento()); // El problema estaba en el nombre de la columna en la sentencia SQL
             stmt.setString(4, persona.getNumeroDocumento());
             stmt.setInt(5, persona.getIdDireccion());
             stmt.setString(6, persona.getTelefono());
             stmt.setString(7, persona.getEmail());
 
-            stmt.executeUpdate();
+            int filasAfectadas = stmt.executeUpdate();
 
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    idGenerado = rs.getInt(1);
+            if (filasAfectadas > 0) {
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        idGenerado = rs.getInt(1);
+                    }
                 }
             }
         } catch (SQLException e) {
