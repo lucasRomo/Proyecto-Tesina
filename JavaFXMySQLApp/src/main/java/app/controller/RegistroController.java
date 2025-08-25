@@ -15,6 +15,9 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import app.model.dao.PersonaDAO;
 
 public class RegistroController {
     @FXML private TextField nombreField;
@@ -34,65 +37,68 @@ public class RegistroController {
 
     private TipoDocumentoDAO tipoDocumentoDAO = new TipoDocumentoDAO();
     private DireccionDAO direccionDAO = new DireccionDAO();
+    private PersonaDAO personaDAO = new PersonaDAO();
 
     @FXML
     public void initialize() {
-
-        String tipoDocumentoSeleccionado = tipoDocumentoComboBox.getValue();
-        String numeroDocumento = numeroDocumentoField.getText().trim();
         List<TipoDocumento> tipos = tipoDocumentoDAO.obtenerTodos();
-
         for (TipoDocumento tipo : tipos) {
             tipoDocumentoComboBox.getItems().add(tipo.getNombreTipo());
         }
-
-        // Paso 3: Luego, realiza la validación condicional de la longitud.
-        if ("DNI".equals(tipoDocumentoSeleccionado)) {
-            if (numeroDocumento.length() != 8) {
-                mostrarAlerta("Advertencia", "El DNI debe tener exactamente 8 caracteres.");
-            }
-        } else if ("CUIT".equals(tipoDocumentoSeleccionado)) {
-            if (numeroDocumento.length() != 11) {
-                mostrarAlerta("Advertencia", "El CUIT debe tener 11 caracteres.");
-            }
-        } else if ("CUIL".equals(tipoDocumentoSeleccionado)) {
-            if (numeroDocumento.length() != 11) {
-                mostrarAlerta("Advertencia", "El CUIL debe tener 11 caracteres.");
-            }
-        } else if ("Pasaporte".equals(tipoDocumentoSeleccionado)) {
-            if (numeroDocumento.length() < 6 || numeroDocumento.length() > 20) {
-                mostrarAlerta("Advertencia", "El Pasaporte debe tener entre 6 y 20 caracteres.");
-            }
-        }
-
-// Fin de verifiaciones del DNI //
-
-        codigoPostalField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.length() > 4) {
-                codigoPostalField.setText(newValue.substring(0, 4));
-            }
-        });
-
-        telefonoField.textProperty().addListener((observable, oldValue, newValue) -> {
-            // Elimina cualquier carácter que no sea un dígito
-            if (!newValue.matches("\\d*")) {
-                telefonoField.setText(newValue.replaceAll("[^\\d]", ""));
-                return;
-            }
-
-            // Limita la longitud a 10 caracteres
-            if (newValue.length() > 11) {
-                telefonoField.setText(newValue.substring(0, 11));
-            }
-        });
-
     }
-
-
 
     @FXML
     public void handleSiguienteButton(ActionEvent event) {
         if (validarCamposPersonales() && validarCamposDireccion()) {
+
+            String tipoDocumentoSeleccionado = tipoDocumentoComboBox.getValue();
+            String numeroDocumento = numeroDocumentoField.getText().trim();
+
+            // Validaciones de longitud del documento
+            if ("DNI".equals(tipoDocumentoSeleccionado)) {
+                if (numeroDocumento.length() != 8) {
+                    mostrarAlerta("Advertencia", "El DNI debe tener exactamente 8 caracteres.");
+                    return;
+                }
+            } else if ("CUIT".equals(tipoDocumentoSeleccionado) || "CUIL".equals(tipoDocumentoSeleccionado)) {
+                if (numeroDocumento.length() != 11) {
+                    mostrarAlerta("Advertencia", tipoDocumentoSeleccionado + " debe tener 11 caracteres.");
+                    return;
+                }
+            } else if ("Pasaporte".equals(tipoDocumentoSeleccionado)) {
+                if (numeroDocumento.length() < 6 || numeroDocumento.length() > 20) {
+                    mostrarAlerta("Advertencia", "El Pasaporte debe tener entre 6 y 20 caracteres.");
+                    return;
+                }
+            }
+
+            // Validación de existencia de documento
+            if (personaDAO.verificarSiDocumentoExiste(numeroDocumento)) {
+                mostrarAlerta("Error de Registro", "El número de documento que ingresó ya se encuentra registrado.");
+                return;
+            }
+
+            // Validaciones de formato de email, longitud de código postal y teléfono
+            if (codigoPostalField.getText().trim().length() != 4) {
+                mostrarAlerta("Advertencia", "El código postal debe tener exactamente 4 caracteres.");
+                return;
+            }
+
+            int longitudTelefono = telefonoField.getText().trim().length();
+            if (longitudTelefono <= 6 || longitudTelefono > 11) {
+                mostrarAlerta("Advertencia", "El número de teléfono debe tener entre 7 y 11 dígitos.");
+                return;
+            }
+
+            String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(emailField.getText());
+            if (!matcher.matches()) {
+                mostrarAlerta("Advertencia", "El formato del correo electrónico no es válido.");
+                return;
+            }
+
+            // Si todas las validaciones pasan, se procede con la lógica de negocio
             try {
                 // Insertar dirección y obtener ID
                 Direccion nuevaDireccion = new Direccion(
@@ -169,14 +175,10 @@ public class RegistroController {
     }
 
     private boolean validarSoloLetras(String texto) {
-        // La expresión regular [a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+ verifica que la cadena
-        // solo contenga letras (mayúsculas y minúsculas), letras acentuadas, la ñ
-        // y espacios en blanco.
         return texto.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+");
     }
 
     private boolean validarSoloNumeros(String texto) {
-        // La expresión regular "\\d+" verifica que la cadena solo contenga dígitos (0-9).
         return texto.matches("\\d+");
     }
 
