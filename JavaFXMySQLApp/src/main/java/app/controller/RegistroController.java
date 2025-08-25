@@ -37,11 +37,55 @@ public class RegistroController {
 
     @FXML
     public void initialize() {
-        TipoDocumentoDAO tipoDocumentoDAO = new TipoDocumentoDAO();
+
+        String tipoDocumentoSeleccionado = tipoDocumentoComboBox.getValue();
+        String numeroDocumento = numeroDocumentoField.getText().trim();
         List<TipoDocumento> tipos = tipoDocumentoDAO.obtenerTodos();
+
         for (TipoDocumento tipo : tipos) {
             tipoDocumentoComboBox.getItems().add(tipo.getNombreTipo());
         }
+
+        // Paso 3: Luego, realiza la validación condicional de la longitud.
+        if ("DNI".equals(tipoDocumentoSeleccionado)) {
+            if (numeroDocumento.length() != 8) {
+                mostrarAlerta("Advertencia", "El DNI debe tener exactamente 8 caracteres.");
+            }
+        } else if ("CUIT".equals(tipoDocumentoSeleccionado)) {
+            if (numeroDocumento.length() != 11) {
+                mostrarAlerta("Advertencia", "El CUIT debe tener 11 caracteres.");
+            }
+        } else if ("CUIL".equals(tipoDocumentoSeleccionado)) {
+            if (numeroDocumento.length() != 11) {
+                mostrarAlerta("Advertencia", "El CUIL debe tener 11 caracteres.");
+            }
+        } else if ("Pasaporte".equals(tipoDocumentoSeleccionado)) {
+            if (numeroDocumento.length() < 6 || numeroDocumento.length() > 20) {
+                mostrarAlerta("Advertencia", "El Pasaporte debe tener entre 6 y 20 caracteres.");
+            }
+        }
+
+// Fin de verifiaciones del DNI //
+
+        codigoPostalField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.length() > 4) {
+                codigoPostalField.setText(newValue.substring(0, 4));
+            }
+        });
+
+        telefonoField.textProperty().addListener((observable, oldValue, newValue) -> {
+            // Elimina cualquier carácter que no sea un dígito
+            if (!newValue.matches("\\d*")) {
+                telefonoField.setText(newValue.replaceAll("[^\\d]", ""));
+                return;
+            }
+
+            // Limita la longitud a 10 caracteres
+            if (newValue.length() > 11) {
+                telefonoField.setText(newValue.substring(0, 11));
+            }
+        });
+
     }
 
 

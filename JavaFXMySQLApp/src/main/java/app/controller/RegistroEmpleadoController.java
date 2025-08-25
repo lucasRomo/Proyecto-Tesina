@@ -49,6 +49,61 @@ public class RegistroEmpleadoController {
     @FXML
     public void handleSiguienteButton(ActionEvent event) {
         if (validarCampos()) {
+
+            String tipoDocumentoSeleccionado = tipoDocumentoComboBox.getValue();
+            String numeroDocumento = numeroDocumentoField.getText().trim();
+            app.model.dao.PersonaDAO personaDAO = new app.model.dao.PersonaDAO();
+
+            if (tipoDocumentoSeleccionado == null) {
+                mostrarAlerta("Advertencia", "Por favor, seleccione un tipo de documento.");
+                return;
+            }
+
+            if (numeroDocumento.isEmpty()) {
+                mostrarAlerta("Advertencia", "Por favor, ingrese el número de documento.");
+                return;
+            }
+
+            if ("DNI".equals(tipoDocumentoSeleccionado)) {
+                if (numeroDocumento.length() != 8) {
+                    mostrarAlerta("Advertencia", "El DNI debe tener exactamente 8 caracteres.");
+                    return;
+                }
+            } else if ("CUIT".equals(tipoDocumentoSeleccionado)) {
+                if (numeroDocumento.length() != 11) {
+                    mostrarAlerta("Advertencia", "El CUIT debe tener 11 caracteres.");
+                    return;
+                }
+            } else if ("CUIL".equals(tipoDocumentoSeleccionado)) {
+                if (numeroDocumento.length() != 11) {
+                    mostrarAlerta("Advertencia", "El CUIL debe tener 11 caracteres.");
+                    return;
+                }
+            } else if ("Pasaporte".equals(tipoDocumentoSeleccionado)) {
+                if (numeroDocumento.length() < 6 || numeroDocumento.length() > 20) {
+                    mostrarAlerta("Advertencia", "El Pasaporte debe tener entre 6 y 20 caracteres.");
+                    return;
+                }
+            }
+
+            if (personaDAO.verificarSiDocumentoExiste(numeroDocumento)) {
+                mostrarAlerta("Error de Registro", "El número de documento que ingresó ya se encuentra registrado.");
+                return; // Detiene la ejecución para no ir a la siguiente pantalla
+            }
+
+            // Fin verificaciones del DNI //
+
+            if (codigoPostalField.getText().trim().length() != 4) {
+                mostrarAlerta("Advertencia", "El código postal debe tener exactamente 4 caracteres.");
+                return;
+            }
+
+            int longitudTelefono = telefonoField.getText().trim().length();
+            if (longitudTelefono <= 6 || longitudTelefono >= 11) {
+                mostrarAlerta("Advertencia", "El número de teléfono debe tener entre 7 y 11 dígitos.");
+                return;
+            }
+
             try {
                 // 1. Insertar la dirección y obtener el ID
                 Direccion nuevaDireccion = new Direccion(

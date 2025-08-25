@@ -1,4 +1,5 @@
-package app.model;// Tu paquete DAO
+package app.model;
+
 import app.model.Usuario;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,23 +13,18 @@ public class UsuarioDAO {
     private static final String PASSWORD = "";
 
     // Método de inserción corregido para incluir el id_persona
-    public boolean insertar(Usuario usuario) {
-        // La consulta SQL debe usar el nombre correcto de la tabla: Usuario
+    public boolean insertar(Usuario usuario, Connection conn) throws SQLException {
         String sql = "INSERT INTO Usuario (id_persona, nombre_usuario, contrasena) VALUES (?, ?, ?)";
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
+        // Usa la conexión 'conn' que se pasa como parámetro
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, usuario.getIdPersona());
             stmt.setString(2, usuario.getUsuario());
             stmt.setString(3, usuario.getContrasenia());
-
             stmt.executeUpdate();
             return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
         }
+
     }
 
     public boolean verificarUsuario(String Usuario, String Contrasenia) {
@@ -51,4 +47,27 @@ public class UsuarioDAO {
             return false;
         }
     }
+
+    public boolean verificarSiUsuarioExiste(String Usuario) {
+        String sql = "SELECT COUNT(*) FROM Usuario WHERE nombre_usuario = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, Usuario);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    // Si el conteo es mayor que 0, significa que el usuario ya existe.
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al verificar si el usuario existe:");
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
 }

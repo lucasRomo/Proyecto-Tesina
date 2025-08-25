@@ -1,39 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.DatePicker?>
 
-<VBox alignment="TOP_CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17" fx:controller="app.controller.EmpleadoController">
+<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml" fx:controller="app.controller.EmpleadoController">
+    <children>
+        <Label text="Datos Específicos del Empleado">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Label>
+        <Label text="Persona:"/>
+        <Label fx:id="nombrePersonaLabel"/>
+
+        <Label text="Usuario:"/>
+        <TextField fx:id="usuarioField" promptText="Ingrese un nombre de Usuario"/>
+        <Label text="Contraseña:"/>
+        <TextField fx:id="contraseniaField" promptText="Ingrese una Contraseña"/>
+
+        <Label text="Fecha de Contratación:"/>
+        <DatePicker fx:id="fechaContratacionPicker" promptText="Seleccione la fecha"/>
+
+        <Label text="Cargo:"/>
+        <TextField fx:id="cargoField" promptText="Ingrese el cargo del empleado"/>
+
+        <Label text="Salario:"/>
+        <TextField fx:id="salarioField" promptText="Ingrese el salario"/>
+
+        <Button text="Guardar Empleado" onAction="#handleGuardarEmpleado"/>
+    </children>
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
-
-    <Label text="Datos del Empleado">
-        <font>
-            <Font name="System Bold" size="24.0" />
-        </font>
-    </Label>
-
-    <Label fx:id="nombrePersonaLabel" text="Nombre Apellido" style="-fx-font-weight: bold;" />
-
-    <Label text="Datos de Usuario" style="-fx-font-weight: bold;" />
-    <GridPane hgap="10" vgap="10">
-        <columnConstraints>
-            <ColumnConstraints percentWidth="40" />
-            <ColumnConstraints percentWidth="60" />
-        </columnConstraints>
-        <Label text="Usuario:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <TextField fx:id="usuarioField" promptText="Usuario" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-
-        <Label text="Contraseña:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <TextField fx:id="contraseniaField" promptText="Contraseña" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-    </GridPane>
-
-    <Button fx:id="guardarEmpleadoButton" text="Guardar" onAction="#handleGuardarEmpleado" />
 </VBox>
