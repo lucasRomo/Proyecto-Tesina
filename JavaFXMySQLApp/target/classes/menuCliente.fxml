@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="394.0" prefWidth="1321.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ClienteController">
+    <Label layoutX="575.0" layoutY="14.0" text="Menu Cliente">
+        <font>
+            <Font name="System Bold" size="24.0" />
+        </font>
+    </Label>
+    <TableView fx:id="clientesTableView" layoutX="24.0" layoutY="71.0" prefHeight="190.0" prefWidth="1273.0">
+        <columns>
+            <TableColumn fx:id="nombreColumn" prefWidth="100.0" text="Nombre" />
+            <TableColumn fx:id="apellidoColumn" prefWidth="100.0" text="Apellido" />
+            <TableColumn fx:id="tipoDocumentoColumn" prefWidth="100.0" text="Tipo Documento" />
+            <TableColumn fx:id="numeroDocumentoColumn" prefWidth="120.0" text="Número Documento" />
+            <TableColumn fx:id="telefonoColumn" prefWidth="100.0" text="Teléfono" />
+            <TableColumn fx:id="emailColumn" prefWidth="150.0" text="Email" />
+            <TableColumn fx:id="idClienteColumn" prefWidth="50.0" text="ID" />
+            <TableColumn fx:id="razonSocialColumn" prefWidth="150.0" text="Razón Social" />
+            <TableColumn fx:id="personaContactoColumn" prefWidth="150.0" text="Persona Contacto" />
+            <TableColumn fx:id="condicionesPagoColumn" prefWidth="150.0" text="Condiciones de Pago" />
+            <TableColumn fx:id="estadoColumn" prefWidth="100.0" text="Estado" />
+        </columns>
+    </TableView>
+    <TextField fx:id="filterField" prefWidth="200.0" promptText="Buscar por nombre, apellido o documento..." />
+    <Button fx:id="nuevoClienteButton" layoutX="827.0" layoutY="343.0" mnemonicParsing="false" onAction="#handleRegistrarClienteButton" text="Registrar Cliente" textFill="#111111" />
+    <Button fx:id="modificarClienteButton" layoutX="957.0" layoutY="343.0" mnemonicParsing="false" onAction="#handleModificarClienteButton" text="Modificar Cliente" />
+</AnchorPane>
