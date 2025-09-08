@@ -17,7 +17,7 @@ public class MenuController {
             Parent root = FXMLLoader.load(getClass().getResource("/menuCliente.fxml"));
             Stage stage = new Stage();
             stage.setTitle("Registro de Cliente");
-            stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT));
+            stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH2, app.MainApp.WINDOW_HEIGHT));
             stage.show();
 
 

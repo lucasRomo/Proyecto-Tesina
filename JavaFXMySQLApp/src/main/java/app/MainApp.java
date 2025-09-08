@@ -11,6 +11,8 @@ public class MainApp extends Application {
     public static final double WINDOW_WIDTH = 450.0;
     public static final double WINDOW_HEIGHT = 800.0;
 
+    public static final double WINDOW_WIDTH2 = 1300.0;
+
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/menuInicial.fxml"));

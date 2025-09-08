@@ -10,22 +10,21 @@
             <Font name="System Bold" size="24.0" />
         </font>
     </Label>
-    <TableView fx:id="clientesTableView" layoutX="24.0" layoutY="71.0" prefHeight="190.0" prefWidth="1273.0">
-        <columns>
-            <TableColumn fx:id="nombreColumn" prefWidth="100.0" text="Nombre" />
-            <TableColumn fx:id="apellidoColumn" prefWidth="100.0" text="Apellido" />
-            <TableColumn fx:id="tipoDocumentoColumn" prefWidth="100.0" text="Tipo Documento" />
-            <TableColumn fx:id="numeroDocumentoColumn" prefWidth="120.0" text="Número Documento" />
-            <TableColumn fx:id="telefonoColumn" prefWidth="100.0" text="Teléfono" />
-            <TableColumn fx:id="emailColumn" prefWidth="150.0" text="Email" />
-            <TableColumn fx:id="idClienteColumn" prefWidth="50.0" text="ID" />
-            <TableColumn fx:id="razonSocialColumn" prefWidth="150.0" text="Razón Social" />
-            <TableColumn fx:id="personaContactoColumn" prefWidth="150.0" text="Persona Contacto" />
-            <TableColumn fx:id="condicionesPagoColumn" prefWidth="150.0" text="Condiciones de Pago" />
-            <TableColumn fx:id="estadoColumn" prefWidth="100.0" text="Estado" />
-        </columns>
+    <TableView fx:id="clientesTableView" editable="true" layoutX="24.0" layoutY="71.0" prefHeight="190.0" prefWidth="1273.0"> <columns>
+        <TableColumn fx:id="nombreColumn" prefWidth="100.0" text="Nombre" />
+        <TableColumn fx:id="apellidoColumn" prefWidth="100.0" text="Apellido" />
+        <TableColumn fx:id="tipoDocumentoColumn" prefWidth="100.0" text="Tipo Documento" />
+        <TableColumn fx:id="numeroDocumentoColumn" prefWidth="120.0" text="Número Documento" />
+        <TableColumn fx:id="telefonoColumn" prefWidth="100.0" text="Teléfono" />
+        <TableColumn fx:id="emailColumn" prefWidth="150.0" text="Email" />
+        <TableColumn fx:id="idClienteColumn" prefWidth="50.0" text="ID" />
+        <TableColumn fx:id="razonSocialColumn" prefWidth="150.0" text="Razón Social" />
+        <TableColumn fx:id="personaContactoColumn" prefWidth="150.0" text="Persona Contacto" />
+        <TableColumn fx:id="condicionesPagoColumn" prefWidth="150.0" text="Condiciones de Pago" />
+        <TableColumn fx:id="estadoColumn" prefWidth="100.0" text="Estado" />
+    </columns>
     </TableView>
-    <TextField fx:id="filterField" layoutX="141.0" layoutY="297.0" prefHeight="14.0" prefWidth="279.0" promptText="Buscar por nombre, apellido o documento..." />
-    <Button fx:id="nuevoClienteButton" layoutX="827.0" layoutY="343.0" mnemonicParsing="false" onAction="#handleRegistrarClienteButton" text="Registrar Cliente" textFill="#111111" />
-    <Button fx:id="modificarClienteButton" layoutX="957.0" layoutY="343.0" mnemonicParsing="false" onAction="#handleModificarClienteButton" text="Modificar Cliente" />
+    <TextField fx:id="filterField" layoutX="141.0" layoutY="297.0" prefHeight="25.0" prefWidth="319.0" promptText="Buscar por nombre, apellido o documento..." />
+    <Button fx:id="nuevoClienteButton" layoutX="823.0" layoutY="297.0" mnemonicParsing="false" onAction="#handleRegistrarClienteButton" text="Registrar Cliente" textFill="#111111" />
+    <Button fx:id="modificarClienteButton" layoutX="952.0" layoutY="297.0" mnemonicParsing="false" onAction="#handleModificarClienteButton" text="Modificar Cliente" />
 </AnchorPane>
