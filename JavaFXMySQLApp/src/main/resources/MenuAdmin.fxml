@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="369.0" prefWidth="603.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuAdministradorController">
+   <children>
+      <Label alignment="CENTER" contentDisplay="RIGHT" layoutX="187.0" layoutY="28.0" prefHeight="38.0" prefWidth="210.0" text="Menu Admin">
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font>
+      </Label>
+      <Button layoutX="188.0" layoutY="90.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="210.0" text="Historial de Pedidos de Empleados" />
+      <Button layoutX="188.0" layoutY="157.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="210.0" text="Informes" />
+      <Button layoutX="188.0" layoutY="226.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="210.0" text="Gestion de Usuarios" />
+      <Button layoutX="188.0" layoutY="291.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="210.0" text="Historial de Actividad" />
+   </children>
+</AnchorPane>
