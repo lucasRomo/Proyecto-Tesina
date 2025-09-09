@@ -39,6 +39,14 @@ public class RegistroController {
     private DireccionDAO direccionDAO = new DireccionDAO();
     private PersonaDAO personaDAO = new PersonaDAO();
 
+    // Referencia al controlador de la ventana principal
+    private ClienteController clienteController;
+
+    // Método setter para recibir la referencia
+    public void setClienteController(ClienteController controller) {
+        this.clienteController = controller;
+    }
+
     @FXML
     public void initialize() {
         List<TipoDocumento> tipos = tipoDocumentoDAO.obtenerTodos();
@@ -109,6 +117,9 @@ public class RegistroController {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/registroClienteDatosEspecificos.fxml"));
                     Parent root = loader.load();
                     RegistroClienteDatosEspecificosController clienteDatosController = loader.getController();
+
+                    // Pasa la referencia del controlador principal al siguiente controlador
+                    clienteDatosController.setClienteController(this.clienteController);
 
                     // Pasar los datos a la nueva vista
                     clienteDatosController.setDatosPersona(
