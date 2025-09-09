@@ -45,8 +45,9 @@ public class ClienteController {
 
     public ClienteController() {
         this.clienteDAO = new ClienteDAO();
-        this.personaDAO = new PersonaDAO(); // Necesario para la validación de documento
+        this.personaDAO = new PersonaDAO();
     }
+
 
     @FXML
     private void initialize() {
@@ -149,6 +150,12 @@ public class ClienteController {
         cargarClientesYConfigurarBuscador();
     }
 
+    // Método para recargar los datos de la tabla, que será llamado desde los otros controladores.
+    public void refreshClientesTable() {
+        cargarClientesYConfigurarBuscador();
+    }
+
+
     private void cargarClientesYConfigurarBuscador() {
         ObservableList<Cliente> masterData = clienteDAO.getAllClientes();
 
@@ -176,10 +183,22 @@ public class ClienteController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/registroCliente.fxml"));
             Parent root = loader.load();
+
+            // Obtener el controlador de la primera ventana de registro
+            RegistroController registroController = loader.getController();
+
+            // Pasar la referencia de este controlador al nuevo
+            registroController.setClienteController(this);
+
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Registrar Nuevo Cliente");
             stage.showAndWait();
+
+            // showAndWait() bloquea la ventana principal. Cuando se cierra la ventana de registro,
+            // el flujo vuelve aquí y la tabla se refresca automáticamente.
+            refreshClientesTable();
+
         } catch (IOException e) {
             e.printStackTrace();
             mostrarAlerta("Error", "No se pudo cargar el formulario de registro de cliente.", Alert.AlertType.ERROR);
@@ -190,7 +209,6 @@ public class ClienteController {
     public void handleModificarClienteButton(ActionEvent event) {
         Cliente selectedCliente = clientesTableView.getSelectionModel().getSelectedItem();
         if (selectedCliente != null) {
-            // Se asume que las validaciones ya se hicieron en el onEditCommit
             boolean exito = clienteDAO.modificarCliente(selectedCliente);
             if (exito) {
                 mostrarAlerta("Éxito", "Cliente modificado exitosamente.", Alert.AlertType.INFORMATION);
@@ -202,7 +220,7 @@ public class ClienteController {
         }
     }
 
-    // Métodos de validación adaptados para el ClienteController
+    // Métodos de validación...
     private boolean validarSoloLetras(String texto) {
         return texto.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+");
     }
@@ -250,8 +268,6 @@ public class ClienteController {
 
 
     private String obtenerNombreTipoDocumento(int idTipoDocumento) {
-        // Asumiendo que esta lógica es suficiente para tu caso.
-        // En una aplicación real, lo ideal sería cargarlo desde la base de datos.
         if (idTipoDocumento == 1) return "DNI";
         if (idTipoDocumento == 2) return "CUIL";
         if (idTipoDocumento == 3) return "CUIT";

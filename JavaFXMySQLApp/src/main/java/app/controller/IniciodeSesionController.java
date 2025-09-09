@@ -42,7 +42,7 @@ public class IniciodeSesionController {
                     // Obtener el 'Stage' (ventana) actual desde un elemento de la escena
                     Stage stage = (Stage) UsuarioField.getScene().getWindow();
                     // Cargar el nuevo archivo FXML
-                    Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/MenuInicial4.fxml")));
+                    Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/menuAbms.fxml")));
 
                     // Crear y establecer la nueva escena
                     Scene scene = new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT);
