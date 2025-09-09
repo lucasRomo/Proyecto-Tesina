@@ -11,7 +11,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -31,9 +30,17 @@ public class RegistroClienteDatosEspecificosController {
     private ClienteDAO clienteDAO;
     private Persona personaData;
 
+    // Referencia al controlador de la ventana principal
+    private ClienteController clienteController;
+
     public RegistroClienteDatosEspecificosController() {
         this.personaDAO = new PersonaDAO();
         this.clienteDAO = new ClienteDAO();
+    }
+
+    // Método setter para recibir la referencia
+    public void setClienteController(ClienteController controller) {
+        this.clienteController = controller;
     }
 
     public void setDatosPersona(String nombre, String apellido, int idTipoDocumento, String numeroDocumento, int idDireccion, String telefono, String email) {
@@ -57,8 +64,6 @@ public class RegistroClienteDatosEspecificosController {
             int idPersona = personaDAO.insertarPersona(personaData, conn);
 
             if (idPersona != -1) {
-                // Se ha añadido "Activo" como valor por defecto para el estado,
-                // para que coincida con el constructor de la clase Cliente.
                 Cliente nuevoCliente = new Cliente(
                         personaData.getNombre(), personaData.getApellido(), personaData.getIdTipoDocumento(),
                         personaData.getNumeroDocumento(), personaData.getIdDireccion(), personaData.getTelefono(),
@@ -70,6 +75,12 @@ public class RegistroClienteDatosEspecificosController {
                 if (clienteDAO.insertarCliente(nuevoCliente, conn)) {
                     conn.commit();
                     mostrarAlerta("Éxito", "Cliente registrado exitosamente.", Alert.AlertType.INFORMATION);
+
+                    // Llama al método del controlador principal para refrescar la tabla
+                    if (clienteController != null) {
+                        clienteController.refreshClientesTable();
+                    }
+
                     Stage stage = (Stage)((Button)event.getSource()).getScene().getWindow();
                     stage.close();
                 } else {
