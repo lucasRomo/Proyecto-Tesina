@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="304.0" prefWidth="196.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.InformesAdminController">
+   <children>
+      <Label alignment="CENTER" contentDisplay="CENTER" layoutX="34.0" layoutY="56.0" prefHeight="35.0" prefWidth="125.0" text="Informes">
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font>
+      </Label>
+      <Button layoutX="32.0" layoutY="123.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="125.0" text="Facturas" />
+      <Button layoutX="32.0" layoutY="190.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="125.0" text="Comprobantes" />
+   </children>
+</AnchorPane>
