@@ -1,19 +1,22 @@
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\ClienteController.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\EmpleadoController.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroController.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroEmpleadoController.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\MainApp.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Cliente.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\ClienteDAO.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Direccion.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\DireccionDAO.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Empleado.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\EmpleadoDAO.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Persona.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\PersonaDAO.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\TipoDocumento.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\TipoDocumentoDAO.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Usuario.java
-C:\Users\lukit\Desktop\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\UsuarioDAO.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\ClienteController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\EmpleadoController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\InformesAdminController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\MenuAdministradorController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroClienteDatosEspecificosController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroEmpleadoController.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\MainApp.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Cliente.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\ClienteDAO.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Direccion.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\DireccionDAO.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Empleado.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\EmpleadoDAO.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Persona.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\PersonaDAO.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\TipoDocumento.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\TipoDocumentoDAO.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Usuario.java
+D:\Lichu\Desktop\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\UsuarioDAO.java
