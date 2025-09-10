@@ -1,8 +1,10 @@
 package app.controller;
 
 import app.model.Cliente;
-import app.model.dao.ClienteDAO;
-import app.model.dao.PersonaDAO;
+import app.model.Direccion;
+import app.model.ClienteDAO;
+import app.model.DireccionDAO;
+import app.model.PersonaDAO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -16,6 +18,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -39,13 +42,16 @@ public class ClienteController {
     @FXML private TextField filterField;
     @FXML private Button nuevoClienteButton;
     @FXML private Button modificarClienteButton;
+    @FXML private TableColumn<Cliente, Void> accionColumn;
 
     private ClienteDAO clienteDAO;
     private PersonaDAO personaDAO;
+    private DireccionDAO direccionDAO;
 
     public ClienteController() {
         this.clienteDAO = new ClienteDAO();
         this.personaDAO = new PersonaDAO();
+        this.direccionDAO = new DireccionDAO();
     }
 
 
@@ -65,14 +71,14 @@ public class ClienteController {
         condicionesPagoColumn.setCellValueFactory(cellData -> cellData.getValue().condicionesPagoProperty());
         estadoColumn.setCellValueFactory(cellData -> cellData.getValue().estadoProperty());
 
-        // Configurar las columnas para edición en línea y agregar validaciones
+        // Celdas editables y validaciones (sin cambios)
         nombreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         nombreColumn.setOnEditCommit(event -> {
             if (validarSoloLetras(event.getNewValue())) {
                 event.getRowValue().setNombre(event.getNewValue());
             } else {
                 mostrarAlerta("Advertencia", "El nombre solo puede contener letras.", Alert.AlertType.WARNING);
-                clientesTableView.refresh(); // Refresca la tabla para revertir el valor
+                clientesTableView.refresh();
             }
         });
 
@@ -117,7 +123,6 @@ public class ClienteController {
             }
         });
 
-        // El resto de columnas (razonSocial, etc.) no tienen validación estricta, pero podrías añadirlas si lo deseas.
         razonSocialColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         razonSocialColumn.setOnEditCommit(event -> event.getRowValue().setRazonSocial(event.getNewValue()));
 
@@ -127,11 +132,9 @@ public class ClienteController {
         condicionesPagoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         condicionesPagoColumn.setOnEditCommit(event -> event.getRowValue().setCondicionesPago(event.getNewValue()));
 
-        // Configurar la columna de estado con un desplegable (ChoiceBox)
         ObservableList<String> estados = FXCollections.observableArrayList("Activo", "Desactivado");
         estadoColumn.setCellFactory(ChoiceBoxTableCell.forTableColumn(estados));
 
-        // Manejar el evento de edición de la columna de estado
         estadoColumn.setOnEditCommit(event -> {
             Cliente cliente = event.getRowValue();
             String nuevoEstado = event.getNewValue();
@@ -147,14 +150,59 @@ public class ClienteController {
             }
         });
 
+        accionColumn.setCellFactory(param -> new TableCell<Cliente, Void>() {
+            private final Button btn = new Button("Ver Dirección");
+
+            {
+                btn.setOnAction(event -> {
+                    Cliente cliente = getTableView().getItems().get(getIndex());
+                    mostrarDireccionCliente(cliente.getIdDireccion());
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btn);
+                }
+            }
+        });
+
         cargarClientesYConfigurarBuscador();
     }
 
-    // Método para recargar los datos de la tabla, que será llamado desde los otros controladores.
+    // Método modificado para manejar la lógica de la dirección
+    private void mostrarDireccionCliente(int idDireccion) {
+        Direccion direccion = direccionDAO.obtenerPorId(idDireccion);
+        if (direccion == null) {
+            mostrarAlerta("Error", "No se encontró la dirección asociada a este cliente.", Alert.AlertType.ERROR);
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/verDireccion.fxml"));
+            Parent root = loader.load();
+
+            VerDireccionController direccionController = loader.getController();
+            direccionController.setDireccion(direccion);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Dirección del Cliente");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo cargar la ventana de dirección.", Alert.AlertType.ERROR);
+        }
+    }
+
     public void refreshClientesTable() {
         cargarClientesYConfigurarBuscador();
     }
-
 
     private void cargarClientesYConfigurarBuscador() {
         ObservableList<Cliente> masterData = clienteDAO.getAllClientes();
@@ -184,10 +232,7 @@ public class ClienteController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/registroCliente.fxml"));
             Parent root = loader.load();
 
-            // Obtener el controlador de la primera ventana de registro
             RegistroController registroController = loader.getController();
-
-            // Pasar la referencia de este controlador al nuevo
             registroController.setClienteController(this);
 
             Stage stage = new Stage();
@@ -195,8 +240,6 @@ public class ClienteController {
             stage.setTitle("Registrar Nuevo Cliente");
             stage.showAndWait();
 
-            // showAndWait() bloquea la ventana principal. Cuando se cierra la ventana de registro,
-            // el flujo vuelve aquí y la tabla se refresca automáticamente.
             refreshClientesTable();
 
         } catch (IOException e) {
@@ -220,7 +263,6 @@ public class ClienteController {
         }
     }
 
-    // Métodos de validación...
     private boolean validarSoloLetras(String texto) {
         return texto.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+");
     }
@@ -245,7 +287,6 @@ public class ClienteController {
         String tipoDocumento = obtenerNombreTipoDocumento(idTipoDocumento);
         int longitudDocumento = numeroDocumento.length();
 
-        // Validación de longitud
         if ("DNI".equals(tipoDocumento) && longitudDocumento != 8) {
             mostrarAlerta("Advertencia", "El DNI debe tener 8 caracteres.", Alert.AlertType.WARNING);
             return false;
@@ -257,7 +298,6 @@ public class ClienteController {
             return false;
         }
 
-        // Validación de existencia, excluyendo el cliente actual
         if (personaDAO.verificarSiDocumentoExiste(numeroDocumento, idPersonaActual)) {
             mostrarAlerta("Error", "El número de documento ya existe.", Alert.AlertType.ERROR);
             return false;
@@ -265,7 +305,6 @@ public class ClienteController {
 
         return true;
     }
-
 
     private String obtenerNombreTipoDocumento(int idTipoDocumento) {
         if (idTipoDocumento == 1) return "DNI";

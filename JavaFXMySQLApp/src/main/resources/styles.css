@@ -1,0 +1,17 @@
+/* Estilo para los campos cuando NO son editables */
+.text-field:disabled {
+    -fx-opacity: 1.0;
+    -fx-font-weight: bold;
+    -fx-text-fill: black;
+    -fx-background-color: #D7DAE0;
+    -fx-background-insets: 0;
+}
+
+/* Estilo para los campos cuando SÍ son editables */
+.editable-field {
+    -fx-opacity: 1.0;
+    -fx-font-weight: normal;
+    -fx-text-fill: black;
+    -fx-background-color: D7DAE0;
+
+}

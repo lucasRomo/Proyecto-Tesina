@@ -1,4 +1,4 @@
-package app.model.dao;
+package app.model;
 
 import app.model.Cliente;
 import java.sql.*;

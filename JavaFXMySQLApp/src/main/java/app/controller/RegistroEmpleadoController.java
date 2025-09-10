@@ -2,8 +2,8 @@ package app.controller;
 
 import app.model.Persona;
 import app.model.TipoDocumento;
-import app.model.dao.DireccionDAO;
-import app.model.dao.TipoDocumentoDAO;
+import app.model.DireccionDAO;
+import app.model.TipoDocumentoDAO;
 import app.model.Direccion;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -52,7 +52,7 @@ public class RegistroEmpleadoController {
 
             String tipoDocumentoSeleccionado = tipoDocumentoComboBox.getValue();
             String numeroDocumento = numeroDocumentoField.getText().trim();
-            app.model.dao.PersonaDAO personaDAO = new app.model.dao.PersonaDAO();
+            app.model.PersonaDAO personaDAO = new app.model.PersonaDAO();
 
             if (tipoDocumentoSeleccionado == null) {
                 mostrarAlerta("Advertencia", "Por favor, seleccione un tipo de documento.");

@@ -3,7 +3,7 @@ package app.controller;
 import app.model.Persona;
 import app.model.Usuario;
 import app.model.Empleado;
-import app.model.dao.PersonaDAO;
+import app.model.PersonaDAO;
 import app.model.UsuarioDAO;
 import app.model.EmpleadoDAO;
 import javafx.fxml.FXML;

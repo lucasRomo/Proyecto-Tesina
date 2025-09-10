@@ -3,9 +3,9 @@ package app.controller;
 import app.MainApp;
 import app.model.Direccion;
 import app.model.TipoDocumento;
-import app.model.dao.DireccionDAO;
-import app.model.dao.TipoDocumentoDAO;
-import app.model.dao.PersonaDAO;
+import app.model.DireccionDAO;
+import app.model.PersonaDAO;
+import app.model.TipoDocumentoDAO;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -165,8 +165,7 @@ public class RegistroController {
 
     private boolean validarCamposDireccion() {
         if (calleField.getText().isEmpty() || numeroField.getText().isEmpty() ||
-                codigoPostalField.getText().isEmpty() || ciudadField.getText().isEmpty() ||
-                provinciaField.getText().isEmpty() || paisField.getText().isEmpty()) {
+                codigoPostalField.getText().isEmpty() ) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos de dirección obligatorios.");
             return false;
         }
