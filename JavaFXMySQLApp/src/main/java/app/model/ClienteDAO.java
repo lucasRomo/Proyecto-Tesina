@@ -2,6 +2,8 @@ package app.model.dao;
 
 import app.model.Cliente;
 import java.sql.*;
+
+import app.model.Usuario;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

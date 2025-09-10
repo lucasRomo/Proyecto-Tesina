@@ -4,7 +4,6 @@ app\model\UsuarioDAO.class
 app\controller\IniciodeSesionController.class
 app\MainApp.class
 app\controller\EmpleadoController.class
-app\controller\InformesAdminController.class
 app\model\Direccion.class
 app\model\TipoDocumento.class
 app\model\Usuario.class
@@ -15,7 +14,8 @@ app\model\dao\ClienteDAO.class
 app\model\EmpleadoDAO.class
 app\model\Cliente.class
 app\model\dao\TipoDocumentoDAO.class
-app\controller\MenuAdministradorController.class
 app\model\dao\DireccionDAO.class
 app\controller\RegistroEmpleadoController.class
 app\controller\MenuController.class
+app\controller\UsuarioEmpleadoView.class
+app\controller\UsuariosEmpleadoController.class

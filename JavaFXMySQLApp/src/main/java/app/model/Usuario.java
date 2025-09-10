@@ -1,6 +1,8 @@
 // Archivo: Usuario.java
 package app.model;
 
+import javafx.beans.value.ObservableValue;
+
 public class Usuario {
     private String usuario;
     private String contrasenia;
