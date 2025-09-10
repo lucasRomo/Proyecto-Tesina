@@ -60,4 +60,35 @@ public class MenuController {
             e.printStackTrace();
         }
     }
+    public void handleOpcionesDeAdminButton(ActionEvent event) {
+        try {
+            // Carga la nueva ventana de registro
+            Parent root = FXMLLoader.load(getClass().getResource("/MenuAdmin.fxml"));
+            Stage stage = new Stage();
+            stage.setTitle("Menú de Admin");
+            stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT));
+            stage.show();
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void handleGestionDeUsuariosButton(ActionEvent event) {
+        try {
+            // Carga la nueva ventana de registro
+            Parent root = FXMLLoader.load(getClass().getResource("/GestionUsuarios.fxml"));
+            Stage stage = new Stage();
+            stage.setTitle("Gestión de Usuarios");
+            stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH2, app.MainApp.WINDOW_HEIGHT));
+            stage.show();
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

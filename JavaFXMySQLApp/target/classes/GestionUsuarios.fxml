@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="1300.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.UsuariosEmpleadoController">
+    <children>
+        <Label layoutX="494.0" layoutY="14.0" text="Gestionar Usuarios Empleados">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Label>
+        <!-- Se cambió el tipo genérico a UsuarioEmpleadoView -->
+        <TableView fx:id="usuariosEditableView" editable="true" layoutX="14.0" layoutY="71.0" prefHeight="250.0" prefWidth="1273.0">
+            <columns>
+                <TableColumn fx:id="idUsuarioColumn" prefWidth="50.0" text="ID" />
+                <TableColumn fx:id="UsuarioColumn" prefWidth="237.0" text="Usuario" />
+                <!-- Se eliminó la columna de contraseña por seguridad -->
+                <TableColumn fx:id="NombreColumn" prefWidth="277.0" text="Nombre" />
+                <TableColumn fx:id="ApellidoColumn" prefWidth="282.0" text="Apellido" />
+                <TableColumn fx:id="idPersonaColumn" prefWidth="128.0" text="ID Persona" />
+                <TableColumn fx:id="SalarioColumn" prefWidth="199.0" text="Salario" />
+                <TableColumn fx:id="EstadoColumn" prefWidth="99.0" text="Estado" />
+            </columns>
+        </TableView>
+        <TextField fx:id="filterField" layoutX="141.0" layoutY="340.0" prefHeight="25.0" prefWidth="319.0" promptText="Buscar por nombre, apellido o usuario..." />
+        <Button fx:id="modificarUsuarioButton" layoutX="1119.0" layoutY="340.0" mnemonicParsing="false" onAction="#handleModificarUsuarioButton" text="Guardar Cambios" />
+    </children>
+</AnchorPane>

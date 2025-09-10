@@ -1,5 +1,6 @@
 package app.model;
 
+import app.controller.UsuarioEmpleadoView;
 import app.model.Usuario;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -70,4 +71,15 @@ public class UsuarioDAO {
     }
 
 
+    public boolean modificarEstadoUsuario(int idUsuario, String nuevoEstado) {
+        return false;
+    }
+
+    public UsuarioEmpleadoView obtenerUsuariosEmpleados() {
+        return null;
+    }
+
+    public boolean modificarUsuarioEmpleado(UsuarioEmpleadoView selectedUsuario) {
+        return false;
+    }
 }

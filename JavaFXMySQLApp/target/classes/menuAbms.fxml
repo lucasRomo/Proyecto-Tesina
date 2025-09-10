@@ -19,6 +19,6 @@
     <Button fx:id="utton" onAction="#handleRegistroButton" prefWidth="200.0" text="Pedidos" />
     <Button fx:id="registroButton" onAction="#handleRegistroButton" prefWidth="200.0" text="Cliente" />
     <Button fx:id="n" onAction="#handleRegistroButton" prefWidth="200.0" text="Stock" />
-    <Button fx:id="" onAction="#handleRegistroButton" prefWidth="200.0" text="Admin" />
+    <Button fx:id="" onAction="#handleOpcionesDeAdminButton" prefWidth="200.0" text="Admin" />
 
 </VBox>
