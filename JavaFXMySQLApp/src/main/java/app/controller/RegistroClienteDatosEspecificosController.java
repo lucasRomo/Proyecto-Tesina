@@ -83,6 +83,7 @@ public class RegistroClienteDatosEspecificosController {
 
                     Stage stage = (Stage)((Button)event.getSource()).getScene().getWindow();
                     stage.close();
+                    ClienteController.cargarClientesYConfigurarBuscador();
                 } else {
                     conn.rollback();
                     mostrarAlerta("Error", "Error al registrar el cliente. Fallo en la tabla Cliente.", Alert.AlertType.ERROR);
@@ -91,6 +92,7 @@ public class RegistroClienteDatosEspecificosController {
                 conn.rollback();
                 mostrarAlerta("Error", "Error al registrar el cliente. Fallo en la tabla Persona.", Alert.AlertType.ERROR);
             }
+
         } catch (SQLException e) {
             try {
                 if (conn != null) conn.rollback();
