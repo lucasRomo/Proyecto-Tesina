@@ -26,8 +26,8 @@ public class ProveedorDAO {
                         rs.getString("mail"),
                         rs.getString("estado"),
                         rs.getInt("id_direccion"),
-                        rs.getInt("id_tipo_proveedor")
-
+                        rs.getInt("id_tipo_proveedor"),
+                        rs.getString("tipo_descripcion") // <-- ¡Agregamos esto!
                 ));
             }
         } catch (SQLException e) {
@@ -35,7 +35,6 @@ public class ProveedorDAO {
         }
         return proveedores;
     }
-
     // Nuevo método para obtener proveedores por tipo de proveedor
     public ObservableList<Proveedor> getProveedoresByTipo(int idTipoProveedor) {
         ObservableList<Proveedor> proveedores = FXCollections.observableArrayList();
