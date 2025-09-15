@@ -68,13 +68,13 @@
         <TextField fx:id="codigoPostalField" promptText="Código Postal" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
         <Label text="Ciudad:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-        <TextField fx:id="ciudadField" promptText="Ciudad" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+        <TextField fx:id="ciudadField" promptText="Ciudad (opcional)" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
         <Label text="Provincia:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-        <TextField fx:id="provinciaField" promptText="Provincia" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+        <TextField fx:id="provinciaField" promptText="Provincia (opcional)" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
 
         <Label text="País:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-        <TextField fx:id="paisField" promptText="País" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+        <TextField fx:id="paisField" promptText="País (opcional)" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
     </GridPane>
 
     <Button fx:id="siguienteButton" text="Siguiente" onAction="#handleSiguienteButton" />

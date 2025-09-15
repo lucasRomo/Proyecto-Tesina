@@ -1,0 +1,310 @@
+package app.controller;
+
+import app.dao.InsumoDAO;
+import app.model.Insumo;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import java.io.IOException;
+
+public class StockController {
+
+    @FXML private TableView<Insumo> insumosTableView;
+    @FXML private TableColumn<Insumo, Number> idInsumoColumn;
+    @FXML private TableColumn<Insumo, String> nombreInsumoColumn;
+    @FXML private TableColumn<Insumo, String> descripcionColumn;
+    @FXML private TableColumn<Insumo, Number> stockMinimoColumn;
+    @FXML private TableColumn<Insumo, Number> stockActualColumn;
+    @FXML private TableColumn<Insumo, String> estadoColumn;
+    @FXML private TableColumn<Insumo, Number> idTipoProveedorColumn;
+    @FXML private TableColumn<Insumo, Void> accionColumn;
+
+    @FXML private TextField filterField;
+    @FXML private ChoiceBox<String> estadoChoiceBox;
+
+    private InsumoDAO insumoDAO;
+    private ObservableList<Insumo> masterData = FXCollections.observableArrayList();
+    private FilteredList<Insumo> filteredData;
+
+    public StockController() {
+        this.insumoDAO = new InsumoDAO();
+    }
+
+    @FXML
+    private void initialize() {
+        insumosTableView.setEditable(true);
+
+        idInsumoColumn.setCellValueFactory(new PropertyValueFactory<>("idInsumo"));
+        nombreInsumoColumn.setCellValueFactory(cellData -> cellData.getValue().nombreInsumoProperty());
+        descripcionColumn.setCellValueFactory(cellData -> cellData.getValue().descripcionProperty());
+        stockMinimoColumn.setCellValueFactory(new PropertyValueFactory<>("stockMinimo"));
+        stockActualColumn.setCellValueFactory(new PropertyValueFactory<>("stockActual"));
+        estadoColumn.setCellValueFactory(cellData -> cellData.getValue().estadoProperty());
+        idTipoProveedorColumn.setCellValueFactory(new PropertyValueFactory<>("idTipoProveedor"));
+
+        // Celdas editables y validaciones
+        nombreInsumoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        nombreInsumoColumn.setOnEditCommit(event -> {
+            if (event.getNewValue() == null || event.getNewValue().trim().isEmpty()) {
+                mostrarAlerta("Advertencia", "El nombre del insumo no puede quedar vacío.", Alert.AlertType.WARNING);
+                insumosTableView.refresh();
+                return;
+            }
+            event.getRowValue().setNombreInsumo(event.getNewValue());
+        });
+
+        descripcionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        descripcionColumn.setOnEditCommit(event -> {
+            if (event.getNewValue() == null || event.getNewValue().trim().isEmpty()) {
+                mostrarAlerta("Advertencia", "La descripción no puede quedar vacía.", Alert.AlertType.WARNING);
+                insumosTableView.refresh();
+                return;
+            }
+            event.getRowValue().setDescripcion(event.getNewValue());
+        });
+
+        stockMinimoColumn.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.NumberStringConverter()));
+        stockMinimoColumn.setOnEditCommit(event -> {
+            Number nuevaCantidad = event.getNewValue();
+            if (nuevaCantidad == null || nuevaCantidad.doubleValue() < 0) {
+                mostrarAlerta("Advertencia", "El stock mínimo debe ser un número positivo.", Alert.AlertType.WARNING);
+                insumosTableView.refresh();
+                return;
+            }
+            event.getRowValue().setStockMinimo(nuevaCantidad.intValue());
+        });
+
+        stockActualColumn.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.NumberStringConverter()));
+        stockActualColumn.setOnEditCommit(event -> {
+            Number nuevaCantidad = event.getNewValue();
+            if (nuevaCantidad == null || nuevaCantidad.doubleValue() < 0) {
+                mostrarAlerta("Advertencia", "El stock actual debe ser un número positivo.", Alert.AlertType.WARNING);
+                insumosTableView.refresh();
+                return;
+            }
+            event.getRowValue().setStockActual(nuevaCantidad.intValue());
+        });
+
+        idTipoProveedorColumn.setCellFactory(TextFieldTableCell.forTableColumn(new javafx.util.converter.NumberStringConverter()));
+        idTipoProveedorColumn.setOnEditCommit(event -> {
+            Number nuevoId = event.getNewValue();
+            if (nuevoId == null || nuevoId.intValue() <= 0) {
+                mostrarAlerta("Advertencia", "El ID del proveedor debe ser un número positivo.", Alert.AlertType.WARNING);
+                insumosTableView.refresh();
+                return;
+            }
+            event.getRowValue().setIdTipoProveedor(nuevoId.intValue());
+        });
+
+        // Celdas para el estado
+        estadoColumn.setCellFactory(column -> new TableCell<Insumo, String>() {
+            private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
+
+            @Override
+            public void startEdit() {
+                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable()) {
+                    return;
+                }
+                super.startEdit();
+                choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
+                choiceBox.getSelectionModel().select(getItem());
+                choiceBox.setOnAction(event -> commitEdit(choiceBox.getSelectionModel().getSelectedItem()));
+                setGraphic(choiceBox);
+                setText(null);
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                setGraphic(null);
+                setText(getItem());
+                applyCellStyle(getItem());
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                getStyleClass().removeAll("activo-cell", "desactivado-cell");
+
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    if (isEditing()) {
+                        choiceBox.getSelectionModel().select(item);
+                        setGraphic(choiceBox);
+                        setText(null);
+                    } else {
+                        setGraphic(null);
+                        setText(item);
+                        applyCellStyle(item);
+                    }
+                }
+            }
+
+            private void applyCellStyle(String item) {
+                if ("Activo".equalsIgnoreCase(item)) {
+                    getStyleClass().add("activo-cell");
+                } else if ("Desactivado".equalsIgnoreCase(item)) {
+                    getStyleClass().add("desactivado-cell");
+                }
+            }
+        });
+
+        estadoColumn.setOnEditCommit(event -> {
+            Insumo insumo = event.getRowValue();
+            String nuevoEstado = event.getNewValue();
+            insumo.setEstado(nuevoEstado);
+            boolean exito = insumoDAO.modificarEstadoInsumo(insumo.getIdInsumo(), nuevoEstado);
+            if (exito) {
+                mostrarAlerta("Éxito", "Estado del insumo actualizado.", Alert.AlertType.INFORMATION);
+            } else {
+                mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
+                insumo.setEstado(event.getOldValue());
+            }
+            insumosTableView.refresh();
+        });
+
+        // Columna para acciones (Ver Proveedores)
+        accionColumn.setCellFactory(param -> new TableCell<Insumo, Void>() {
+            private final Button btn = new Button("Ver Proveedores");
+            {
+                btn.setOnAction(event -> {
+                    Insumo insumo = getTableView().getItems().get(getIndex());
+                    try {
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/verProveedores.fxml"));
+                        Parent root = loader.load();
+
+                        VerProveedoresController proveedoresController = loader.getController();
+                        proveedoresController.setTipoProveedor(insumo.getIdTipoProveedor());
+
+                        Stage stage = new Stage();
+                        stage.setScene(new Scene(root));
+                        stage.setTitle("Proveedores de " + insumo.getNombreInsumo());
+                        stage.initModality(Modality.APPLICATION_MODAL);
+                        stage.showAndWait();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        mostrarAlerta("Error", "No se pudo cargar la ventana de proveedores.", Alert.AlertType.ERROR);
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btn);
+                }
+            }
+        });
+
+        estadoChoiceBox.setItems(FXCollections.observableArrayList("Todos", "Activo", "Desactivado"));
+        estadoChoiceBox.getSelectionModel().select("Todos");
+
+        cargarInsumosYConfigurarFiltros();
+    }
+
+    private void cargarInsumosYConfigurarFiltros() {
+        masterData = insumoDAO.getAllInsumos();
+        filteredData = new FilteredList<>(masterData, p -> true);
+
+        filterField.textProperty().addListener((observable, oldValue, newValue) -> updateFilteredList());
+        estadoChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> updateFilteredList());
+
+        SortedList<Insumo> sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(insumosTableView.comparatorProperty());
+        insumosTableView.setItems(sortedData);
+    }
+
+    private void updateFilteredList() {
+        filteredData.setPredicate(insumo -> {
+            String searchText = filterField.getText() == null ? "" : filterField.getText().toLowerCase();
+            String selectedStatus = estadoChoiceBox.getSelectionModel().getSelectedItem();
+
+            boolean matchesSearchText = searchText.isEmpty() ||
+                    (insumo.getNombreInsumo() != null && insumo.getNombreInsumo().toLowerCase().contains(searchText));
+
+            boolean matchesStatus = selectedStatus.equals("Todos") ||
+                    selectedStatus.equalsIgnoreCase(insumo.getEstado());
+
+            return matchesSearchText && matchesStatus;
+        });
+    }
+
+    @FXML
+    public void handleRegistrarInsumoButton(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/registroInsumo.fxml"));
+            Parent root = loader.load();
+
+            RegistroInsumoController registroController = loader.getController();
+            registroController.setStockController(this);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Registrar Nuevo Insumo");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            refreshInsumosTable();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo cargar el formulario de registro de insumo.", Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    public void handleModificarInsumoButton(ActionEvent event) {
+        Insumo selectedInsumo = insumosTableView.getSelectionModel().getSelectedItem();
+        if (selectedInsumo != null) {
+            boolean exito = insumoDAO.modificarInsumo(selectedInsumo);
+            if (exito) {
+                mostrarAlerta("Éxito", "Insumo modificado exitosamente.", Alert.AlertType.INFORMATION);
+            } else {
+                mostrarAlerta("Error", "No se pudo modificar el insumo en la base de datos.", Alert.AlertType.ERROR);
+            }
+        } else {
+            mostrarAlerta("Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.", Alert.AlertType.WARNING);
+        }
+    }
+
+    @FXML
+    public void handleRefreshButton(ActionEvent event) {
+        refreshInsumosTable();
+    }
+
+    public void refreshInsumosTable() {
+        String filtroTexto = filterField.getText();
+        String filtroEstado = estadoChoiceBox.getValue();
+
+        masterData.clear();
+        masterData.addAll(insumoDAO.getAllInsumos());
+
+        filterField.setText(filtroTexto);
+        estadoChoiceBox.setValue(filtroEstado);
+
+        updateFilteredList();
+    }
+
+    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
+        Alert alert = new Alert(tipo);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
+    }
+}

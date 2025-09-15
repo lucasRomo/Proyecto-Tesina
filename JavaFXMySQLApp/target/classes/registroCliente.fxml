@@ -65,7 +65,7 @@
         <TextField fx:id="departamentoField" promptText="Departamento (opcional)" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
         <Label text="Código Postal:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-        <TextField fx:id="codigoPostalField" promptText="Código Postal (opcional)" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+        <TextField fx:id="codigoPostalField" promptText="Código Postal" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
         <Label text="Ciudad:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
         <TextField fx:id="ciudadField" promptText="Ciudad (opcional)" GridPane.rowIndex="5" GridPane.columnIndex="1"/>

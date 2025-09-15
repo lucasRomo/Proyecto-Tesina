@@ -1,11 +1,10 @@
 package app.controller;
 
-import app.MainApp;
 import app.model.Direccion;
 import app.model.TipoDocumento;
-import app.model.DireccionDAO;
-import app.model.PersonaDAO;
-import app.model.TipoDocumentoDAO;
+import app.dao.DireccionDAO;
+import app.dao.PersonaDAO;
+import app.dao.TipoDocumentoDAO;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

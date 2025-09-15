@@ -1,4 +1,4 @@
-package app.model;
+package app.dao;
 
 import app.model.Direccion;
 import java.sql.*;
@@ -8,10 +8,10 @@ public class DireccionDAO {
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
+    // Tu método original para inserción independiente
     public int insertarDireccion(Direccion direccion) {
         String sql = "INSERT INTO Direccion (calle, numero, piso, departamento, codigo_postal, ciudad, provincia, pais) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         int idGenerado = -1;
-
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, direccion.getCalle());
@@ -22,9 +22,7 @@ public class DireccionDAO {
             stmt.setString(6, direccion.getCiudad());
             stmt.setString(7, direccion.getProvincia());
             stmt.setString(8, direccion.getPais());
-
             stmt.executeUpdate();
-
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     idGenerado = rs.getInt(1);
@@ -36,14 +34,39 @@ public class DireccionDAO {
         return idGenerado;
     }
 
+    /**
+     * **NUEVO MÉTODO:** Inserta una dirección usando una conexión existente.
+     * Esto es fundamental para las transacciones.
+     */
+    public int insertarDireccion(Direccion direccion, Connection conn) throws SQLException {
+        String sql = "INSERT INTO Direccion (calle, numero, piso, departamento, codigo_postal, ciudad, provincia, pais) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        int idGenerado = -1;
+        try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, direccion.getCalle());
+            stmt.setString(2, direccion.getNumero());
+            stmt.setString(3, direccion.getPiso());
+            stmt.setString(4, direccion.getDepartamento());
+            stmt.setString(5, direccion.getCodigoPostal());
+            stmt.setString(6, direccion.getCiudad());
+            stmt.setString(7, direccion.getProvincia());
+            stmt.setString(8, direccion.getPais());
+            stmt.executeUpdate();
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    idGenerado = rs.getInt(1);
+                }
+            }
+        }
+        return idGenerado;
+    }
+
+    // El resto de tus métodos (obtenerPorId, modificarDireccion) no necesitan cambios
     public Direccion obtenerPorId(int id) {
         String sql = "SELECT * FROM Direccion WHERE id_direccion = ?";
         Direccion direccion = null;
-
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     direccion = new Direccion();
@@ -65,7 +88,6 @@ public class DireccionDAO {
     }
 
     public boolean modificarDireccion(Direccion direccion) {
-        // Asegúrate de que el nombre de la columna aquí coincida con tu base de datos
         String sql = "UPDATE Direccion SET calle = ?, numero = ?, piso = ?, departamento = ?, codigo_postal = ?, ciudad = ?, provincia = ?, pais = ? WHERE id_direccion = ?";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -77,13 +99,12 @@ public class DireccionDAO {
             stmt.setString(6, direccion.getCiudad());
             stmt.setString(7, direccion.getProvincia());
             stmt.setString(8, direccion.getPais());
-            // Asegúrate de que el nombre de la columna aquí coincida con tu base de datos
             stmt.setInt(9, direccion.getIdDireccion());
-
             int filasAfectadas = stmt.executeUpdate();
             return filasAfectadas > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
-        }}
+        }
+    }
 }

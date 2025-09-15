@@ -1,9 +1,9 @@
 package app.controller;
 
-import app.model.Persona;
+import app.dao.PersonaDAO;
 import app.model.TipoDocumento;
-import app.model.DireccionDAO;
-import app.model.TipoDocumentoDAO;
+import app.dao.DireccionDAO;
+import app.dao.TipoDocumentoDAO;
 import app.model.Direccion;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -52,7 +52,7 @@ public class RegistroEmpleadoController {
 
             String tipoDocumentoSeleccionado = tipoDocumentoComboBox.getValue();
             String numeroDocumento = numeroDocumentoField.getText().trim();
-            app.model.PersonaDAO personaDAO = new app.model.PersonaDAO();
+            PersonaDAO personaDAO = new PersonaDAO();
 
             if (tipoDocumentoSeleccionado == null) {
                 mostrarAlerta("Advertencia", "Por favor, seleccione un tipo de documento.");
@@ -158,8 +158,7 @@ public class RegistroEmpleadoController {
 
         // Validar que los campos de dirección no estén vacíos
         if (calleField.getText().isEmpty() || numeroField.getText().isEmpty() ||
-                codigoPostalField.getText().isEmpty() || ciudadField.getText().isEmpty() ||
-                provinciaField.getText().isEmpty() || paisField.getText().isEmpty()) {
+                codigoPostalField.getText().isEmpty()) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos de dirección obligatorios.");
             return false;
         }

@@ -2,8 +2,8 @@ package app.controller;
 
 import app.model.Cliente;
 import app.model.Persona;
-import app.model.ClienteDAO;
-import app.model.PersonaDAO;
+import app.dao.ClienteDAO;
+import app.dao.PersonaDAO;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;

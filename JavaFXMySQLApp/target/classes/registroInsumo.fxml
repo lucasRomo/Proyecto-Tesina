@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import java.net.URL?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.RegistroInsumoController">
+    <stylesheets>
+        <URL value="@styles.css" />
+    </stylesheets>
+    <VBox alignment="CENTER" layoutX="14.0" layoutY="14.0" prefHeight="372.0" prefWidth="572.0" spacing="15.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
+        <children>
+            <Label text="Registrar Nuevo Insumo">
+                <font>
+                    <Font name="System Bold" size="24.0" />
+                </font>
+            </Label>
+            <HBox alignment="CENTER" prefHeight="30.0" prefWidth="544.0" spacing="10.0">
+                <children>
+                    <Label prefWidth="150.0" text="Nombre del Insumo:">
+                        <font>
+                            <Font size="14.0" />
+                        </font>
+                    </Label>
+                    <TextField fx:id="nombreField" prefHeight="25.0" prefWidth="300.0" />
+                </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="30.0" prefWidth="544.0" spacing="10.0">
+                <children>
+                    <Label prefWidth="150.0" text="Descripción:">
+                        <font>
+                            <Font size="14.0" />
+                        </font>
+                    </Label>
+                    <TextArea fx:id="descripcionArea" prefHeight="80.0" prefWidth="300.0" wrapText="true" />
+                </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="30.0" prefWidth="544.0" spacing="10.0">
+                <children>
+                    <Label prefWidth="150.0" text="Stock Mínimo:">
+                        <font>
+                            <Font size="14.0" />
+                        </font>
+                    </Label>
+                    <TextField fx:id="stockMinimoField" prefHeight="25.0" prefWidth="300.0" />
+                </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="30.0" prefWidth="544.0" spacing="10.0">
+                <children>
+                    <Label prefWidth="150.0" text="Stock Actual:">
+                        <font>
+                            <Font size="14.0" />
+                        </font>
+                    </Label>
+                    <TextField fx:id="stockActualField" prefHeight="25.0" prefWidth="300.0" />
+                </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="30.0" prefWidth="544.0" spacing="10.0">
+                <children>
+                    <Label prefWidth="150.0" text="Tipo de Proveedor:">
+                        <font>
+                            <Font size="14.0" />
+                        </font>
+                    </Label>
+                    <ChoiceBox fx:id="tipoProveedorChoiceBox" prefHeight="25.0" prefWidth="300.0" />
+                </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="40.0" prefWidth="572.0" spacing="20.0">
+                <children>
+                    <Button mnemonicParsing="false" onAction="#handleGuardarInsumoButton" prefHeight="25.0" prefWidth="150.0" styleClass="save-button" text="Guardar Insumo" />
+                    <Button mnemonicParsing="false" onAction="#handleCancelarButton" prefHeight="25.0" prefWidth="150.0" styleClass="cancel-button" text="Cancelar" />
+                </children>
+                <VBox.margin>
+                    <Insets top="10.0" />
+                </VBox.margin>
+            </HBox>
+        </children>
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        </padding>
+    </VBox>
+</AnchorPane>

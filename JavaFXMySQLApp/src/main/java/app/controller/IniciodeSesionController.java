@@ -1,7 +1,7 @@
 package app.controller;
 
 import app.model.Usuario;
-import app.model.UsuarioDAO;
+import app.dao.UsuarioDAO;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

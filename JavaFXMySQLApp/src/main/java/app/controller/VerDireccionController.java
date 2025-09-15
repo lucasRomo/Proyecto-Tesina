@@ -1,7 +1,7 @@
 package app.controller;
 
 import app.model.Direccion;
-import app.model.DireccionDAO;
+import app.dao.DireccionDAO;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;

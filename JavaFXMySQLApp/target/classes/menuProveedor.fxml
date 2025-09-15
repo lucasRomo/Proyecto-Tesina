@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="469.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ProveedorController">
+    <stylesheets>
+        <URL value="@styles.css" />
+    </stylesheets>
+    <Label layoutX="490.0" layoutY="14.0" text="Menú Proveedores">
+        <font>
+            <Font name="System Bold" size="24.0" />
+        </font>
+    </Label>
+    <TableView fx:id="proveedoresTableView" editable="true" layoutX="43.0" layoutY="72.0" prefHeight="274.0" prefWidth="1115.0">
+        <columns>
+            <TableColumn fx:id="idProveedorColumn" prefWidth="50.0" text="ID" />
+            <TableColumn fx:id="nombreColumn" prefWidth="150.0" text="Nombre" />
+            <TableColumn fx:id="contactoColumn" prefWidth="150.0" text="Contacto" />
+            <TableColumn fx:id="mailColumn" prefWidth="200.0" text="Email" />
+            <TableColumn fx:id="estadoColumn" prefWidth="120.0" text="Estado" />
+            <TableColumn fx:id="tipoProveedorColumn" prefWidth="120.0" text="Tipo Proveedor" />
+            <TableColumn fx:id="accionColumn" prefWidth="150.0" text="Dirección" />
+        </columns>
+    </TableView>
+    <TextField fx:id="filterField" layoutX="43.0" layoutY="387.0" prefHeight="25.0" prefWidth="200.0" promptText="Buscar por nombre, contacto o mail..." />
+
+    <Label layoutX="260.0" layoutY="391.0" text="Estado:">
+        <font>
+            <Font size="14.0" />
+        </font>
+    </Label>
+    <ChoiceBox fx:id="estadoChoiceBox" layoutX="310.0" layoutY="387.0" prefWidth="150.0" />
+
+    <Label layoutX="480.0" layoutY="391.0" text="Tipo:">
+        <font>
+            <Font size="14.0" />
+        </font>
+    </Label>
+    <ChoiceBox fx:id="tipoProveedorChoiceBox" layoutX="520.0" layoutY="387.0" prefWidth="150.0" />
+
+    <Button fx:id="nuevoProveedorButton" layoutX="700.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleRegistrarProveedorButton" text="Registrar Proveedor" textFill="#111111" />
+    <Button fx:id="modificarProveedorButton" layoutX="850.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleModificarProveedorButton" text="Modificar Proveedor" />
+    <Button fx:id="refreshButton" layoutX="1010.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
+</AnchorPane>

@@ -1,4 +1,4 @@
-package app.model;
+package app.dao;
 
 import app.model.Usuario;
 import java.sql.Connection;
