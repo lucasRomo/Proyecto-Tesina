@@ -17,5 +17,4 @@ app\model\dao\TipoDocumentoDAO.class
 app\model\dao\DireccionDAO.class
 app\controller\RegistroEmpleadoController.class
 app\controller\MenuController.class
-app\controller\UsuarioEmpleadoView.class
 app\controller\UsuariosEmpleadoController.class

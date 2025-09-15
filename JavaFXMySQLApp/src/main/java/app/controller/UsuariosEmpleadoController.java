@@ -1,5 +1,5 @@
 package app.controller;
-import app.controller.UsuarioEmpleadoView;
+import app.controller.UsuarioEmpleadoTableView;
 import app.model.UsuarioDAO;
 import app.model.dao.PersonaDAO;
 import javafx.collections.FXCollections;
@@ -15,21 +15,21 @@ import java.sql.SQLException;
 public class UsuariosEmpleadoController {
 
     // Se cambió el tipo genérico a UsuarioEmpleadoView
-    @FXML private TableView<UsuarioEmpleadoView> usuariosEditableView;
-    @FXML private TableColumn<UsuarioEmpleadoView, Number> idUsuarioColumn;
-    @FXML private TableColumn<UsuarioEmpleadoView, String> UsuarioColumn;
-    // Se eliminó la columna de contraseña por seguridad
-    @FXML private TableColumn<UsuarioEmpleadoView, Number> idPersonaColumn;
-    @FXML private TableColumn<UsuarioEmpleadoView, String> NombreColumn;
-    @FXML private TableColumn<UsuarioEmpleadoView, String> ApellidoColumn;
-    @FXML private TableColumn<UsuarioEmpleadoView, Number> SalarioColumn;
-    @FXML private TableColumn<UsuarioEmpleadoView, String> EstadoColumn;
+    @FXML private TableView<UsuarioEmpleadoTableView> usuariosEditableView;
+    @FXML private TableColumn<UsuarioEmpleadoTableView, Number> idUsuarioColumn;
+    @FXML private TableColumn<UsuarioEmpleadoTableView, String> UsuarioColumn;
+    @FXML private TableColumn<UsuarioEmpleadoTableView, String> ContrasenaColumn;
+    @FXML private TableColumn<UsuarioEmpleadoTableView, Number> idPersonaColumn;
+    @FXML private TableColumn<UsuarioEmpleadoTableView, String> NombreColumn;
+    @FXML private TableColumn<UsuarioEmpleadoTableView, String> ApellidoColumn;
+    @FXML private TableColumn<UsuarioEmpleadoTableView, Number> SalarioColumn;
+    @FXML private TableColumn<UsuarioEmpleadoTableView, String> EstadoColumn;
     @FXML private Button modificarUsuarioButton;
     @FXML private TextField filterField;
 
     private UsuarioDAO usuarioDAO;
     private PersonaDAO personaDAO;
-    private ObservableList<UsuarioEmpleadoView> listaUsuariosEmpleados;
+    private ObservableList<UsuarioEmpleadoTableView> listaUsuariosEmpleados;
 
 
     @FXML
@@ -40,6 +40,7 @@ public class UsuariosEmpleadoController {
         // Se cambiaron los CellValueFactory para usar la nueva clase
         idUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("idUsuario"));
         UsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("usuario"));
+        ContrasenaColumn.setCellValueFactory(new PropertyValueFactory<>("contrasena"));
         idPersonaColumn.setCellValueFactory(new PropertyValueFactory<>("idPersona"));
         NombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         ApellidoColumn.setCellValueFactory(new PropertyValueFactory<>("apellido"));
@@ -52,14 +53,14 @@ public class UsuariosEmpleadoController {
         // Se configura la edición de las celdas
         NombreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         NombreColumn.setOnEditCommit(event -> {
-            UsuarioEmpleadoView usuario = event.getRowValue();
+            UsuarioEmpleadoTableView usuario = event.getRowValue();
             usuario.setNombre(event.getNewValue());
             // Lógica para guardar en la base de datos (requiere un método en el DAO)
         });
 
         ApellidoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         ApellidoColumn.setOnEditCommit(event -> {
-            UsuarioEmpleadoView usuario = event.getRowValue();
+            UsuarioEmpleadoTableView usuario = event.getRowValue();
             usuario.setApellido(event.getNewValue());
             // Lógica para guardar en la base de datos (requiere un método en el DAO)
         });
@@ -69,10 +70,10 @@ public class UsuariosEmpleadoController {
         EstadoColumn.setCellFactory(ChoiceBoxTableCell.forTableColumn(estados));
 
         EstadoColumn.setOnEditCommit(event -> {
-            UsuarioEmpleadoView usuario = event.getRowValue();
+            UsuarioEmpleadoTableView usuario = event.getRowValue();
             String nuevoEstado = event.getNewValue();
             // Lógica para guardar el estado en la base de datos
-            boolean exito = usuarioDAO.modificarEstadoUsuario(usuario.getIdUsuario(), nuevoEstado);
+            boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
             if (exito) {
                 usuario.setEstado(nuevoEstado);
             } else {
@@ -99,11 +100,11 @@ public class UsuariosEmpleadoController {
 
     @FXML
     public void handleModificarUsuarioButton() {
-        UsuarioEmpleadoView selectedUsuario = usuariosEditableView.getSelectionModel().getSelectedItem();
+        UsuarioEmpleadoTableView selectedUsuario = usuariosEditableView.getSelectionModel().getSelectedItem();
         if (selectedUsuario != null) {
             try {
                 // Lógica para guardar los cambios en la base de datos
-                 boolean exito = usuarioDAO.modificarUsuarioEmpleado(selectedUsuario);
+                 boolean exito = usuarioDAO.modificarUsuariosEmpleados(selectedUsuario);
                  if (exito) {
                      mostrarAlerta("Éxito", "Usuario modificado exitosamente.", Alert.AlertType.INFORMATION);
                  } else {
