@@ -17,6 +17,23 @@ public class MenuController {
             Parent root = FXMLLoader.load(getClass().getResource("/menuStock.fxml"));
             Stage stage = new Stage();
             stage.setTitle("Menu de Proveedor");
+            stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH2, app.MainApp.WINDOW_HEIGHT));
+            stage.show();
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void handleStockabm(ActionEvent event){
+        try {
+            // Carga la nueva ventana de registro
+            Parent root = FXMLLoader.load(getClass().getResource("/menuAbmStock.fxml"));
+            Stage stage = new Stage();
+            stage.setTitle("Menu de Proveedor");
             stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT));
             stage.show();
 

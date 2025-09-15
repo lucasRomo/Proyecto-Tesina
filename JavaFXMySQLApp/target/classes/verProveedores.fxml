@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="488.0" prefWidth="807.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerProveedoresController">
+    <stylesheets>
+        <URL value="@styles.css" />
+    </stylesheets>
+    <VBox alignment="TOP_CENTER" layoutX="14.0" layoutY="14.0" prefHeight="376.0" prefWidth="778.0" spacing="15.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="14.0">
+        <children>
+            <Label text="Proveedores Asociados">
+                <font>
+                    <Font name="System Bold" size="24.0" />
+                </font>
+            </Label>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <children>
+                    <Label text="Estado:">
+                        <font>
+                            <Font size="14.0" />
+                        </font>
+                    </Label>
+                    <ChoiceBox fx:id="estadoChoiceBox" prefWidth="150.0" />
+                </children>
+            </HBox>
+            <TableView fx:id="proveedoresTableView" prefHeight="362.0" prefWidth="770.0">
+                <columns>
+                    <TableColumn fx:id="nombreColumn" prefWidth="164.0" text="Nombre" />
+                    <TableColumn fx:id="contactoColumn" prefWidth="190.0" text="Contacto" />
+                    <TableColumn fx:id="mailColumn" prefWidth="209.0" text="Email" />
+                    <TableColumn fx:id="estadoColumn" prefWidth="181.0" text="Estado" />
+                </columns>
+            </TableView>
+            <Button mnemonicParsing="false" onAction="#handleCerrarButton" styleClass="cancel-button" text="Cerrar">
+                <VBox.margin>
+                    <Insets top="10.0" />
+                </VBox.margin>
+            </Button>
+        </children>
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        </padding>
+    </VBox>
+</AnchorPane>
