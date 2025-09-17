@@ -168,6 +168,10 @@ public class RegistroController {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos de dirección obligatorios.");
             return false;
         }
+        if (!this.validarSoloNumeros(this.numeroField.getText())) {
+            this.mostrarAlerta("Advertencia", "El teléfono solo puede contener números.");
+            return false;
+        }
         return true;
     }
 

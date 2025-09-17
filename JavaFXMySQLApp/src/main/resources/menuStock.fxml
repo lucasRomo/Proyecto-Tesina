@@ -22,7 +22,7 @@
             <TableColumn fx:id="stockMinimoColumn" prefWidth="100.0" text="Stock Mínimo" />
             <TableColumn fx:id="stockActualColumn" prefWidth="100.0" text="Stock Actual" />
             <TableColumn fx:id="estadoColumn" prefWidth="100.0" text="Estado" />
-            <TableColumn fx:id="idTipoProveedorColumn" prefWidth="120.0" text="ID Tipo Proveedor" />
+            <TableColumn fx:id="idTipoProveedorColumn" prefWidth="120.0" text="Tipo Proveedor" />
             <TableColumn fx:id="accionColumn" prefWidth="120.0" text="Acción" />
         </columns>
     </TableView>
@@ -39,4 +39,5 @@
     <Button fx:id="modificarInsumoButton" layoutX="865.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleModificarInsumoButton" text="Modificar Insumo" />
     <Button fx:id="registrarInsumoButton" layoutX="700.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleRegistrarInsumoButton" text="Registrar Insumo" />
     <Button fx:id="refreshButton" layoutX="1005.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
+    <Button fx:id="volverButton" layoutX="1090.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
 </AnchorPane>

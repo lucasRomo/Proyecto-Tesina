@@ -447,4 +447,10 @@ public class ProveedorController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
+    @FXML
+    private void handleVolverButton(ActionEvent event) {
+        Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+        stage.close();
+    }
 }

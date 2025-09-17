@@ -18,6 +18,7 @@
         <PasswordField fx:id="ContraseniaField" promptText="Ingrese su Contraseña" />
         <Button onAction="#IniciarSesion" text="Iniciar Sesion" />
     </children>
+    <Button fx:id="volverButton" layoutX="1090.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>

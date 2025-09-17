@@ -149,10 +149,16 @@ public class RegistroEmpleadoController {
 
     private boolean validarCampos() {
         // Validar que los campos personales no estén vacíos
+        String regexNumeros = "\\d+";
         if (nombreField.getText().isEmpty() || apellidoField.getText().isEmpty() ||
                 tipoDocumentoComboBox.getValue() == null || numeroDocumentoField.getText().isEmpty() ||
                 emailField.getText().isEmpty() || telefonoField.getText().isEmpty()) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos personales obligatorios.");
+            return false;
+        }
+
+        if (!numeroField.getText().matches(regexNumeros)) {
+            mostrarAlerta("Advertencia", "El campo 'Número' debe contener solo números.", Alert.AlertType.WARNING);
             return false;
         }
 
@@ -173,6 +179,13 @@ public class RegistroEmpleadoController {
         }
 
         return true;
+    }
+    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
+        Alert alert = new Alert(tipo);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
     }
 
     private void mostrarAlerta(String titulo, String mensaje) {

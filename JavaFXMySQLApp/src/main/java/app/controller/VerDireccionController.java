@@ -78,11 +78,20 @@ public class VerDireccionController {
     }
 
     private boolean validarCamposDireccion() {
+        // Expresión regular para verificar si una cadena contiene solo dígitos.
+        String regexNumeros = "\\d+";
+
         if (calleTextField.getText().isEmpty() || numeroTextField.getText().isEmpty() ||
                 codigoPostalTextField.getText().isEmpty()) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos de dirección obligatorios.", Alert.AlertType.WARNING);
             return false;
         }
+        // Nueva validación para el número: comprueba si la cadena solo contiene dígitos.
+        else if (!numeroTextField.getText().matches(regexNumeros)) {
+            mostrarAlerta("Advertencia", "El campo 'Número' debe contener solo números.", Alert.AlertType.WARNING);
+            return false;
+        }
+        // Validación existente para el código postal.
         else if (codigoPostalTextField.getText().trim().length() != 4) {
             mostrarAlerta("Advertencia", "El código postal debe tener exactamente 4 caracteres.", Alert.AlertType.WARNING);
             return false;

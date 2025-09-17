@@ -42,4 +42,5 @@
     <Button fx:id="nuevoClienteButton" layoutX="826.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleRegistrarClienteButton" text="Registrar Cliente" textFill="#111111" />
     <Button fx:id="modificarClienteButton" layoutX="955.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleModificarClienteButton" text="Modificar Cliente" />
     <Button fx:id="refreshButton" layoutX="1084.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
+    <Button fx:id="volverButton" layoutX="1175.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
 </AnchorPane>

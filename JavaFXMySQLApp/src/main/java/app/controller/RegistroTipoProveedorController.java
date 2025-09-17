@@ -26,8 +26,19 @@ public class RegistroTipoProveedorController {
         }
 
         try {
+            // Paso 1: Verificar si ya existe un tipo de proveedor con la misma descripción
+            TipoProveedor tipoExistente = tipoProveedorDAO.getTipoProveedorByDescription(descripcion);
+
+            if (tipoExistente != null) {
+                // Si el tipo ya existe, mostrar una alerta y no registrar
+                mostrarAlerta("Advertencia", "Ya existe un tipo de proveedor con esa descripción. No se puede registrar dos veces el mismo.", Alert.AlertType.WARNING);
+                return;
+            }
+
+            // Paso 2: Si no existe, proceder con la inserción
             TipoProveedor nuevoTipo = new TipoProveedor(0, descripcion);
             boolean exito = tipoProveedorDAO.insertarTipoProveedor(nuevoTipo);
+
             if (exito) {
                 mostrarAlerta("Éxito", "Tipo de proveedor registrado correctamente.", Alert.AlertType.INFORMATION);
                 Stage stage = (Stage) descripcionField.getScene().getWindow();

@@ -2,10 +2,12 @@ package app.controller;
 
 import app.model.Usuario;
 import app.dao.UsuarioDAO;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -70,4 +72,10 @@ public class IniciodeSesionController {
                 alert.showAndWait();
             }
         }
+
+    @FXML
+    private void handleVolverButton(ActionEvent event) {
+        Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+        stage.close();
+    }
     }

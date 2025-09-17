@@ -182,10 +182,15 @@ public class RegistroProveedorController {
     }
 
     private boolean validarCamposDireccion() {
+        String regexNumeros = "\\d+";
         if (calleField.getText().isEmpty() || numeroField.getText().isEmpty() ||
                 codigoPostalField.getText().isEmpty() || ciudadField.getText().isEmpty() ||
                 provinciaField.getText().isEmpty()) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos de dirección obligatorios.");
+            return false;
+        }
+        else if (!numeroField.getText().matches(regexNumeros)) {
+            mostrarAlerta("Advertencia", "El campo 'Número' debe contener solo números.", Alert.AlertType.WARNING);
             return false;
         }
         if (codigoPostalField.getText().trim().length() != 4) {
