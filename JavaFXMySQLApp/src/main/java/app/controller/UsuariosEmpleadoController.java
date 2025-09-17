@@ -1,7 +1,7 @@
 package app.controller;
-import app.controller.UsuarioEmpleadoTableView;
 import app.model.UsuarioDAO;
 import app.model.dao.PersonaDAO;
+import app.controller.UsuarioEmpleadoTableView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -11,10 +11,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 
 import java.sql.SQLException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javafx.util.StringConverter;
 
 public class UsuariosEmpleadoController {
 
-    // Se cambió el tipo genérico a UsuarioEmpleadoView
     @FXML private TableView<UsuarioEmpleadoTableView> usuariosEditableView;
     @FXML private TableColumn<UsuarioEmpleadoTableView, Number> idUsuarioColumn;
     @FXML private TableColumn<UsuarioEmpleadoTableView, String> UsuarioColumn;
@@ -37,7 +39,6 @@ public class UsuariosEmpleadoController {
         this.usuarioDAO = new UsuarioDAO();
         this.personaDAO = new PersonaDAO();
 
-        // Se cambiaron los CellValueFactory para usar la nueva clase
         idUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("idUsuario"));
         UsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("usuario"));
         ContrasenaColumn.setCellValueFactory(new PropertyValueFactory<>("contrasena"));
@@ -47,22 +48,56 @@ public class UsuariosEmpleadoController {
         SalarioColumn.setCellValueFactory(new PropertyValueFactory<>("salario"));
         EstadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
 
-        // La tabla ahora es editable
         usuariosEditableView.setEditable(true);
 
-        // Se configura la edición de las celdas
+        // Se configura la edición de las celdas y sus validaciones
         NombreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         NombreColumn.setOnEditCommit(event -> {
-            UsuarioEmpleadoTableView usuario = event.getRowValue();
-            usuario.setNombre(event.getNewValue());
-            // Lógica para guardar en la base de datos (requiere un método en el DAO)
+            String nuevoNombre = event.getNewValue();
+            if (nuevoNombre != null && !nuevoNombre.trim().isEmpty() && nuevoNombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+")) {
+                event.getRowValue().setNombre(nuevoNombre);
+            } else {
+                mostrarAlerta("Advertencia", "El nombre solo puede contener letras y no puede estar vacío.", Alert.AlertType.WARNING);
+                usuariosEditableView.refresh(); // Revierte el valor a su estado original
+            }
         });
 
         ApellidoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         ApellidoColumn.setOnEditCommit(event -> {
-            UsuarioEmpleadoTableView usuario = event.getRowValue();
-            usuario.setApellido(event.getNewValue());
-            // Lógica para guardar en la base de datos (requiere un método en el DAO)
+            String nuevoApellido = event.getNewValue();
+            if (nuevoApellido != null && !nuevoApellido.trim().isEmpty() && nuevoApellido.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+")) {
+                event.getRowValue().setApellido(nuevoApellido);
+            } else {
+                mostrarAlerta("Advertencia", "El apellido solo puede contener letras y no puede estar vacío.", Alert.AlertType.WARNING);
+                usuariosEditableView.refresh();
+            }
+        });
+
+        // Se configura la edición del Salario con validación para que solo acepte números
+        SalarioColumn.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
+            @Override
+            public String toString(Number object) {
+                return object == null ? "" : String.valueOf(object);
+            }
+
+            @Override
+            public Number fromString(String string) {
+                try {
+                    return Double.parseDouble(string);
+                } catch (NumberFormatException e) {
+                    return null; // Devuelve null si no es un número válido
+                }
+            }
+        }));
+
+        SalarioColumn.setOnEditCommit(event -> {
+            Number nuevoSalario = event.getNewValue();
+            if (nuevoSalario != null && nuevoSalario.doubleValue() >= 0) {
+                event.getRowValue().setSalario(nuevoSalario.doubleValue());
+            } else {
+                mostrarAlerta("Advertencia", "El salario debe ser un número válido y no puede ser negativo.", Alert.AlertType.WARNING);
+                usuariosEditableView.refresh();
+            }
         });
 
         // Configurar la columna de estado con un desplegable
@@ -72,7 +107,6 @@ public class UsuariosEmpleadoController {
         EstadoColumn.setOnEditCommit(event -> {
             UsuarioEmpleadoTableView usuario = event.getRowValue();
             String nuevoEstado = event.getNewValue();
-            // Lógica para guardar el estado en la base de datos
             boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
             if (exito) {
                 usuario.setEstado(nuevoEstado);
@@ -82,14 +116,11 @@ public class UsuariosEmpleadoController {
             }
         });
 
-        // Llamada al método para cargar los datos en la tabla
         cargarDatos();
     }
 
-    // Método para cargar los datos en la tabla
     private void cargarDatos() {
         try {
-            // Se asume que UsuarioDAO tiene un método que devuelve una lista de UsuarioEmpleadoView
             listaUsuariosEmpleados = FXCollections.observableArrayList(usuarioDAO.obtenerUsuariosEmpleados());
             usuariosEditableView.setItems(listaUsuariosEmpleados);
         } catch (Exception e) {
@@ -103,13 +134,12 @@ public class UsuariosEmpleadoController {
         UsuarioEmpleadoTableView selectedUsuario = usuariosEditableView.getSelectionModel().getSelectedItem();
         if (selectedUsuario != null) {
             try {
-                // Lógica para guardar los cambios en la base de datos
-                 boolean exito = usuarioDAO.modificarUsuariosEmpleados(selectedUsuario);
-                 if (exito) {
-                     mostrarAlerta("Éxito", "Usuario modificado exitosamente.", Alert.AlertType.INFORMATION);
-                 } else {
-                     mostrarAlerta("Error", "No se pudo modificar el usuario en la base de datos.", Alert.AlertType.ERROR);
-                 }
+                boolean exito = usuarioDAO.modificarUsuariosEmpleados(selectedUsuario);
+                if (exito) {
+                    mostrarAlerta("Éxito", "Usuario modificado exitosamente.", Alert.AlertType.INFORMATION);
+                } else {
+                    mostrarAlerta("Error", "No se pudo modificar el usuario en la base de datos.", Alert.AlertType.ERROR);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 mostrarAlerta("Error", "Ocurrió un error al intentar modificar el usuario.", Alert.AlertType.ERROR);
@@ -119,7 +149,6 @@ public class UsuariosEmpleadoController {
         }
     }
 
-    // Método de utilidad para mostrar alertas
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);
         alert.setTitle(titulo);
