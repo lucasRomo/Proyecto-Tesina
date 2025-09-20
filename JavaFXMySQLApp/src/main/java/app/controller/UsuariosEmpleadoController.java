@@ -171,8 +171,7 @@ public class UsuariosEmpleadoController {
                 }
                 String lowerCaseFilter = newValue.toLowerCase();
                 return usuario.getUsuario().toLowerCase().contains(lowerCaseFilter) ||
-                        usuario.getNombre().toLowerCase().contains(lowerCaseFilter) ||
-                        usuario.getEstado().toLowerCase().contains(lowerCaseFilter);
+                        usuario.getNombre().toLowerCase().contains(lowerCaseFilter);
             });
         });
 
