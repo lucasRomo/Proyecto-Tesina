@@ -1,0 +1,15 @@
+.table-cell {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.activo-status {
+    -fx-background-color: #C8E6C9; /* Un verde mucho más claro */
+    -fx-text-fill: #1B5E20; /* Color de texto verde oscuro para contraste */
+    -fx-weight: bold;
+}
+
+.desactivado-status {
+    -fx-background-color: #FFCDD2; /* Un rojo mucho más claro */
+    -fx-text-fill: #B71C1C; /* Color de texto rojo oscuro para contraste */
+    -fx-weight: bold;
+}
