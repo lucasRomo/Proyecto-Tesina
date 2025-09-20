@@ -62,6 +62,30 @@ public class UsuariosEmpleadoController {
             }
         });
 
+        // Se configura la edición de la columna de Usuario y su validación
+        UsuarioColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        UsuarioColumn.setOnEditCommit(event -> {
+            String nuevoUsuario = event.getNewValue();
+            if (nuevoUsuario != null && !nuevoUsuario.trim().isEmpty() && !nuevoUsuario.contains(" ")) {
+                event.getRowValue().setUsuario(nuevoUsuario);
+            } else {
+                mostrarAlerta("Advertencia", "El nombre de usuario no puede estar vacío y no puede contener espacios.", Alert.AlertType.WARNING);
+                usuariosEditableView.refresh();
+            }
+        });
+
+        // Se configura la edición de la columna de contraseña.
+        ContrasenaColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        ContrasenaColumn.setOnEditCommit(event -> {
+            String nuevaContrasena = event.getNewValue();
+            if (nuevaContrasena != null && !nuevaContrasena.trim().isEmpty()) {
+                event.getRowValue().setContrasena(nuevaContrasena);
+            } else {
+                mostrarAlerta("Advertencia", "La contraseña no puede estar vacía.", Alert.AlertType.WARNING);
+                usuariosEditableView.refresh();
+            }
+        });
+
         ApellidoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         ApellidoColumn.setOnEditCommit(event -> {
             String nuevoApellido = event.getNewValue();
@@ -77,7 +101,7 @@ public class UsuariosEmpleadoController {
         SalarioColumn.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
             @Override
             public String toString(Number object) {
-                return object == null ? "" : String.valueOf(object);
+                return object == null ? "" : object.toString();
             }
 
             @Override
@@ -100,6 +124,7 @@ public class UsuariosEmpleadoController {
             }
         });
 
+
         // Configurar la columna de estado con un desplegable
         ObservableList<String> estados = FXCollections.observableArrayList("Activo", "Desactivado");
         EstadoColumn.setCellFactory(ChoiceBoxTableCell.forTableColumn(estados));
@@ -107,9 +132,10 @@ public class UsuariosEmpleadoController {
         EstadoColumn.setOnEditCommit(event -> {
             UsuarioEmpleadoTableView usuario = event.getRowValue();
             String nuevoEstado = event.getNewValue();
+            usuario.setEstado(nuevoEstado);
             boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
             if (exito) {
-                usuario.setEstado(nuevoEstado);
+                mostrarAlerta("Éxito", "Estado del usuario actualizado correctamente.", Alert.AlertType.INFORMATION);
             } else {
                 mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
                 usuariosEditableView.refresh();
