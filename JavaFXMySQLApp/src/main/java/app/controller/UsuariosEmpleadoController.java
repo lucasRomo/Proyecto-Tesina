@@ -1,9 +1,12 @@
 package app.controller;
+import app.model.Cliente;
 import app.model.UsuarioDAO;
 import app.model.dao.PersonaDAO;
 import app.controller.UsuarioEmpleadoTableView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ChoiceBoxTableCell;
@@ -35,7 +38,7 @@ public class UsuariosEmpleadoController {
 
 
     @FXML
-    private void initialize() {
+    private void initialize() throws SQLException {
         this.usuarioDAO = new UsuarioDAO();
         this.personaDAO = new PersonaDAO();
 
@@ -143,6 +146,7 @@ public class UsuariosEmpleadoController {
         });
 
         cargarDatos();
+        cargarUsuariosyConfigurarBuscador();
     }
 
     private void cargarDatos() {
@@ -153,6 +157,28 @@ public class UsuariosEmpleadoController {
             e.printStackTrace();
             mostrarAlerta("Error", "No se pudieron cargar los datos de los usuarios.", Alert.AlertType.ERROR);
         }
+    }
+
+    private void cargarUsuariosyConfigurarBuscador() throws SQLException {
+        ObservableList<UsuarioEmpleadoTableView> masterData = usuarioDAO.obtenerUsuariosEmpleados();
+
+        FilteredList<UsuarioEmpleadoTableView> filteredData = new FilteredList<>(masterData, p -> true);
+
+        filterField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(usuario -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                String lowerCaseFilter = newValue.toLowerCase();
+                return usuario.getUsuario().toLowerCase().contains(lowerCaseFilter) ||
+                        usuario.getNombre().toLowerCase().contains(lowerCaseFilter) ||
+                        usuario.getEstado().toLowerCase().contains(lowerCaseFilter);
+            });
+        });
+
+        SortedList<UsuarioEmpleadoTableView> sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(usuariosEditableView.comparatorProperty());
+        usuariosEditableView.setItems(sortedData);
     }
 
     @FXML
