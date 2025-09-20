@@ -26,7 +26,7 @@
         </TableView>
         <TextField fx:id="filterField" layoutX="42.0" layoutY="340.0" prefHeight="25.0" prefWidth="273.0" promptText="Buscar por Usuario o Nombre..." />
         <Button fx:id="modificarUsuarioButton" layoutX="1028.0" layoutY="340.0" mnemonicParsing="false" onAction="#handleModificarUsuarioButton" prefHeight="25.0" prefWidth="131.0" text="Guardar Cambios" />
-      <Button layoutX="386.0" layoutY="340.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="121.0" text="Button" />
+        <ChoiceBox fx:id="estadoUsuarioChoiceBox" layoutX="376.0" layoutY="340.0" prefHeight="25.0" prefWidth="131.0" />
       <Label layoutX="324.0" layoutY="340.0" prefHeight="25.0" prefWidth="91.0" text="Estado:">
          <font>
             <Font size="14.0" />
