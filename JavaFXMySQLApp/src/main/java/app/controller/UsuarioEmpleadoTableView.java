@@ -64,8 +64,8 @@ public class UsuarioEmpleadoTableView {
         this.usuario.set(usuario);
     }
 
-    public void setContrasena(String usuario) {
-        this.usuario.set(String.valueOf(this.contrasena));
+    public void setContrasena(String contrasena) {
+        this.contrasena.set(contrasena);
     }
 
     public void setNombre(String nombre) {

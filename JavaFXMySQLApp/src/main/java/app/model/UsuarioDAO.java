@@ -111,7 +111,7 @@ public class UsuarioDAO {
 
     public boolean modificarUsuariosEmpleados(UsuarioEmpleadoTableView usuario) {
         // La lógica para la actualización de múltiples tablas debe ser una transacción
-        String sqlUpdateUsuario = "UPDATE Usuario SET nombre_usuario = ? WHERE id_usuario = ?";
+        String sqlUpdateUsuario = "UPDATE Usuario SET nombre_usuario = ?, contrasena = ? WHERE id_usuario = ?";
         String sqlUpdatePersona = "UPDATE Persona SET nombre = ?, apellido = ? WHERE id_persona = ?";
         String sqlUpdateEmpleado = "UPDATE Empleado SET salario = ?, estado = ? WHERE id_persona = ?";
 
@@ -121,7 +121,8 @@ public class UsuarioDAO {
             // 1. Actualizar Usuario
             try (PreparedStatement stmt = conn.prepareStatement(sqlUpdateUsuario)) {
                 stmt.setString(1, usuario.getUsuario());
-                stmt.setInt(2, usuario.getIdUsuario());
+                stmt.setString(2, usuario.getContrasena());
+                stmt.setInt(3, usuario.getIdUsuario());
                 stmt.executeUpdate();
             }
 
