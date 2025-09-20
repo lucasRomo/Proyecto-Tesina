@@ -14,9 +14,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 
 import java.sql.SQLException;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.util.StringConverter;
+import javafx.scene.control.TableCell;
+import javafx.util.Callback;
 
 public class UsuariosEmpleadoController {
 
@@ -31,16 +34,21 @@ public class UsuariosEmpleadoController {
     @FXML private TableColumn<UsuarioEmpleadoTableView, String> EstadoColumn;
     @FXML private Button modificarUsuarioButton;
     @FXML private TextField filterField;
+    @FXML private ChoiceBox<String> estadoUsuarioChoiceBox;
 
     private UsuarioDAO usuarioDAO;
     private PersonaDAO personaDAO;
     private ObservableList<UsuarioEmpleadoTableView> listaUsuariosEmpleados;
+    private FilteredList<UsuarioEmpleadoTableView> filteredData;
 
 
     @FXML
-    private void initialize() throws SQLException {
+    private void initialize() {
         this.usuarioDAO = new UsuarioDAO();
         this.personaDAO = new PersonaDAO();
+
+        // Carga el archivo CSS
+        usuariosEditableView.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
 
         idUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("idUsuario"));
         UsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("usuario"));
@@ -127,10 +135,28 @@ public class UsuariosEmpleadoController {
             }
         });
 
-
-        // Configurar la columna de estado con un desplegable
+        // Configurar la columna de estado con un desplegable editable y colores de fondo
         ObservableList<String> estados = FXCollections.observableArrayList("Activo", "Desactivado");
-        EstadoColumn.setCellFactory(ChoiceBoxTableCell.forTableColumn(estados));
+
+        Callback<TableColumn<UsuarioEmpleadoTableView, String>, TableCell<UsuarioEmpleadoTableView, String>> cellFactory =
+                ChoiceBoxTableCell.forTableColumn(estados);
+
+        EstadoColumn.setCellFactory(column -> {
+            TableCell<UsuarioEmpleadoTableView, String> cell = cellFactory.call(column);
+
+            // Sobrescribimos el método updateItem para agregar estilos
+            cell.itemProperty().addListener((obs, oldVal, newVal) -> {
+                cell.getStyleClass().removeAll("activo-status", "desactivado-status"); // Limpia clases anteriores
+                if (newVal != null) {
+                    if ("Activo".equalsIgnoreCase(newVal)) {
+                        cell.getStyleClass().add("activo-status");
+                    } else if ("Desactivado".equalsIgnoreCase(newVal)) {
+                        cell.getStyleClass().add("desactivado-status");
+                    }
+                }
+            });
+            return cell;
+        });
 
         EstadoColumn.setOnEditCommit(event -> {
             UsuarioEmpleadoTableView usuario = event.getRowValue();
@@ -145,39 +171,59 @@ public class UsuariosEmpleadoController {
             }
         });
 
-        cargarDatos();
-        cargarUsuariosyConfigurarBuscador();
-    }
-
-    private void cargarDatos() {
+        // Llamada al método refactorizado que carga los datos y configura todos los filtros.
         try {
-            listaUsuariosEmpleados = FXCollections.observableArrayList(usuarioDAO.obtenerUsuariosEmpleados());
-            usuariosEditableView.setItems(listaUsuariosEmpleados);
-        } catch (Exception e) {
+            cargarDatosyConfigurarFiltros();
+        } catch (SQLException e) {
             e.printStackTrace();
             mostrarAlerta("Error", "No se pudieron cargar los datos de los usuarios.", Alert.AlertType.ERROR);
         }
     }
 
-    private void cargarUsuariosyConfigurarBuscador() throws SQLException {
-        ObservableList<UsuarioEmpleadoTableView> masterData = usuarioDAO.obtenerUsuariosEmpleados();
+    private void cargarDatosyConfigurarFiltros() throws SQLException {
+        // Carga los datos maestros desde la base de datos
+        listaUsuariosEmpleados = FXCollections.observableArrayList(usuarioDAO.obtenerUsuariosEmpleados());
 
-        FilteredList<UsuarioEmpleadoTableView> filteredData = new FilteredList<>(masterData, p -> true);
+        // Inicializa el ChoiceBox
+        estadoUsuarioChoiceBox.setItems(FXCollections.observableArrayList("Todos", "Activo", "Desactivado"));
+        estadoUsuarioChoiceBox.getSelectionModel().select("Todos");
 
-        filterField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(usuario -> {
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-                String lowerCaseFilter = newValue.toLowerCase();
-                return usuario.getUsuario().toLowerCase().contains(lowerCaseFilter) ||
-                        usuario.getNombre().toLowerCase().contains(lowerCaseFilter);
-            });
-        });
+        // Crea una FilteredList que envuelve la lista de datos.
+        filteredData = new FilteredList<>(listaUsuariosEmpleados, p -> true);
 
+        // Agrega un listener para el campo de texto de búsqueda.
+        filterField.textProperty().addListener((observable, oldValue, newValue) -> reconfigurarFiltro());
+
+        // Agrega un listener para el ChoiceBox de estado.
+        estadoUsuarioChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> reconfigurarFiltro());
+
+        // Envuelve la FilteredList en una SortedList
         SortedList<UsuarioEmpleadoTableView> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(usuariosEditableView.comparatorProperty());
         usuariosEditableView.setItems(sortedData);
+    }
+
+    /**
+     * Reconfigura el predicado del filtro combinando el texto de búsqueda y el estado.
+     */
+    private void reconfigurarFiltro() {
+        filteredData.setPredicate(usuario -> {
+            // Predicado para el filtro de texto
+            String lowerCaseFilter = filterField.getText().toLowerCase();
+            boolean coincideTexto = lowerCaseFilter.isEmpty() ||
+                    usuario.getUsuario().toLowerCase().contains(lowerCaseFilter) ||
+                    usuario.getNombre().toLowerCase().contains(lowerCaseFilter) ||
+                    (usuario.getApellido() != null && usuario.getApellido().toLowerCase().contains(lowerCaseFilter));
+
+            // Predicado para el filtro de estado
+            String selectedEstado = estadoUsuarioChoiceBox.getSelectionModel().getSelectedItem();
+            boolean coincideEstado = selectedEstado == null ||
+                    "Todos".equals(selectedEstado) ||
+                    selectedEstado.equalsIgnoreCase(usuario.getEstado());
+
+            // Devuelve true solo si ambas condiciones son verdaderas
+            return coincideTexto && coincideEstado;
+        });
     }
 
     @FXML
