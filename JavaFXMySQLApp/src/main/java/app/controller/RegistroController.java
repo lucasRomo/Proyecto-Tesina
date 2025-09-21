@@ -38,6 +38,8 @@ public class RegistroController {
     private DireccionDAO direccionDAO = new DireccionDAO();
     private PersonaDAO personaDAO = new PersonaDAO();
 
+    String email = emailField.getText().trim();
+
     // Referencia al controlador de la ventana principal
     private ClienteController clienteController;
 
@@ -146,6 +148,10 @@ public class RegistroController {
 
             this.mostrarAlerta("Advertencia", "Por favor, complete todos los campos personales obligatorios.");
             return false;
+        }
+        if (personaDAO.verificarSiMailExiste(email)) {
+            mostrarAlerta("Error de Registro", "El email que ingresó ya se encuentra registrado.");
+            return false; // Detiene la ejecución para no ir a la siguiente pantalla
         }
         if (!this.validarSoloLetras(this.nombreField.getText())) {
             this.mostrarAlerta("Advertencia", "El nombre no puede contener números. Por favor, ingrese caracteres válidos.");

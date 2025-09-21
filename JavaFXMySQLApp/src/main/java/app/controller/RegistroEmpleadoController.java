@@ -52,6 +52,7 @@ public class RegistroEmpleadoController {
 
             String tipoDocumentoSeleccionado = tipoDocumentoComboBox.getValue();
             String numeroDocumento = numeroDocumentoField.getText().trim();
+            String email = emailField.getText().trim();
             PersonaDAO personaDAO = new PersonaDAO();
 
             if (tipoDocumentoSeleccionado == null) {
@@ -88,6 +89,10 @@ public class RegistroEmpleadoController {
 
             if (personaDAO.verificarSiDocumentoExiste(numeroDocumento)) {
                 mostrarAlerta("Error de Registro", "El número de documento que ingresó ya se encuentra registrado.");
+                return; // Detiene la ejecución para no ir a la siguiente pantalla
+            }
+            if (personaDAO.verificarSiMailExiste(email)) {
+                mostrarAlerta("Error de Registro", "El email que ingresó ya se encuentra registrado.");
                 return; // Detiene la ejecución para no ir a la siguiente pantalla
             }
 

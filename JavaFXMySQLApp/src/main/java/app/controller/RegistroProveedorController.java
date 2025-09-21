@@ -1,6 +1,7 @@
 package app.controller;
 
 import app.dao.DireccionDAO;
+import app.dao.PersonaDAO;
 import app.dao.ProveedorDAO;
 import app.dao.TipoProveedorDAO;
 import app.model.Direccion;
@@ -43,7 +44,9 @@ public class RegistroProveedorController {
     private ProveedorController proveedorController;
     private DireccionDAO direccionDAO = new DireccionDAO();
     private ProveedorDAO proveedorDAO = new ProveedorDAO();
+    PersonaDAO personaDAO = new PersonaDAO();
     private TipoProveedorDAO tipoProveedorDAO = new TipoProveedorDAO();
+    String email = mailField.getText().trim();
 
     public void setProveedorController(ProveedorController proveedorController) {
         this.proveedorController = proveedorController;
@@ -172,6 +175,10 @@ public class RegistroProveedorController {
         if (nombreField.getText().isEmpty() || contactoField.getText().isEmpty() ||
                 mailField.getText().isEmpty() || tipoProveedorChoiceBox.getValue() == null) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos obligatorios.");
+            return false;
+        }
+        if (personaDAO.verificarSiMailExiste(email)) {
+            mostrarAlerta("Error de Registro", "El email que ingresó ya se encuentra registrado.");
             return false;
         }
         if (!mailField.getText().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {

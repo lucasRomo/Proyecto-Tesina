@@ -18,5 +18,6 @@
 
     <Button fx:id="utton" onAction="#handleProveedor" prefWidth="200.0" text="Proveedores" />
     <Button fx:id="n" onAction="#handleStock" prefWidth="200.0" text="Stock" />
+    <Button fx:id="volverButton" layoutX="1175.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
 
 </VBox>

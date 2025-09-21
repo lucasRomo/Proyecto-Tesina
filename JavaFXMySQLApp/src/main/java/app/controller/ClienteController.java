@@ -52,6 +52,7 @@ public class ClienteController {
     private ObservableList<Cliente> masterData = FXCollections.observableArrayList();
     private FilteredList<Cliente> filteredData;
 
+
     public ClienteController() {
         this.clienteDAO = new ClienteDAO();
         this.personaDAO = new PersonaDAO();
@@ -415,12 +416,26 @@ public class ClienteController {
         return longitudTelefono >= 7 && longitudTelefono <= 11;
     }
 
+
+    private boolean validarEmailRepetido(String email){
+        boolean bol = true;
+        if (personaDAO.verificarSiMailExiste(email)) {
+            mostrarAlerta("Error de Registro", "El email que ingresó ya se encuentra registrado.", Alert.AlertType.WARNING);
+            return false; // Detiene la ejecución para no ir a la siguiente pantalla
+        }
+        return bol;
+    }
+
     private boolean validarEmail(String email) {
+
         String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
+
+
     }
+
 
     private boolean validarNumeroDocumento(int idTipoDocumento, String numeroDocumento, int idPersonaActual) {
         String tipoDocumento = obtenerNombreTipoDocumento(idTipoDocumento);

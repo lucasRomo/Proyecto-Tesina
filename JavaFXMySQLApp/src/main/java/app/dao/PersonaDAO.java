@@ -55,6 +55,22 @@ public class PersonaDAO {
         return false;
     }
 
+    public boolean verificarSiMailExiste(String email) {
+        String sql = "SELECT COUNT(*) FROM Persona WHERE email = ?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // NUEVO MÉTODO (CORREGIDO) PARA VERIFICAR LA EXISTENCIA DE UN DOCUMENTO, EXCLUYENDO A UNA PERSONA
     public boolean verificarSiDocumentoExiste(String numeroDocumento, int idPersonaExcluir) {
         String sql = "SELECT COUNT(*) FROM Persona WHERE numero_documento = ? AND id_persona != ?";

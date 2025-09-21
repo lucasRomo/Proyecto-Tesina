@@ -14,7 +14,7 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
     <children>
-        <Label text="Dirección del Cliente">
+        <Label text="Dirección">
             <font>
                 <Font name="System Bold" size="24.0" />
             </font>
