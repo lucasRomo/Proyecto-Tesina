@@ -1,7 +1,7 @@
 package app.controller;
 
-import app.model.Pedido;
 import app.model.PedidoDAO;
+import app.model.Pedido;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -10,26 +10,28 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 import java.io.IOException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class PedidosController {
 
     @FXML private TableView<Pedido> pedidosTableView;
     @FXML private TableColumn<Pedido, Integer> idPedidoColumn;
-    @FXML private TableColumn<Pedido, LocalDate> fechaColumn;
-    @FXML private TableColumn<Pedido, String> estadoColumn;
     @FXML private TableColumn<Pedido, Integer> idClienteColumn;
+    // --- CORRECCIÓN AQUÍ: NOMBRES DE LAS COLUMNAS CORREGIDOS ---
+    @FXML private TableColumn<Pedido, LocalDateTime> fechaCreacionColumn;
+    @FXML private TableColumn<Pedido, LocalDateTime> fechaEntregaEstimadaColumn;
+    @FXML private TableColumn<Pedido, LocalDateTime> fechaFinalizacionColumn;
+    // ------------------------------------------------------------
+    @FXML private TableColumn<Pedido, String> estadoColumn;
     @FXML private TableColumn<Pedido, Double> montoTotalColumn;
+    @FXML private TableColumn<Pedido, Double> montoEntregadoColumn;
+    @FXML private TableColumn<Pedido, String> instruccionesColumn;
     @FXML private TextField filterField;
 
     private PedidoDAO pedidoDAO;
@@ -39,11 +41,19 @@ public class PedidosController {
     private void initialize() {
         pedidoDAO = new PedidoDAO();
 
+        // Configuración de las fábricas de valores para cada columna
         idPedidoColumn.setCellValueFactory(new PropertyValueFactory<>("idPedido"));
-        fechaColumn.setCellValueFactory(new PropertyValueFactory<>("fecha"));
-        estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
         idClienteColumn.setCellValueFactory(new PropertyValueFactory<>("idCliente"));
+        estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
         montoTotalColumn.setCellValueFactory(new PropertyValueFactory<>("montoTotal"));
+        montoEntregadoColumn.setCellValueFactory(new PropertyValueFactory<>("montoEntregado"));
+        instruccionesColumn.setCellValueFactory(new PropertyValueFactory<>("instrucciones"));
+
+        // --- CORRECCIÓN AQUÍ: Uso de los nombres de columna correctos ---
+        fechaCreacionColumn.setCellValueFactory(new PropertyValueFactory<>("fechaCreacion"));
+        fechaEntregaEstimadaColumn.setCellValueFactory(new PropertyValueFactory<>("fechaEntregaEstimada"));
+        fechaFinalizacionColumn.setCellValueFactory(new PropertyValueFactory<>("fechaFinalizacion"));
+        // ----------------------------------------------------------------
 
         loadPedidos();
 
@@ -79,7 +89,6 @@ public class PedidosController {
     @FXML
     private void handleCrearPedido() {
         try {
-            // Se corrigió la ruta para asegurarse de que sea relativa a la raíz de recursos.
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/crearPedido.fxml"));
             Parent root = loader.load();
             CrearPedidoController controller = loader.getController();
@@ -91,10 +100,9 @@ public class PedidosController {
             controller.setStage(stage);
             stage.showAndWait();
 
-            // Refrescar la tabla después de que se cierre la ventana
             loadPedidos();
         } catch (IOException e) {
-            mostrarAlerta("Error", "No se pudo cargar la vista de 'Crear Pedido'. Verifique que el archivo FXML exista.", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "No se pudo cargar la vista de 'Crear Pedido'.", Alert.AlertType.ERROR);
             e.printStackTrace();
         }
     }
@@ -122,7 +130,6 @@ public class PedidosController {
                 controller.setStage(stage);
                 stage.showAndWait();
 
-                // Refrescar la tabla después de que se cierre la ventana
                 loadPedidos();
             } catch (IOException e) {
                 mostrarAlerta("Error", "No se pudo cargar la vista de 'Modificar Pedido'.", Alert.AlertType.ERROR);
