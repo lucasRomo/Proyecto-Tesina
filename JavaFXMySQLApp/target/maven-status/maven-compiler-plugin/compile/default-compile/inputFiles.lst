@@ -1,7 +1,12 @@
+C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\AsignarPedidoController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\ClienteController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\CrearPedidoController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\EmpleadoController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\ModificarPedidoController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\PedidosController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\RegistrarPagoController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\RegistroClienteDatosEspecificosController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\RegistroController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\RegistroEmpleadoController.java
@@ -12,6 +17,8 @@ C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\DireccionDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\Empleado.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\EmpleadoDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\Pedido.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\PedidoDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\Persona.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\PersonaDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\TipoDocumento.java

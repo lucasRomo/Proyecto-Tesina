@@ -1,18 +1,24 @@
 package app.controller;
 
 import app.model.Pedido;
-import app.model.dao.PedidoDAO;
+import app.model.PedidoDAO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,17 +39,14 @@ public class PedidosController {
     private void initialize() {
         pedidoDAO = new PedidoDAO();
 
-        // Configurar las columnas de la tabla para mapear a las propiedades del modelo Pedido
         idPedidoColumn.setCellValueFactory(new PropertyValueFactory<>("idPedido"));
         fechaColumn.setCellValueFactory(new PropertyValueFactory<>("fecha"));
         estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
         idClienteColumn.setCellValueFactory(new PropertyValueFactory<>("idCliente"));
         montoTotalColumn.setCellValueFactory(new PropertyValueFactory<>("montoTotal"));
 
-        // Cargar los datos desde la base de datos
         loadPedidos();
 
-        // Configurar el filtro de búsqueda
         FilteredList<Pedido> filteredData = new FilteredList<>(masterData, p -> true);
         filterField.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(pedido -> {
@@ -73,14 +76,32 @@ public class PedidosController {
         pedidosTableView.setItems(masterData);
     }
 
-    // Métodos para manejar los eventos de los botones
     @FXML
     private void handleCrearPedido() {
-        mostrarAlerta("Crear Pedidos", "La funcionalidad de crear un nuevo pedido se abrirá en una ventana emergente.", Alert.AlertType.INFORMATION);
+        try {
+            // Se corrigió la ruta para asegurarse de que sea relativa a la raíz de recursos.
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/crearPedido.fxml"));
+            Parent root = loader.load();
+            CrearPedidoController controller = loader.getController();
+
+            Stage stage = new Stage();
+            stage.setTitle("Crear Nuevo Pedido");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            controller.setStage(stage);
+            stage.showAndWait();
+
+            // Refrescar la tabla después de que se cierre la ventana
+            loadPedidos();
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo cargar la vista de 'Crear Pedido'. Verifique que el archivo FXML exista.", Alert.AlertType.ERROR);
+            e.printStackTrace();
+        }
     }
 
     @FXML
     private void handleVerPedidos() {
+        loadPedidos();
         mostrarAlerta("Ver Pedidos", "Mostrando todos los pedidos existentes en la tabla.", Alert.AlertType.INFORMATION);
     }
 
@@ -88,7 +109,25 @@ public class PedidosController {
     private void handleModificarPedido() {
         Pedido selectedPedido = pedidosTableView.getSelectionModel().getSelectedItem();
         if (selectedPedido != null) {
-            mostrarAlerta("Modificar Pedido", "Se abrirá un formulario para modificar el pedido seleccionado.", Alert.AlertType.INFORMATION);
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/modificarPedido.fxml"));
+                Parent root = loader.load();
+                ModificarPedidoController controller = loader.getController();
+                controller.setPedido(selectedPedido);
+
+                Stage stage = new Stage();
+                stage.setTitle("Modificar Pedido");
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.setScene(new Scene(root));
+                controller.setStage(stage);
+                stage.showAndWait();
+
+                // Refrescar la tabla después de que se cierre la ventana
+                loadPedidos();
+            } catch (IOException e) {
+                mostrarAlerta("Error", "No se pudo cargar la vista de 'Modificar Pedido'.", Alert.AlertType.ERROR);
+                e.printStackTrace();
+            }
         } else {
             mostrarAlerta("Modificar Pedido", "Por favor, seleccione un pedido de la tabla para modificarlo.", Alert.AlertType.WARNING);
         }
@@ -98,7 +137,18 @@ public class PedidosController {
     private void handleAsignarPedido() {
         Pedido selectedPedido = pedidosTableView.getSelectionModel().getSelectedItem();
         if (selectedPedido != null) {
-            mostrarAlerta("Asignar Pedido", "Se abrirá un formulario para asignar este pedido.", Alert.AlertType.INFORMATION);
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/asignarPedido.fxml"));
+                Parent root = loader.load();
+                Stage stage = new Stage();
+                stage.setTitle("Asignar Pedido");
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.setScene(new Scene(root));
+                stage.showAndWait();
+            } catch (IOException e) {
+                mostrarAlerta("Error", "No se pudo cargar la vista de 'Asignar Pedido'.", Alert.AlertType.ERROR);
+                e.printStackTrace();
+            }
         } else {
             mostrarAlerta("Asignar Pedido", "Por favor, seleccione un pedido de la tabla para asignarlo.", Alert.AlertType.WARNING);
         }
@@ -108,7 +158,18 @@ public class PedidosController {
     private void handleRegistrarPago() {
         Pedido selectedPedido = pedidosTableView.getSelectionModel().getSelectedItem();
         if (selectedPedido != null) {
-            mostrarAlerta("Registrar Pagos", "Se abrirá una interfaz para registrar pagos para este pedido.", Alert.AlertType.INFORMATION);
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/registrarPago.fxml"));
+                Parent root = loader.load();
+                Stage stage = new Stage();
+                stage.setTitle("Registrar Pago");
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.setScene(new Scene(root));
+                stage.showAndWait();
+            } catch (IOException e) {
+                mostrarAlerta("Error", "No se pudo cargar la vista de 'Registrar Pago'.", Alert.AlertType.ERROR);
+                e.printStackTrace();
+            }
         } else {
             mostrarAlerta("Registrar Pagos", "Por favor, seleccione un pedido para registrar el pago.", Alert.AlertType.WARNING);
         }

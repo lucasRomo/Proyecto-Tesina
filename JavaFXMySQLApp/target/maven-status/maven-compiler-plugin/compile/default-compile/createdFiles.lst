@@ -2,11 +2,17 @@ app\controller\ClienteController.class
 app\controller\RegistroController.class
 app\model\UsuarioDAO.class
 app\controller\IniciodeSesionController.class
+app\controller\CrearPedidoController.class
+app\controller\AsignarPedidoController.class
+app\model\Pedido.class
+app\model\PedidoDAO.class
+app\controller\ModificarPedidoController.class
 app\MainApp.class
 app\controller\EmpleadoController.class
 app\model\Direccion.class
 app\model\TipoDocumento.class
 app\model\Usuario.class
+app\controller\PedidosController.class
 app\model\Empleado.class
 app\model\dao\PersonaDAO.class
 app\model\Persona.class
@@ -15,5 +21,6 @@ app\model\EmpleadoDAO.class
 app\model\Cliente.class
 app\model\dao\TipoDocumentoDAO.class
 app\model\dao\DireccionDAO.class
+app\controller\RegistrarPagoController.class
 app\controller\RegistroEmpleadoController.class
 app\controller\MenuController.class
