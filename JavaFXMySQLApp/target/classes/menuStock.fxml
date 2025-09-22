@@ -61,7 +61,7 @@
                         <Button fx:id="registrarInsumoButton" mnemonicParsing="false" onAction="#handleRegistrarInsumoButton" text="Registrar Insumo" />
                         <Button fx:id="modificarInsumoButton" mnemonicParsing="false" onAction="#handleModificarInsumoButton" text="Modificar Insumo" />
                         <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
-                        <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
+                        <Button fx:id="volverButton" styleClass="button-volver" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
                     </children>
                 </HBox>
             </children>

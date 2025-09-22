@@ -59,7 +59,7 @@
                         <Button fx:id="nuevoProveedorButton" mnemonicParsing="false" onAction="#handleRegistrarProveedorButton" text="Registrar Proveedor" textFill="#111111" />
                         <Button fx:id="modificarProveedorButton" mnemonicParsing="false" onAction="#handleModificarProveedorButton" text="Modificar Proveedor" />
                         <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
-                        <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
+                        <Button fx:id="volverButton" styleClass="button-volver" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
                     </children>
                 </HBox>
             </children>

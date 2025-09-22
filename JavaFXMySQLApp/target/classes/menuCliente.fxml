@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
+<?import java.net.URL?>
 <BorderPane prefHeight="469.0" prefWidth="1500.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ClienteController">
     <stylesheets>
         <URL value="@style.css" />
@@ -43,7 +44,7 @@
                         <Button fx:id="nuevoClienteButton" mnemonicParsing="false" onAction="#handleRegistrarClienteButton" text="Registrar Cliente" textFill="#111111" />
                         <Button fx:id="modificarClienteButton" mnemonicParsing="false" onAction="#handleModificarClienteButton" text="Modificar Cliente" />
                         <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
-                        <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
+                        <Button fx:id="volverButton" styleClass="button-volver" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
                     </children>
                 </HBox>
             </children>
