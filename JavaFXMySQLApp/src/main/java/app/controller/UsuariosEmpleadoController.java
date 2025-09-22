@@ -1,12 +1,9 @@
 package app.controller;
 
 import app.dao.DireccionDAO;
-import app.model.Cliente;
 import app.model.Direccion;
-import app.model.Persona;
 import app.dao.UsuarioDAO;
 import app.dao.PersonaDAO;
-import app.controller.UsuarioEmpleadoTableView;
 import app.model.Usuario;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,21 +16,14 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.scene.control.TableCell;
-import javafx.util.Callback;
 
 public class UsuariosEmpleadoController {
 
@@ -152,27 +142,63 @@ public class UsuariosEmpleadoController {
             }
         });
 
-        // Configurar la columna de estado con un desplegable editable y colores de fondo
-        ObservableList<String> estados = FXCollections.observableArrayList("Activo", "Desactivado");
+        // Se configura la columna de estado para ser un ChoiceBox y aplicar estilos
+        EstadoColumn.setCellFactory(column -> new TableCell<UsuarioEmpleadoTableView, String>() {
+            private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
 
-        Callback<TableColumn<UsuarioEmpleadoTableView, String>, TableCell<UsuarioEmpleadoTableView, String>> cellFactory =
-                ChoiceBoxTableCell.forTableColumn(estados);
+            @Override
+            public void startEdit() {
+                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable()) {
+                    return;
+                }
+                super.startEdit();
+                choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
+                choiceBox.getSelectionModel().select(getItem());
+                choiceBox.setOnAction(event -> commitEdit(choiceBox.getSelectionModel().getSelectedItem()));
+                setGraphic(choiceBox);
+                setText(null);
+            }
 
-        EstadoColumn.setCellFactory(column -> {
-            TableCell<UsuarioEmpleadoTableView, String> cell = cellFactory.call(column);
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit();
+                setGraphic(null);
+                setText(getItem());
+                applyCellStyle(getItem());
+            }
 
-            // Sobrescribimos el método updateItem para agregar estilos
-            cell.itemProperty().addListener((obs, oldVal, newVal) -> {
-                cell.getStyleClass().removeAll("activo-status", "desactivado-status"); // Limpia clases anteriores
-                if (newVal != null) {
-                    if ("Activo".equalsIgnoreCase(newVal)) {
-                        cell.getStyleClass().add("activo-status");
-                    } else if ("Desactivado".equalsIgnoreCase(newVal)) {
-                        cell.getStyleClass().add("desactivado-status");
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                getStyleClass().removeAll("activo-cell", "desactivado-cell");
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setStyle(null);
+                } else {
+                    if (isEditing()) {
+                        choiceBox.getSelectionModel().select(item);
+                        setText(null);
+                        setGraphic(choiceBox);
+                    } else {
+                        setGraphic(null);
+                        setText(item);
+                        applyCellStyle(item);
                     }
                 }
-            });
-            return cell;
+            }
+
+            private void applyCellStyle(String item) {
+                if ("Activo".equalsIgnoreCase(item)) {
+                    getStyleClass().add("activo-cell");
+                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
+                } else if ("Desactivado".equalsIgnoreCase(item)) {
+                    getStyleClass().add("desactivado-cell");
+                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
+                } else {
+                    setStyle(null);
+                }
+            }
         });
 
         EstadoColumn.setOnEditCommit(event -> {
@@ -210,7 +236,6 @@ public class UsuariosEmpleadoController {
             }
         });
 
-        // Llamada al método refactorizado que carga los datos y configura todos los filtros.
         try {
             cargarDatosyConfigurarFiltros();
         } catch (SQLException e) {
@@ -235,7 +260,7 @@ public class UsuariosEmpleadoController {
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
-            stage.setTitle("Dirección del Cliente");
+            stage.setTitle("Dirección del Usuario");
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
         } catch (IOException e) {
@@ -244,49 +269,31 @@ public class UsuariosEmpleadoController {
         }
     }
 
-
     private void cargarDatosyConfigurarFiltros() throws SQLException {
-        // Carga los datos maestros desde la base de datos
         listaUsuariosEmpleados = FXCollections.observableArrayList(usuarioDAO.obtenerUsuariosEmpleados());
-
-        // Inicializa el ChoiceBox
         estadoUsuarioChoiceBox.setItems(FXCollections.observableArrayList("Todos", "Activo", "Desactivado"));
         estadoUsuarioChoiceBox.getSelectionModel().select("Todos");
-
-        // Crea una FilteredList que envuelve la lista de datos.
         filteredData = new FilteredList<>(listaUsuariosEmpleados, p -> true);
-
-        // Agrega un listener para el campo de texto de búsqueda.
         filterField.textProperty().addListener((observable, oldValue, newValue) -> reconfigurarFiltro());
-
-        // Agrega un listener para el ChoiceBox de estado.
         estadoUsuarioChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> reconfigurarFiltro());
-
-        // Envuelve la FilteredList en una SortedList
         SortedList<UsuarioEmpleadoTableView> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(usuariosEditableView.comparatorProperty());
         usuariosEditableView.setItems(sortedData);
     }
 
-    /**
-     * Reconfigura el predicado del filtro combinando el texto de búsqueda y el estado.
-     */
     private void reconfigurarFiltro() {
         filteredData.setPredicate(usuario -> {
-            // Predicado para el filtro de texto
             String lowerCaseFilter = filterField.getText().toLowerCase();
             boolean coincideTexto = lowerCaseFilter.isEmpty() ||
                     usuario.getUsuario().toLowerCase().contains(lowerCaseFilter) ||
                     usuario.getNombre().toLowerCase().contains(lowerCaseFilter) ||
                     (usuario.getApellido() != null && usuario.getApellido().toLowerCase().contains(lowerCaseFilter));
 
-            // Predicado para el filtro de estado
             String selectedEstado = estadoUsuarioChoiceBox.getSelectionModel().getSelectedItem();
             boolean coincideEstado = selectedEstado == null ||
                     "Todos".equals(selectedEstado) ||
                     selectedEstado.equalsIgnoreCase(usuario.getEstado());
 
-            // Devuelve true solo si ambas condiciones son verdaderas
             return coincideTexto && coincideEstado;
         });
     }
@@ -318,27 +325,18 @@ public class UsuariosEmpleadoController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            // Carga el FXML de la pantalla a la que quieres regresar.
-            // Asegúrate de que la ruta sea correcta.
             Parent root = FXMLLoader.load(getClass().getResource("/MenuAdmin.fxml"));
-
-            // Obtiene la Stage (ventana) actual del botón
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            // Crea una nueva Scene con la pantalla anterior
             Scene scene = new Scene(root);
-
-            // Reemplaza la Scene actual con la nueva
             stage.setScene(scene);
-            stage.setTitle("Menú Principal"); // O el título de la pantalla anterior
+            stage.setTitle("Menú Principal");
             stage.show();
-
         } catch (IOException e) {
             e.printStackTrace();
-            // Maneja el error si no se puede cargar el archivo FXML
         }
     }
 }
