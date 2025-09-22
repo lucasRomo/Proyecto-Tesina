@@ -173,6 +173,8 @@ public class UsuariosEmpleadoController {
                 }
             });
             return cell;
+
+
         });
 
         EstadoColumn.setOnEditCommit(event -> {
@@ -186,6 +188,7 @@ public class UsuariosEmpleadoController {
                 mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
                 usuariosEditableView.refresh();
             }
+
         });
 
         accionUsuarioColumn.setCellFactory(param -> new TableCell<UsuarioEmpleadoTableView, Void>() {
@@ -219,6 +222,7 @@ public class UsuariosEmpleadoController {
         }
     }
 
+
     private void mostrarDireccionUsuario(int idPersona) {
         Direccion direccion = direccionDAO.obtenerPorId(idPersona);
         if (direccion == null) {
@@ -243,6 +247,7 @@ public class UsuariosEmpleadoController {
             mostrarAlerta("Error", "No se pudo cargar la ventana de dirección.", Alert.AlertType.ERROR);
         }
     }
+
 
 
     private void cargarDatosyConfigurarFiltros() throws SQLException {
