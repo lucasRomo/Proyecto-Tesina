@@ -7,6 +7,7 @@ public class Usuario {
     private String usuario;
     private String contrasena;
     private int idPersona; // <-- CAMBIO AGREGADO
+    private int idDireccion;
 
     // Constructor para inicio de sesion (sin idPersona)
     public Usuario(String usuario, String contrasenia) {
@@ -19,6 +20,13 @@ public class Usuario {
         this.usuario = usuario;
         this.contrasena = contrasenia;
         this.idPersona = idPersona;
+    }
+
+    public Usuario(String usuario, String contrasenia, int idPersona, int idDireccion) {
+        this.usuario = usuario;
+        this.contrasena = contrasenia;
+        this.idPersona = idPersona;
+        this.idDireccion = idDireccion;
     }
 
     public String getUsuario() {
@@ -39,4 +47,5 @@ public class Usuario {
         return idPersona;
     }
 
+    public int getIdDireccion() { return idDireccion; }
 }
