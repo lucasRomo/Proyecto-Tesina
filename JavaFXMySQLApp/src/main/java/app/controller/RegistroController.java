@@ -38,7 +38,7 @@ public class RegistroController {
     private DireccionDAO direccionDAO = new DireccionDAO();
     private PersonaDAO personaDAO = new PersonaDAO();
 
-    String email = emailField.getText().trim();
+
 
     // Referencia al controlador de la ventana principal
     private ClienteController clienteController;
@@ -148,6 +148,7 @@ public class RegistroController {
     }
 
     private boolean validarCamposPersonales() {
+        String email = emailField.getText().trim();
         if (this.nombreField.getText().isEmpty() || this.apellidoField.getText().isEmpty() ||
                 this.tipoDocumentoComboBox.getValue() == null || this.numeroDocumentoField.getText().isEmpty() ||
                 this.emailField.getText().isEmpty() || this.telefonoField.getText().isEmpty()) {
