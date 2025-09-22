@@ -224,6 +224,7 @@ public class ClienteController {
                 if (empty || item == null) {
                     setText(null);
                     setGraphic(null);
+                    setStyle(null); // Limpiar estilo
                 } else {
                     if (isEditing()) {
                         choiceBox.getSelectionModel().select(item);
@@ -240,11 +241,16 @@ public class ClienteController {
             private void applyCellStyle(String item) {
                 if ("Activo".equalsIgnoreCase(item)) {
                     getStyleClass().add("activo-cell");
+                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
                 } else if ("Desactivado".equalsIgnoreCase(item)) {
                     getStyleClass().add("desactivado-cell");
+                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
+                } else {
+                    setStyle(null); // Limpiar estilo si no coincide
                 }
             }
         });
+
 
         estadoColumn.setOnEditCommit(event -> {
             Cliente cliente = event.getRowValue();
@@ -264,7 +270,7 @@ public class ClienteController {
         });
 
         accionColumn.setCellFactory(param -> new TableCell<Cliente, Void>() {
-            private final Button btn = new Button("Ver Dirección");
+            private final Button btn = new Button("Direccion");
 
             {
                 btn.setOnAction(event -> {
@@ -422,19 +428,16 @@ public class ClienteController {
         boolean bol = true;
         if (personaDAO.verificarSiMailExiste(email)) {
             mostrarAlerta("Error de Registro", "El email que ingresó ya se encuentra registrado.", Alert.AlertType.WARNING);
-            return false; // Detiene la ejecución para no ir a la siguiente pantalla
+            return false;
         }
         return bol;
     }
 
     private boolean validarEmail(String email) {
-
         String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
-
-
     }
 
 
@@ -476,27 +479,22 @@ public class ClienteController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            // Carga el FXML de la pantalla a la que quieres regresar.
-            // Asegúrate de que la ruta sea correcta.
             Parent root = FXMLLoader.load(getClass().getResource("/menuAbms.fxml"));
 
-            // Obtiene la Stage (ventana) actual del botón
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            // Crea una nueva Scene con la pantalla anterior
             Scene scene = new Scene(root);
 
-            // Reemplaza la Scene actual con la nueva
             stage.setScene(scene);
-            stage.setTitle("Menú Principal"); // O el título de la pantalla anterior
+            stage.setTitle("Menú Principal");
             stage.show();
 
         } catch (IOException e) {
             e.printStackTrace();
-            // Maneja el error si no se puede cargar el archivo FXML
         }
     }
 }

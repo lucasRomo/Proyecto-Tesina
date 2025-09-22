@@ -12,7 +12,7 @@
     -fx-opacity: 1.0;
     -fx-font-weight: normal;
     -fx-text-fill: black;
-    -fx-background-color: #D7DAE0; /* CORREGIDO: Se agregó el # */
+    -fx-background-color: #D7DAE0;
     -fx-border-color: #007bff;
     -fx-border-width: 1px;
     -fx-border-radius: 5px;
@@ -25,10 +25,73 @@
     -fx-text-fill: #155724;
     -fx-font-weight: bold;
 }
-
+.label-blanco {
+    -fx-text-fill: white;
+}
 /* Estilo para filas o celdas con estado "Desactivado" */
-.desactivado-cell { /* CORREGIDO: Se cambió "inactivo" por "desactivado" */
+.desactivado-cell {
     -fx-background-color: #f8d7da;
     -fx-text-fill: #721c24;
     -fx-font-weight: bold;
 }
+
+/* Estilo para el fondo del VBox principal */
+.root {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #72757E 0%, #030000 100%);
+}
+
+/* Estilo para el título */
+.titulo-principal {
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #fffffe;
+}
+
+/* From Uiverse.io by Randdose - Adaptado para JavaFX */
+/* El selector 'Button.button' ahora es más específico */
+Button.button {
+    /* Propiedades de tamaño y fuente */
+    -fx-padding: 0.4em 1.2em;
+    -fx-font-size: 1.2em;
+    -fx-font-family: "Monospaced";
+    /* Propiedades básicas (color naranja) */
+    -fx-border-color: #7f5af0;
+    -fx-border-width: 0.15em;
+    -fx-border-radius: 0.25em;
+    -fx-text-fill: #7f5af0;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-transition-duration: 300ms;
+    -fx-transition-timing-function: ease-in;
+}
+
+/* Efecto al pasar el ratón */
+Button.button:hover {
+    -fx-text-fill: #fffffe;
+    -fx-background-color: #7f5af0;
+}
+
+/* Efecto al hacer click (activo) */
+Button.button:pressed {
+    -fx-border-color: #7f5af0;
+    -fx-background-color: #7f5af0;
+}
+
+/* Estilo específico para el botón de Volver */
+#volverButton {
+    -fx-border-color: #C7C5C5;
+    -fx-text-fill: red;
+    -fx-background-color: transparent;
+}
+
+#volverButton:hover {
+    -fx-text-fill: black;
+    -fx-background-color: #C7C5C5;
+}
+
+#volverButton:pressed {
+    -fx-border-color: #C7C5C5;
+    -fx-background-color: #C7C5C5;
+

@@ -4,7 +4,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
+<?import java.net.URL?>
 <AnchorPane prefHeight="400.0" prefWidth="1176.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.UsuariosEmpleadoController">
+    <stylesheets>
+        <URL value="@style.css" />
+    </stylesheets>
     <children>
         <Label layoutX="494.0" layoutY="14.0" text="Gestionar Usuarios Empleados">
             <font>

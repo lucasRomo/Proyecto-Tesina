@@ -10,7 +10,7 @@
 
 <VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml" fx:controller="app.controller.EmpleadoController">
     <children>
-        <Label text="Datos Específicos del Empleado">
+        <Label text="Datos Específicos del Empleado" styleClass="titulo-principal">
             <font>
                 <Font name="System Bold" size="24.0" />
             </font>

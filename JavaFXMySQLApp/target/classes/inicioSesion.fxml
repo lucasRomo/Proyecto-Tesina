@@ -5,16 +5,20 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
+<?import java.net.URL?>
 <VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0" spacing="10" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.IniciodeSesionController">
+    <stylesheets>
+        <URL value="@styles.css" />
+    </stylesheets>
     <children>
-        <Label text="Inicio de Sesión">
+        <Label text="Inicio de Sesión" styleClass="titulo-principal">
             <font>
                 <Font name="System Bold" size="24.0" />
             </font>
         </Label>
-        <Label text="Usuario:" />
+        <Label text="Usuario:" styleClass="label-blanco"/>
         <TextField fx:id="UsuarioField" promptText="Ingrese su Usuario" />
-        <Label text="Contraseña:" />
+        <Label text="Contraseña:" styleClass="label-blanco"/>
         <PasswordField fx:id="ContraseniaField" promptText="Ingrese su Contraseña" />
         <Button onAction="#IniciarSesion" text="Iniciar Sesion" />
     </children>

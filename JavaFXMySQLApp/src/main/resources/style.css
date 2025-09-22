@@ -1,15 +1,172 @@
+/* Estilo para los campos cuando NO son editables */
+.text-field:disabled {
+    -fx-opacity: 1.0;
+    -fx-font-weight: bold;
+    -fx-text-fill: black;
+    -fx-background-color: #D7DAE0;
+    -fx-background-insets: 0;
+}
+
+/* Estilo para los campos cuando SÍ son editables */
+.editable-field {
+    -fx-opacity: 1.0;
+    -fx-font-weight: normal;
+    -fx-text-fill: black;
+    -fx-background-color: #D7DAE0;
+    -fx-border-color: #007bff;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-insets: 0;
+}
+
+/* Estilo para filas o celdas con estado "Activo" */
+.activo-cell {
+    -fx-background-color: #d4edda;
+}
+
+/* Estilo para el texto dentro de celdas "Activo" */
+.activo-cell .text {
+    -fx-fill: #000000;
+    -fx-font-weight: bold;
+}
+
+/* Estilo para filas o celdas con estado "Desactivado" */
+.desactivado-cell {
+    -fx-background-color: #f8d7da;
+}
+
+/* Estilo para el texto dentro de celdas "Desactivado" */
+.desactivado-cell .text {
+    -fx-fill: #000000;
+    -fx-font-weight: bold;
+}
+
+/* Estilo para el fondo del VBox principal */
+.root {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #72757E 0%, #030000 100%);
+}
+
+/* Estilo para el título */
+.titulo-principal {
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #fffffe;
+}
+
+/* Estilos de botones generales */
+Button.button {
+    -fx-padding: 0.4em 1.2em;
+    -fx-font-size: 1.2em;
+    -fx-font-family: "Monospaced";
+    -fx-border-color: #7f5af0;
+    -fx-border-width: 0.15em;
+    -fx-border-radius: 0.25em;
+    -fx-text-fill: #7f5af0;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-transition-duration: 300ms;
+    -fx-transition-timing-function: ease-in;
+}
+
+Button.button:hover {
+    -fx-text-fill: #fffffe;
+    -fx-background-color: #7f5af0;
+}
+
+Button.button:pressed {
+    -fx-border-color: #7f5af0;
+    -fx-background-color: #7f5af0;
+}
+
+/* Estilo específico para el botón de Volver */
+.button-volver {
+    -fx-border-color: #db6151;
+    -fx-text-fill: #db6151;
+    -fx-background-color: transparent;
+    -fx-padding: 0.4em 1.2em;
+    -fx-font-size: 1.2em;
+    -fx-border-width: 0.15em;
+    -fx-border-radius: 0.25em;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-background-insets: 0;
+    -fx-transition-duration: 300ms;
+    -fx-transition-timing-function: ease-in;
+}
+
+.button-volver:hover {
+    -fx-text-fill: #fffffe;
+    -fx-background-color: #db6151;
+}
+
+.button-volver:pressed {
+    -fx-border-color: #b34a3e;
+    -fx-background-color: #b34a3e;
+}
+
+/* --- ESTILOS PARA LAS GRILLAS Y TABLAS --- */
+/* Estilo de la tabla completa */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #444;
+    -fx-border-width: 1px;
+    -fx-table-cell-border-color: #555;
+}
+
+/* Estilo del encabezado de la tabla (columnas) */
+.table-view .column-header-background {
+    -fx-background-color: #C0C0C0;
+    -fx-border-color: #555;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #212121;
+    -fx-font-weight: bold;
+}
+
+/* Estilo de las filas */
+.table-row-cell {
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: #ccc;
+    -fx-border-color: #555;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #505050;
+    -fx-text-fill: #fff;
+}
+
+/* Estilo para las celdas de la tabla */
 .table-cell {
-    -fx-alignment: CENTER_LEFT;
+    -fx-text-fill: #ccc;
+    -fx-border-color: #555;
+    -fx-alignment: center;
 }
 
-.activo-status {
-    -fx-background-color: #C8E6C9; /* Un verde mucho más claro */
-    -fx-text-fill: #1B5E20; /* Color de texto verde oscuro para contraste */
-    -fx-weight: bold;
+/* Estilo para el botón dentro de las celdas de la grilla */
+.table-cell .button-in-table {
+    -fx-padding: 0.1em 0.2em;
+    -fx-font-size: 0.6em;
+    -fx-border-color: #7f5af0;
+    -fx-border-width: 0.1em;
+    -fx-border-radius: 0.2em;
+    -fx-text-fill: #7f5af0;
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-max-width: infinity;
+}
+.label-blanco {
+    -fx-text-fill: white;
+}
+.table-cell .button-in-table:hover {
+    -fx-text-fill: #fffffe;
+    -fx-background-color: #7f5af0;
 }
 
-.desactivado-status {
-    -fx-background-color: #FFCDD2; /* Un rojo mucho más claro */
-    -fx-text-fill: #B71C1C; /* Color de texto rojo oscuro para contraste */
-    -fx-weight: bold;
+.table-cell .button-in-table:pressed {
+    -fx-border-color: #7f5af0;
+    -fx-background-color: #7f5af0;
 }

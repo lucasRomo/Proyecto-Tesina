@@ -10,7 +10,7 @@
         <padding>
             <Insets bottom="10" left="10" right="10" top="10" />
         </padding>
-        <Label text="Registro de Proveedor">
+        <Label text="Registro de Proveedor" styleClass="titulo-principal">
             <font>
                 <Font name="System Bold" size="20.0" />
             </font>

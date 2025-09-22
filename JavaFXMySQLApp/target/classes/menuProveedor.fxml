@@ -7,9 +7,9 @@
 
 <AnchorPane prefHeight="469.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ProveedorController">
     <stylesheets>
-        <URL value="@styles.css" />
+        <URL value="@style.css" />
     </stylesheets>
-    <Label layoutX="490.0" layoutY="14.0" text="Menú Proveedores">
+    <Label layoutX="490.0" layoutY="14.0" text="Menú Proveedores" styleClass="titulo-principal">
         <font>
             <Font name="System Bold" size="24.0" />
         </font>
@@ -27,14 +27,14 @@
     </TableView>
     <TextField fx:id="filterField" layoutX="43.0" layoutY="387.0" prefHeight="25.0" prefWidth="200.0" promptText="Buscar por nombre, contacto o mail..." />
 
-    <Label layoutX="260.0" layoutY="391.0" text="Estado:">
+    <Label layoutX="260.0" layoutY="391.0" text="Estado:" styleClass="label-blanco">
         <font>
             <Font size="14.0" />
         </font>
     </Label>
     <ChoiceBox fx:id="estadoChoiceBox" layoutX="310.0" layoutY="387.0" prefWidth="150.0" />
 
-    <Label layoutX="480.0" layoutY="391.0" text="Tipo:">
+    <Label layoutX="480.0" layoutY="391.0" text="Tipo:" styleClass="label-blanco">
         <font>
             <Font size="14.0" />
         </font>

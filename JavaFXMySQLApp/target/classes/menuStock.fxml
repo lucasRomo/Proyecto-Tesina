@@ -7,9 +7,9 @@
 
 <AnchorPane prefHeight="469.0" prefWidth="1600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.StockController">
     <stylesheets>
-        <URL value="@styles.css" />
+        <URL value="@style.css" />
     </stylesheets>
-    <Label layoutX="781.0" layoutY="27.0" text="Menú de Stock">
+    <Label layoutX="781.0" layoutY="27.0" text="Menú de Stock" styleClass="titulo-principal">
         <font>
             <Font name="System Bold" size="24.0" />
         </font>
@@ -28,7 +28,7 @@
     </TableView>
     <TextField fx:id="filterField" layoutX="144.0" layoutY="387.0" prefHeight="25.0" prefWidth="319.0" promptText="Buscar por nombre..." />
 
-    <Label layoutX="473.0" layoutY="391.0" text="Estado:">
+    <Label layoutX="473.0" layoutY="391.0" text="Estado:" styleClass="label-blanco">
         <font>
             <Font size="14.0" />
         </font>

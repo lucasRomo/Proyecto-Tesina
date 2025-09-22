@@ -7,9 +7,12 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 
+<?import java.net.URL?>
 <VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml" fx:controller="app.controller.MenuController" >
-
-    <Label text="El Sur Centro De Copiado">
+    <stylesheets>
+        <URL value="@styles.css" />
+    </stylesheets>
+    <Label text="El Sur Centro De Copiado" styleClass="titulo-principal">
         <font>
             <Font name="System Bold" size="24.0" />
         </font>

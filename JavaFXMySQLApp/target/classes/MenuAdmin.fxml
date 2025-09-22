@@ -4,9 +4,13 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
+<?import java.net.URL?>
 <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="401.0" prefWidth="284.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuController">
-   <children>
-      <Label prefHeight="54.0" prefWidth="147.0" text="Menu Admin">
+    <stylesheets>
+        <URL value="@styles.css" />
+    </stylesheets>
+    <children>
+      <Label prefHeight="54.0" prefWidth="147.0" text="Menu Admin" styleClass="titulo-principal" >
          <font>
             <Font name="System Bold" size="24.0" />
          </font></Label>

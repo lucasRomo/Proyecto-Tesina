@@ -12,7 +12,7 @@
     </stylesheets>
     <VBox alignment="TOP_CENTER" layoutX="14.0" layoutY="14.0" prefHeight="376.0" prefWidth="778.0" spacing="15.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="14.0">
         <children>
-            <Label text="Proveedores Asociados">
+            <Label text="Proveedores Asociados" styleClass="titulo-principal">
                 <font>
                     <Font name="System Bold" size="24.0" />
                 </font>
