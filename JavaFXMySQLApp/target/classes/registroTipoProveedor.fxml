@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<?import javafx.geometry.Insets?>
 
-<?import java.net.URL?>
-<AnchorPane prefHeight="200.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.RegistroTipoProveedorController">
+<AnchorPane prefHeight="275.0" prefWidth="406.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.RegistroTipoProveedorController">
     <stylesheets>
         <URL value="@styleRegistro.css" />
     </stylesheets>
-    <VBox layoutX="25.0" layoutY="25.0" prefWidth="250.0" spacing="15" alignment="CENTER">
+    <VBox alignment="CENTER" prefHeight="288.0" prefWidth="484.0" spacing="15">
         <padding>
             <Insets bottom="10" left="10" right="10" top="10" />
         </padding>
-        <Label text="Nuevo Tipo de Proveedor" styleClass="titulo-principal">
+        <Label prefHeight="65.0" prefWidth="465.0" styleClass="titulo-principal" text="Nuevo Tipo de Proveedor">
             <font>
                 <Font name="System Bold" size="16.0" />
             </font>
         </Label>
-        <TextField fx:id="descripcionField" promptText="Descripción del Tipo" />
+        <TextField fx:id="descripcionField" prefHeight="29.0" prefWidth="320.0" promptText="Descripción del Tipo" />
         <HBox alignment="CENTER" spacing="20">
-            <Button onAction="#handleRegistrar" text="Guardar" />
+            <Button onAction="#handleRegistrar" prefHeight="32.0" prefWidth="101.0" text="Guardar" />
             <Button onAction="#handleCancelar" text="Cancelar" />
         </HBox>
     </VBox>

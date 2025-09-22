@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<?import java.net.URL?>
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.RegistroInsumoController">
     <stylesheets>
@@ -12,7 +12,7 @@
     </stylesheets>
     <VBox alignment="CENTER" layoutX="14.0" layoutY="14.0" prefHeight="372.0" prefWidth="572.0" spacing="15.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
         <children>
-            <Label text="Registrar Nuevo Insumo" styleClass="titulo-principal">
+            <Label styleClass="titulo-principal" text="Registrar Nuevo Insumo">
                 <font>
                     <Font name="System Bold" size="24.0" />
                 </font>
@@ -69,8 +69,8 @@
             </HBox>
             <HBox alignment="CENTER" prefHeight="40.0" prefWidth="572.0" spacing="20.0">
                 <children>
-                    <Button mnemonicParsing="false" onAction="#handleGuardarInsumoButton" prefHeight="25.0" prefWidth="150.0" styleClass="save-button" text="Guardar Insumo" />
-                    <Button mnemonicParsing="false" onAction="#handleCancelarButton" prefHeight="25.0" prefWidth="150.0" styleClass="cancel-button" text="Cancelar" />
+                    <Button mnemonicParsing="false" onAction="#handleGuardarInsumoButton" prefHeight="45.0" prefWidth="165.0" styleClass="save-button" text="Guardar Insumo" />
+                    <Button mnemonicParsing="false" onAction="#handleCancelarButton" prefHeight="25.0" prefWidth="165.0" styleClass="cancel-button" text="Cancelar" />
                 </children>
                 <VBox.margin>
                     <Insets top="10.0" />
