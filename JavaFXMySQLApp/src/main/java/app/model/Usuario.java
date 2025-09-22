@@ -1,21 +1,23 @@
 // Archivo: Usuario.java
 package app.model;
 
+import javafx.beans.value.ObservableValue;
+
 public class Usuario {
     private String usuario;
-    private String contrasenia;
+    private String contrasena;
     private int idPersona; // <-- CAMBIO AGREGADO
 
     // Constructor para inicio de sesion (sin idPersona)
     public Usuario(String usuario, String contrasenia) {
         this.usuario = usuario;
-        this.contrasenia = contrasenia;
+        this.contrasena = contrasenia;
     }
 
     // Constructor para registro (con idPersona)
     public Usuario(String usuario, String contrasenia, int idPersona) {
         this.usuario = usuario;
-        this.contrasenia = contrasenia;
+        this.contrasena = contrasenia;
         this.idPersona = idPersona;
     }
 
@@ -24,7 +26,7 @@ public class Usuario {
     }
 
     public String getContrasenia() {
-        return contrasenia;
+        return contrasena;
     }
 
     // <-- METODO AGREGADO
@@ -36,4 +38,5 @@ public class Usuario {
     public int getIdPersona() {
         return idPersona;
     }
+
 }

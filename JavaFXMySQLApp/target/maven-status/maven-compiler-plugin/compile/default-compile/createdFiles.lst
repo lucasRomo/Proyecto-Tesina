@@ -1,9 +1,11 @@
 app\controller\ClienteController.class
+app\controller\UsuariosEmpleadoController$1.class
 app\controller\RegistroController.class
 app\model\UsuarioDAO.class
 app\controller\IniciodeSesionController.class
 app\MainApp.class
 app\controller\EmpleadoController.class
+app\controller\UsuarioEmpleadoTableView.class
 app\model\Direccion.class
 app\model\TipoDocumento.class
 app\model\Usuario.class
@@ -17,3 +19,4 @@ app\model\dao\TipoDocumentoDAO.class
 app\model\dao\DireccionDAO.class
 app\controller\RegistroEmpleadoController.class
 app\controller\MenuController.class
+app\controller\UsuariosEmpleadoController.class

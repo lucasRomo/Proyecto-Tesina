@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="1176.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.UsuariosEmpleadoController">
+    <children>
+        <Label layoutX="494.0" layoutY="14.0" text="Gestionar Usuarios Empleados">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Label>
+        <!-- Se cambió el tipo genérico a UsuarioEmpleadoView -->
+        <TableView fx:id="usuariosEditableView" editable="true" layoutX="14.0" layoutY="71.0" prefHeight="250.0" prefWidth="1146.0">
+            <columns>
+                <TableColumn fx:id="idUsuarioColumn" prefWidth="50.0" text="ID" />
+                <TableColumn fx:id="UsuarioColumn" prefWidth="187.0" text="Usuario" />
+                <TableColumn fx:id="ContrasenaColumn" prefWidth="194.0" text="Contraseña" />
+                <TableColumn fx:id="NombreColumn" prefWidth="198.0" text="Nombre" />
+                <TableColumn fx:id="ApellidoColumn" prefWidth="217.0" text="Apellido" />
+                <TableColumn fx:id="idPersonaColumn" prefWidth="69.0" text="ID Persona" />
+                <TableColumn fx:id="SalarioColumn" prefWidth="120.0" text="Salario" />
+                <TableColumn fx:id="EstadoColumn" prefWidth="109.0" text="Estado" />
+            </columns>
+        </TableView>
+        <TextField fx:id="filterField" layoutX="42.0" layoutY="340.0" prefHeight="25.0" prefWidth="273.0" promptText="Buscar por Usuario o Nombre..." />
+        <Button fx:id="modificarUsuarioButton" layoutX="1028.0" layoutY="340.0" mnemonicParsing="false" onAction="#handleModificarUsuarioButton" prefHeight="25.0" prefWidth="131.0" text="Guardar Cambios" />
+      <Label layoutX="324.0" layoutY="340.0" prefHeight="25.0" prefWidth="91.0" text="Estado:">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+      <ChoiceBox fx:id= "estadoUsuarioChoiceBox" layoutX="378.0" layoutY="340.0" prefHeight="25.0" prefWidth="116.0" />
+    </children>
+</AnchorPane>

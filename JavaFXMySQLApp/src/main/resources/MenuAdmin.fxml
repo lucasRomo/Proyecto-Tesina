@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="401.0" prefWidth="284.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuController">
+   <children>
+      <Label prefHeight="54.0" prefWidth="147.0" text="Menu Admin">
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font></Label>
+      <Button mnemonicParsing="false" prefHeight="8.0" prefWidth="200.0" text="Historial de Pedidos" />
+      <Button mnemonicParsing="false" prefHeight="8.0" prefWidth="200.0" text="Informes" />
+      <Button fx:id="Button" onAction="#handleGestionDeUsuariosButton" prefHeight="8.0" prefWidth="200.0" text="Gestión de Usuarios" />
+      <Button mnemonicParsing="false" prefHeight="8.0" prefWidth="200.0" text="Historial de Actividad" />
+   </children>
+</VBox>

@@ -1,6 +1,9 @@
 package app.dao;
 
-import app.model.Usuario;
+import app.controller.UsuarioEmpleadoTableView;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,6 +14,10 @@ public class UsuarioDAO {
     private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
     private static final String USER = "root";
     private static final String PASSWORD = "";
+
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
 
     // Método de inserción corregido para incluir el id_persona
     public boolean insertar(Usuario usuario, Connection conn) throws SQLException {
@@ -26,6 +33,39 @@ public class UsuarioDAO {
         }
 
     }
+
+
+    public ObservableList<UsuarioEmpleadoTableView> obtenerUsuariosEmpleados() throws SQLException {
+        ObservableList<UsuarioEmpleadoTableView> listaUsuarios = FXCollections.observableArrayList();
+        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.nombre, p.apellido, e.salario, e.estado, p.id_persona " +
+                "FROM Usuario u " +
+                "JOIN Empleado e ON u.id_persona = e.id_persona " +
+                "JOIN Persona p ON e.id_persona = p.id_persona";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                int idUsuario = rs.getInt("id_usuario");
+                String usuario = rs.getString("nombre_usuario");
+                String contrasena = rs.getString("contrasena");
+                String nombre = rs.getString("nombre");
+                String apellido = rs.getString("apellido");
+                double salario = rs.getDouble("salario");
+                String estado = rs.getString("estado");
+                int idPersona = rs.getInt("id_persona");
+
+                UsuarioEmpleadoTableView usuarioEmpleado = new UsuarioEmpleadoTableView(idUsuario, usuario, contrasena, nombre, apellido, salario, estado, idPersona);
+                listaUsuarios.add(usuarioEmpleado);
+            }
+        }
+        return listaUsuarios;
+    }
+
+
+
+
 
     public boolean verificarUsuario(String Usuario, String Contrasenia) {
         String contraseniaHasheada = Contrasenia;
@@ -69,5 +109,45 @@ public class UsuarioDAO {
         return false;
     }
 
+    public boolean modificarUsuariosEmpleados(UsuarioEmpleadoTableView usuario) {
+        // La lógica para la actualización de múltiples tablas debe ser una transacción
+        String sqlUpdateUsuario = "UPDATE Usuario SET nombre_usuario = ?, contrasena = ? WHERE id_usuario = ?";
+        String sqlUpdatePersona = "UPDATE Persona SET nombre = ?, apellido = ? WHERE id_persona = ?";
+        String sqlUpdateEmpleado = "UPDATE Empleado SET salario = ?, estado = ? WHERE id_persona = ?";
 
+        try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false); // Inicia la transacción
+
+            // 1. Actualizar Usuario
+            try (PreparedStatement stmt = conn.prepareStatement(sqlUpdateUsuario)) {
+                stmt.setString(1, usuario.getUsuario());
+                stmt.setString(2, usuario.getContrasena());
+                stmt.setInt(3, usuario.getIdUsuario());
+                stmt.executeUpdate();
+            }
+
+            // 2. Actualizar Persona
+            try (PreparedStatement stmt = conn.prepareStatement(sqlUpdatePersona)) {
+                stmt.setString(1, usuario.getNombre());
+                stmt.setString(2, usuario.getApellido());
+                stmt.setInt(3, usuario.getIdPersona());
+                stmt.executeUpdate();
+            }
+
+            // 3. Actualizar Empleado
+            try (PreparedStatement stmt = conn.prepareStatement(sqlUpdateEmpleado)) {
+                stmt.setDouble(1, usuario.getSalario());
+                stmt.setString(2, usuario.getEstado());
+                stmt.setInt(3, usuario.getIdPersona());
+                stmt.executeUpdate();
+            }
+
+            conn.commit(); // Confirma la transacción
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error al modificar el usuario en la base de datos.");
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
