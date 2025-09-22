@@ -20,14 +20,12 @@
         </font>
     </Label>
 
-    <!-- El tamaño de la fuente para este label ahora es más grande -->
     <Label style="-fx-font-weight: bold; -fx-font-size: 18px;" text="Datos Personales" />
     <GridPane hgap="10" vgap="10">
         <columnConstraints>
             <ColumnConstraints percentWidth="40" />
             <ColumnConstraints percentWidth="60" />
         </columnConstraints>
-        <!-- Se ha agregado el estilo para aumentar el tamaño de la fuente -->
         <Label prefHeight="35.0" prefWidth="156.0" style="-fx-font-size: 24px;" text="Nombre:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
         <TextField fx:id="nombreField" promptText="Nombre" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
@@ -55,14 +53,12 @@
         </rowConstraints>
     </GridPane>
 
-    <!-- El tamaño de la fuente para este label ahora es más grande -->
     <Label style="-fx-font-weight: bold; -fx-font-size: 18px;" text="Datos de Dirección" />
     <GridPane hgap="10" vgap="10">
         <columnConstraints>
             <ColumnConstraints percentWidth="40" />
             <ColumnConstraints percentWidth="60" />
         </columnConstraints>
-        <!-- Se ha agregado el estilo para aumentar el tamaño de la fuente -->
         <Label style="-fx-font-size: 24px;" text="Calle:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
         <TextField fx:id="calleField" promptText="Calle" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
@@ -97,6 +93,10 @@
             <RowConstraints />
         </rowConstraints>
     </GridPane>
-    <Button fx:id="volverButton" layoutX="1175.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
-    <Button fx:id="siguienteButton" text="Siguiente" onAction="#handleSiguienteButton" />
+    <HBox alignment="CENTER" spacing="10.0">
+        <children>
+            <Button fx:id="volverButton" onAction="#handleVolverButton" text="Volver" />
+            <Button fx:id="siguienteButton" onAction="#handleSiguienteButton" text="Siguiente" />
+        </children>
+    </HBox>
 </VBox>
