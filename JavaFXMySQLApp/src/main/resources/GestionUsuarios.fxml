@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<?import java.net.URL?>
 <BorderPane prefHeight="400.0" prefWidth="1176.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.UsuariosEmpleadoController">
     <stylesheets>
         <URL value="@style.css" />
     </stylesheets>
     <top>
-        <Label text="Gestionar Usuarios Empleados" BorderPane.alignment="CENTER" styleClass="titulo-principal">
+        <Label styleClass="titulo-principal" text="Gestionar Usuarios Empleados" BorderPane.alignment="CENTER">
             <font>
                 <Font name="System Bold" size="24.0" />
             </font>
@@ -49,7 +42,7 @@
                 <HBox alignment="CENTER" spacing="10.0">
                     <children>
                         <TextField fx:id="filterField" prefHeight="25.0" prefWidth="273.0" promptText="Buscar por Usuario o Nombre..." HBox.hgrow="ALWAYS" />
-                        <Label text="Estado:" styleClass="label-blanco">
+                        <Label styleClass="label-blanco" text="Estado:">
                             <font>
                                 <Font size="14.0" />
                             </font>
@@ -59,8 +52,8 @@
                 </HBox>
                 <HBox alignment="CENTER" spacing="10.0">
                     <children>
-                        <Button fx:id="modificarUsuarioButton" mnemonicParsing="false" onAction="#handleModificarUsuarioButton" prefHeight="25.0" prefWidth="131.0" text="Guardar Cambios" />
-                        <Button fx:id="volverButton" styleClass="button-volver" mnemonicParsing="false" onAction="#handleVolverButton" prefHeight="25.0" prefWidth="116.0" text="Volver" />
+                        <Button fx:id="modificarUsuarioButton" mnemonicParsing="false" onAction="#handleModificarUsuarioButton" prefHeight="34.0" prefWidth="172.0" text="Guardar Cambios" />
+                        <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverButton" prefHeight="25.0" prefWidth="116.0" styleClass="button-volver" text="Volver" />
                     </children>
                 </HBox>
             </children>
