@@ -1,24 +1,25 @@
 package app.controller;
 
-import app.model.Direccion;
-import app.model.TipoDocumento;
 import app.dao.DireccionDAO;
 import app.dao.PersonaDAO;
 import app.dao.TipoDocumentoDAO;
+import app.model.Direccion;
+import app.model.TipoDocumento;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RegistroController {
+
     @FXML private TextField nombreField;
     @FXML private TextField apellidoField;
     @FXML private ComboBox<String> tipoDocumentoComboBox;
@@ -38,12 +39,8 @@ public class RegistroController {
     private DireccionDAO direccionDAO = new DireccionDAO();
     private PersonaDAO personaDAO = new PersonaDAO();
 
-
-
-    // Referencia al controlador de la ventana principal
     private ClienteController clienteController;
 
-    // Método setter para recibir la referencia
     public void setClienteController(ClienteController controller) {
         this.clienteController = controller;
     }
@@ -128,21 +125,24 @@ public class RegistroController {
                             numeroDocumentoField.getText(), idDireccion, telefonoField.getText(), emailField.getText()
                     );
 
-                    Stage stage = (Stage)((Button)event.getSource()).getScene().getWindow();
-                    Scene scene = new Scene(root);
-                    stage.setScene(scene);
-                    stage.setWidth(1800);
-                    stage.setHeight(1000);
-
-                    // Centra la ventana en la pantalla (opcional)
-                    stage.centerOnScreen();
+                    // Crear una nueva ventana (Stage) para la vista modal
+                    Stage stage = new Stage();
+                    stage.setScene(new Scene(root));
                     stage.setTitle("Datos del Cliente");
-                    stage.show();
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.showAndWait();
+
+                    // Cerrar la ventana de registro actual
+                    Stage currentStage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+                    currentStage.close();
+
                 } else {
                     mostrarAlerta("Error", "No se pudo registrar la dirección. Intente de nuevo.");
                 }
+
             } catch (IOException e) {
                 e.printStackTrace();
+                mostrarAlerta("Error", "No se pudo cargar el formulario de datos del cliente.", Alert.AlertType.ERROR);
             }
         }
     }
@@ -152,13 +152,12 @@ public class RegistroController {
         if (this.nombreField.getText().isEmpty() || this.apellidoField.getText().isEmpty() ||
                 this.tipoDocumentoComboBox.getValue() == null || this.numeroDocumentoField.getText().isEmpty() ||
                 this.emailField.getText().isEmpty() || this.telefonoField.getText().isEmpty()) {
-
             this.mostrarAlerta("Advertencia", "Por favor, complete todos los campos personales obligatorios.");
             return false;
         }
         if (personaDAO.verificarSiMailExiste(email)) {
             mostrarAlerta("Error de Registro", "El email que ingresó ya se encuentra registrado.");
-            return false; // Detiene la ejecución para no ir a la siguiente pantalla
+            return false;
         }
         if (!this.validarSoloLetras(this.nombreField.getText())) {
             this.mostrarAlerta("Advertencia", "El nombre no puede contener números. Por favor, ingrese caracteres válidos.");
@@ -182,7 +181,7 @@ public class RegistroController {
             return false;
         }
         if (!this.validarSoloNumeros(this.numeroField.getText())) {
-            this.mostrarAlerta("Advertencia", "El teléfono solo puede contener números.");
+            this.mostrarAlerta("Advertencia", "El número de calle solo puede contener números.");
             return false;
         }
         return true;
@@ -196,11 +195,15 @@ public class RegistroController {
         return texto.matches("\\d+");
     }
 
-    private void mostrarAlerta(String titulo, String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
+    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
+        Alert alert = new Alert(tipo);
         alert.setTitle(titulo);
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
         alert.showAndWait();
+    }
+
+    private void mostrarAlerta(String titulo, String mensaje) {
+        mostrarAlerta(titulo, mensaje, Alert.AlertType.WARNING);
     }
 }
