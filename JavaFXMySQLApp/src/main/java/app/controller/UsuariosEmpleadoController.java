@@ -325,18 +325,27 @@ public class UsuariosEmpleadoController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
-
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
+            // Carga el FXML de la pantalla a la que quieres regresar.
+            // Asegúrate de que la ruta sea correcta.
             Parent root = FXMLLoader.load(getClass().getResource("/MenuAdmin.fxml"));
+
+            // Obtiene la Stage (ventana) actual del botón
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            // Crea una nueva Scene con la pantalla anterior
             Scene scene = new Scene(root);
+
+            // Reemplaza la Scene actual con la nueva
             stage.setScene(scene);
-            stage.setTitle("Menú Principal");
+            stage.setTitle("Menú Principal"); // O el título de la pantalla anterior
             stage.show();
+
         } catch (IOException e) {
             e.printStackTrace();
+            // Maneja el error si no se puede cargar el archivo FXML
         }
     }
 }
