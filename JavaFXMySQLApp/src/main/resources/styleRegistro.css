@@ -1,6 +1,6 @@
 /* Estilo para el contenedor principal VBox */
-.vbox {
-    -fx-background-color: #333333; /* Fondo gris oscuro */
+.root {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #72757E 0%, #030000 100%);
 }
 
 /* Estilo para los títulos principales, usando la clase del FXML */
@@ -42,11 +42,8 @@
     -fx-background-color: #555555;
     -fx-text-fill: #FFFFFF;
 }
-.root {
-    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #72757E 0%, #030000 100%);
-}
 
-/* Estilo para el botón "Siguiente" */
+/* Estilo para el botón "Siguiente" (o cualquier botón que no tenga un ID específico) */
 .button {
     -fx-background-color: #0078D7; /* Un azul vibrante */
     -fx-text-fill: #FFFFFF; /* Texto blanco */
@@ -62,11 +59,29 @@
     -fx-background-color: #005A9E; /* Un azul un poco más oscuro */
 }
 
+/* Estilo para el botón "Volver" con fondo rojo y texto blanco */
+#volverButton {
+    -fx-background-color: red;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+/* No hay efecto de hover para el botón "Volver" según lo solicitado */
+#volverButton:hover {
+    -fx-background-color: red;
+}
+
 /* Estilo para los GridPane para que tengan un aspecto más limpio */
 .grid-pane {
     -fx-background-color: transparent;
     -fx-padding: 10px;
 }
+
+/* Se elimina el estilo del botón "siguiente" que estaba incorrecto y se usa la clase general del botón */
 .titulo-principal {
     -fx-font-size: 38px;
     -fx-font-weight: bold;
