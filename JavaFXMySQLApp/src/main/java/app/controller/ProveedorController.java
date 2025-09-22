@@ -25,6 +25,7 @@ import javafx.util.StringConverter;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +52,7 @@ public class ProveedorController {
     private TipoProveedorDAO tipoProveedorDAO;
     private ObservableList<Proveedor> masterData = FXCollections.observableArrayList();
     private FilteredList<Proveedor> filteredData;
+    private List<TipoProveedor> tiposProveedor;
 
     public ProveedorController() {
         this.proveedorDAO = new ProveedorDAO();
@@ -97,23 +99,16 @@ public class ProveedorController {
             }
         });
 
-        // **INICIO DE LA CORRECCIÓN**
         // Configuración para que TipoProveedor sea editable con un ChoiceBox
-        tipoProveedorColumn.setCellValueFactory(new PropertyValueFactory<>("descripcionTipoProveedor"));
+        tipoProveedorColumn.setCellValueFactory(cellData -> cellData.getValue().descripcionTipoProveedorProperty());
         tipoProveedorColumn.setCellFactory(column -> new TableCell<Proveedor, String>() {
-            @Override
-            public void startEdit() {
-                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable()) {
-                    return;
-                }
-                super.startEdit();
+            private final ChoiceBox<TipoProveedor> choiceBox = new ChoiceBox<>();
+            private boolean isEditing = false;
 
-                final ChoiceBox<TipoProveedor> choiceBox = new ChoiceBox<>();
-                ObservableList<TipoProveedor> tipos = FXCollections.observableArrayList();
-
+            {
                 try {
-                    tipos.addAll(tipoProveedorDAO.getAllTipoProveedores());
-                    choiceBox.setItems(tipos);
+                    tiposProveedor = tipoProveedorDAO.getAllTipoProveedores();
+                    choiceBox.setItems(FXCollections.observableArrayList(tiposProveedor));
                     choiceBox.setConverter(new StringConverter<TipoProveedor>() {
                         @Override
                         public String toString(TipoProveedor tipo) {
@@ -121,7 +116,10 @@ public class ProveedorController {
                         }
                         @Override
                         public TipoProveedor fromString(String string) {
-                            return null;
+                            return tiposProveedor.stream()
+                                    .filter(t -> t.getDescripcion().equals(string))
+                                    .findFirst()
+                                    .orElse(null);
                         }
                     });
                 } catch (SQLException e) {
@@ -129,21 +127,26 @@ public class ProveedorController {
                     mostrarAlerta("Error de Carga", "No se pudieron cargar los tipos de proveedor para la edición.", Alert.AlertType.ERROR);
                 }
 
-                Proveedor proveedor = getTableView().getItems().get(getIndex());
-                if (proveedor != null) {
-                    tipos.stream()
-                            .filter(t -> t.getId() == proveedor.getIdTipoProveedor())
-                            .findFirst()
-                            .ifPresent(choiceBox.getSelectionModel()::select);
-                }
-
-                choiceBox.setOnAction(event -> {
-                    if (choiceBox.getValue() != null) {
+                choiceBox.setOnAction(e -> {
+                    if (isEditing) {
                         commitEdit(choiceBox.getValue().getDescripcion());
-                    } else {
-                        cancelEdit();
                     }
                 });
+            }
+
+            @Override
+            public void startEdit() {
+                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable()) {
+                    return;
+                }
+                super.startEdit();
+                isEditing = true;
+
+                Proveedor proveedor = getTableView().getItems().get(getIndex());
+                tiposProveedor.stream()
+                        .filter(t -> t.getId() == proveedor.getIdTipoProveedor())
+                        .findFirst()
+                        .ifPresent(choiceBox.getSelectionModel()::select);
 
                 setGraphic(choiceBox);
                 setText(null);
@@ -152,6 +155,7 @@ public class ProveedorController {
             @Override
             public void cancelEdit() {
                 super.cancelEdit();
+                isEditing = false;
                 setGraphic(null);
                 setText(getItem());
             }
@@ -163,8 +167,8 @@ public class ProveedorController {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    if (isEditing()) {
-                        setGraphic(new ChoiceBox<>()); // Se crea un nuevo ChoiceBox en update para que funcione el startEdit()
+                    if (isEditing) {
+                        setGraphic(choiceBox);
                         setText(null);
                     } else {
                         setGraphic(null);
@@ -204,8 +208,8 @@ public class ProveedorController {
                 proveedoresTableView.refresh();
             }
         });
-        // **FIN DE LA CORRECCIÓN**
 
+        // Configuración de la celda de estado con estilo
         estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
         estadoColumn.setCellFactory(column -> new TableCell<Proveedor, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
@@ -218,9 +222,7 @@ public class ProveedorController {
                 super.startEdit();
                 choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
                 choiceBox.getSelectionModel().select(getItem());
-                choiceBox.setOnAction(event -> {
-                    commitEdit(choiceBox.getSelectionModel().getSelectedItem());
-                });
+                choiceBox.setOnAction(event -> commitEdit(choiceBox.getSelectionModel().getSelectedItem()));
                 setGraphic(choiceBox);
                 setText(null);
             }
@@ -230,6 +232,7 @@ public class ProveedorController {
                 super.cancelEdit();
                 setGraphic(null);
                 setText(getItem());
+                applyCellStyle(getItem());
             }
 
             @Override
@@ -239,6 +242,7 @@ public class ProveedorController {
                 if (empty || item == null) {
                     setText(null);
                     setGraphic(null);
+                    setStyle(null);
                 } else {
                     if (isEditing()) {
                         choiceBox.getSelectionModel().select(item);
@@ -247,12 +251,20 @@ public class ProveedorController {
                     } else {
                         setGraphic(null);
                         setText(item);
-                        if ("Activo".equalsIgnoreCase(item)) {
-                            getStyleClass().add("activo-cell");
-                        } else if ("Desactivado".equalsIgnoreCase(item)) {
-                            getStyleClass().add("desactivado-cell");
-                        }
+                        applyCellStyle(item);
                     }
+                }
+            }
+
+            private void applyCellStyle(String item) {
+                if ("Activo".equalsIgnoreCase(item)) {
+                    getStyleClass().add("activo-cell");
+                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
+                } else if ("Desactivado".equalsIgnoreCase(item)) {
+                    getStyleClass().add("desactivado-cell");
+                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
+                } else {
+                    setStyle(null);
                 }
             }
         });
@@ -412,21 +424,17 @@ public class ProveedorController {
     }
 
     public void refreshProveedoresTable() {
-        // Guarda los valores actuales de los filtros.
         String filtroTexto = filterField.getText();
         String filtroEstado = estadoChoiceBox.getValue();
         TipoProveedor filtroTipo = tipoProveedorChoiceBox.getValue();
 
-        // Recarga los datos desde la base de datos.
         masterData.clear();
         masterData.addAll(proveedorDAO.getAllProveedores());
 
-        // Vuelve a aplicar los valores guardados a los controles de filtro.
         filterField.setText(filtroTexto);
         estadoChoiceBox.setValue(filtroEstado);
         tipoProveedorChoiceBox.setValue(filtroTipo);
 
-        // Llama a la función de actualización de la lista filtrada directamente.
         updateFilteredList();
     }
 
@@ -452,24 +460,14 @@ public class ProveedorController {
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            // Carga el FXML de la pantalla a la que quieres regresar.
-            // Asegúrate de que la ruta sea correcta.
             Parent root = FXMLLoader.load(getClass().getResource("/menuAbmStock.fxml"));
-
-            // Obtiene la Stage (ventana) actual del botón
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            // Crea una nueva Scene con la pantalla anterior
             Scene scene = new Scene(root);
-
-            // Reemplaza la Scene actual con la nueva
             stage.setScene(scene);
-            stage.setTitle("Menú Principal"); // O el título de la pantalla anterior
+            stage.setTitle("Menú Principal");
             stage.show();
-
         } catch (IOException e) {
             e.printStackTrace();
-            // Maneja el error si no se puede cargar el archivo FXML
         }
     }
-    }
+}

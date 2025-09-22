@@ -1,18 +1,24 @@
 package app.controller;
 
-import app.model.Persona;
-import app.model.Usuario;
-import app.model.Empleado;
+import app.dao.EmpleadoDAO;
 import app.dao.PersonaDAO;
 import app.dao.UsuarioDAO;
-import app.dao.EmpleadoDAO;
+import app.model.Empleado;
+import app.model.Persona;
+import app.model.Usuario;
+import javafx.event.ActionEvent; // Se debe importar ActionEvent
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -36,7 +42,7 @@ public class EmpleadoController {
     private UsuarioDAO usuarioDAO;
     private EmpleadoDAO empleadoDAO;
 
-    private Persona personaData; // Objeto para guardar los datos de la persona
+    private Persona personaData;
 
     // Constructor para inicializar los DAOs
     public EmpleadoController() {
@@ -52,15 +58,13 @@ public class EmpleadoController {
     }
 
     @FXML
-    public void handleGuardarEmpleado() {
-        // Validación inicial de los campos del empleado
+    public void handleGuardarEmpleado(ActionEvent event) {
         if (!validarCampos()) {
             return;
         }
 
         String nuevoUsuarioStr = usuarioField.getText().trim();
 
-        // 1. Validar si el nombre de usuario ya existe
         if (usuarioDAO.verificarSiUsuarioExiste(nuevoUsuarioStr)) {
             mostrarAlerta("Error de Registro", "El nombre de usuario ya está registrado. Por favor, elija otro.");
             return;
@@ -69,22 +73,15 @@ public class EmpleadoController {
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            conn.setAutoCommit(false); // Inicia la transacción
+            conn.setAutoCommit(false);
 
-            // 2. Insertar en la tabla Persona
-            // Nota: Se asume que insertarPersona de PersonaDAO ha sido modificado
-            // para aceptar un objeto Connection para la transacción.
             int idPersona = personaDAO.insertarPersona(this.personaData, conn);
 
             if (idPersona != -1) {
-                // 3. Insertar en la tabla Usuario
-                // Nota: Similarmente, se asume que el método insertar de UsuarioDAO
-                // ha sido modificado para aceptar la conexión.
                 Usuario nuevoUsuario = new Usuario(usuarioField.getText(), contraseniaField.getText());
                 nuevoUsuario.setIdPersona(idPersona);
 
                 if (usuarioDAO.insertar(nuevoUsuario, conn)) {
-                    // 4. Insertar en la tabla Empleado
                     LocalDate fechaContratacion = fechaContratacionPicker.getValue();
                     String cargo = cargoField.getText();
                     double salario = Double.parseDouble(salarioField.getText());
@@ -92,17 +89,30 @@ public class EmpleadoController {
                     Empleado nuevoEmpleado = new Empleado(fechaContratacion, cargo, salario, idPersona);
 
                     if (empleadoDAO.insertarEmpleado(nuevoEmpleado, conn)) {
-                        conn.commit(); // Confirma la transacción
+                        conn.commit();
                         mostrarAlerta("Éxito", "Empleado y Usuario registrados exitosamente.");
                         limpiarCampos();
-                        Stage stage = (Stage) usuarioField.getScene().getWindow();
-                        stage.close();
+
+                        // **CÓDIGO CORREGIDO PARA REDIRECCIONAR**
+                        try {
+                            // Cargar la nueva pantalla
+                            Parent root = FXMLLoader.load(getClass().getResource("/inicioSesion.fxml"));
+                            // Obtener el Stage de la ventana actual
+                            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                            // Establecer la nueva escena
+                            stage.setScene(new Scene(root));
+                            stage.setTitle("Inicio de Sesión");
+                            stage.show();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            mostrarAlerta("Error", "No se pudo cargar la pantalla de inicio de sesión.");
+                        }
                     } else {
-                        conn.rollback(); // Deshace todo si falla la inserción de Empleado
+                        conn.rollback();
                         mostrarAlerta("Error", "Error al registrar los datos del empleado.");
                     }
                 } else {
-                    conn.rollback(); // Deshace la inserción de la Persona
+                    conn.rollback();
                     mostrarAlerta("Error", "Error al registrar el usuario. La operación fue cancelada.");
                 }
             } else {
@@ -111,7 +121,7 @@ public class EmpleadoController {
         } catch (SQLException e) {
             try {
                 if (conn != null) {
-                    conn.rollback(); // Deshace todo si hay un error
+                    conn.rollback();
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -121,7 +131,7 @@ public class EmpleadoController {
         } finally {
             try {
                 if (conn != null) {
-                    conn.close(); // Cierra la conexión
+                    conn.close();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -136,8 +146,6 @@ public class EmpleadoController {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos obligatorios del empleado.");
             return false;
         }
-
-        // Validación de salario para asegurar que sea un número válido
         try {
             Double.parseDouble(salarioField.getText());
         } catch (NumberFormatException e) {
