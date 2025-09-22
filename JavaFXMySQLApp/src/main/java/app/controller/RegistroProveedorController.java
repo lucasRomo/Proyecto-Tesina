@@ -46,7 +46,7 @@ public class RegistroProveedorController {
     private ProveedorDAO proveedorDAO = new ProveedorDAO();
     PersonaDAO personaDAO = new PersonaDAO();
     private TipoProveedorDAO tipoProveedorDAO = new TipoProveedorDAO();
-    String email = mailField.getText().trim();
+
 
     public void setProveedorController(ProveedorController proveedorController) {
         this.proveedorController = proveedorController;
@@ -172,6 +172,7 @@ public class RegistroProveedorController {
 
     // APLICANDO LAS VALIDACIONES QUE ME DISTE DEL REGISTRO DE CLIENTE
     private boolean validarCamposProveedores() {
+        String email = mailField.getText().trim();
         if (nombreField.getText().isEmpty() || contactoField.getText().isEmpty() ||
                 mailField.getText().isEmpty() || tipoProveedorChoiceBox.getValue() == null) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos obligatorios.");

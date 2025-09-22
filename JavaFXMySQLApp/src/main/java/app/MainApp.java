@@ -8,17 +8,25 @@ import javafx.stage.Stage;
 
 public class MainApp extends Application {
 
-    public static final double WINDOW_WIDTH = 450.0;
-    public static final double WINDOW_HEIGHT = 800.0;
 
-    public static final double WINDOW_WIDTH2 = 1600.0;
 
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/menuInicial.fxml"));
-        Scene scene = new Scene((Parent)fxmlLoader.load(), WINDOW_WIDTH, WINDOW_HEIGHT);
+        Parent root = fxmlLoader.load();
+
+        Scene scene = new Scene(root);
+
         stage.setTitle("Imprenta");
         stage.setScene(scene);
+
+
+        stage.setWidth(1800);
+        stage.setHeight(1000);
+
+        // Centra la ventana en la pantalla (opcional)
+        stage.centerOnScreen();
+
         stage.show();
     }
 

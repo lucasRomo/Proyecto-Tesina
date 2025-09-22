@@ -7,16 +7,24 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.scene.control.TableCell;
 import javafx.util.Callback;
@@ -252,5 +260,28 @@ public class UsuariosEmpleadoController {
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
         alert.showAndWait();
+    }
+    @FXML
+    private void handleVolverButton(ActionEvent event) {
+        try {
+            // Carga el FXML de la pantalla a la que quieres regresar.
+            // Asegúrate de que la ruta sea correcta.
+            Parent root = FXMLLoader.load(getClass().getResource("/MenuAdmin.fxml"));
+
+            // Obtiene la Stage (ventana) actual del botón
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            // Crea una nueva Scene con la pantalla anterior
+            Scene scene = new Scene(root);
+
+            // Reemplaza la Scene actual con la nueva
+            stage.setScene(scene);
+            stage.setTitle("Menú Principal"); // O el título de la pantalla anterior
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Maneja el error si no se puede cargar el archivo FXML
+        }
     }
 }
