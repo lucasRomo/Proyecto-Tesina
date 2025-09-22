@@ -1,46 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="469.0" prefWidth="1500.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ClienteController">
-    <stylesheets>
-        <URL value="@styles.css" />
-    </stylesheets>
-    <Label layoutX="675.0" layoutY="14.0" text="Menu Cliente">
-        <font>
-            <Font name="System Bold" size="24.0" />
-        </font>
-    </Label>
-    <TableView fx:id="clientesTableView" editable="true" layoutX="43.0" layoutY="72.0" prefHeight="274.0" prefWidth="1415.0">
-        <columns>
-            <TableColumn fx:id="nombreColumn" prefWidth="100.0" text="Nombre" />
-            <TableColumn fx:id="apellidoColumn" prefWidth="100.0" text="Apellido" />
-            <TableColumn fx:id="tipoDocumentoColumn" prefWidth="100.0" text="Tipo Documento" />
-            <TableColumn fx:id="numeroDocumentoColumn" prefWidth="120.0" text="Número Documento" />
-            <TableColumn fx:id="telefonoColumn" prefWidth="100.0" text="Teléfono" />
-            <TableColumn fx:id="emailColumn" prefWidth="150.0" text="Email" />
-            <TableColumn fx:id="idClienteColumn" prefWidth="50.0" text="ID" />
-            <TableColumn fx:id="razonSocialColumn" prefWidth="150.0" text="Razón Social" />
-            <TableColumn fx:id="personaContactoColumn" prefWidth="150.0" text="Persona Contacto" />
-            <TableColumn fx:id="condicionesPagoColumn" prefWidth="150.0" text="Condiciones de Pago" />
-            <TableColumn fx:id="estadoColumn" prefWidth="120.0" text="Estado" />
-            <TableColumn fx:id="accionColumn" prefWidth="124.0" text="Direccion" />
-        </columns>
-    </TableView>
-    <TextField fx:id="filterField" layoutX="144.0" layoutY="387.0" prefHeight="25.0" prefWidth="319.0" promptText="Buscar por nombre, apellido o documento..." />
-
-    <Label layoutX="473.0" layoutY="391.0" text="Estado:">
-        <font>
-            <Font size="14.0" />
-        </font>
-    </Label>
-    <ChoiceBox fx:id="estadoChoiceBox" layoutX="523.0" layoutY="387.0" prefWidth="150.0" />
-
-    <Button fx:id="nuevoClienteButton" layoutX="826.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleRegistrarClienteButton" text="Registrar Cliente" textFill="#111111" />
-    <Button fx:id="modificarClienteButton" layoutX="955.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleModificarClienteButton" text="Modificar Cliente" />
-    <Button fx:id="refreshButton" layoutX="1084.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
-    <Button fx:id="volverButton" layoutX="1175.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
-</AnchorPane>
+<BorderPane prefHeight="469.0" prefWidth="1500.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ClienteController">
+    <center>
+        <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+            <children>
+                <TableView fx:id="clientesTableView" editable="true" VBox.vgrow="ALWAYS">
+                    <columnResizePolicy>
+                        <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
+                    <columns>
+                        <TableColumn fx:id="nombreColumn" prefWidth="100.0" text="Nombre" />
+                        <TableColumn fx:id="apellidoColumn" prefWidth="200.0" text="Apellido" />
+                        <TableColumn fx:id="tipoDocumentoColumn" prefWidth="100.0" text="Tipo Documento" />
+                        <TableColumn fx:id="numeroDocumentoColumn" prefWidth="120.0" text="Número Documento" />
+                        <TableColumn fx:id="telefonoColumn" prefWidth="100.0" text="Teléfono" />
+                        <TableColumn fx:id="emailColumn" prefWidth="250.0" text="Email" />
+                        <TableColumn fx:id="idClienteColumn" prefWidth="50.0" text="ID" />
+                        <TableColumn fx:id="razonSocialColumn" prefWidth="150.0" text="Razón Social" />
+                        <TableColumn fx:id="personaContactoColumn" prefWidth="186.0" text="Persona Contacto" />
+                        <TableColumn fx:id="condicionesPagoColumn" prefWidth="177.0" text="Condiciones de Pago" />
+                        <TableColumn fx:id="estadoColumn" prefWidth="130.0" text="Estado" />
+                        <TableColumn fx:id="accionColumn" prefWidth="178.5" text="Direccion" />
+                    </columns>
+                </TableView>
+                <HBox alignment="CENTER" spacing="10.0">
+                    <children>
+                        <Label text="Estado:" />
+                        <ChoiceBox fx:id="estadoChoiceBox" prefWidth="150.0" />
+                        <TextField fx:id="filterField" prefHeight="25.0" promptText="Buscar por nombre, apellido o documento..." HBox.hgrow="ALWAYS" />
+                    </children>
+                </HBox>
+                <HBox alignment="CENTER" spacing="10.0">
+                    <children>
+                        <Button fx:id="nuevoClienteButton" mnemonicParsing="false" onAction="#handleRegistrarClienteButton" text="Registrar Cliente" textFill="#111111" />
+                        <Button fx:id="modificarClienteButton" mnemonicParsing="false" onAction="#handleModificarClienteButton" text="Modificar Cliente" />
+                        <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
+                        <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
+                    </children>
+                </HBox>
+            </children>
+            <padding>
+                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+            </padding>
+        </VBox>
+    </center>
+    <top>
+        <Label text="Menu Cliente" BorderPane.alignment="CENTER">
+            <font>
+                <Font name="System Bold" size="34.0" />
+            </font>
+            <BorderPane.margin>
+                <Insets bottom="10.0" top="10.0" />
+            </BorderPane.margin>
+        </Label>
+    </top>
+</BorderPane>

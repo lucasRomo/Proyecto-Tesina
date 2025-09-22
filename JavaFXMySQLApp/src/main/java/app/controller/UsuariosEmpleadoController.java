@@ -1,8 +1,13 @@
 package app.controller;
+
+import app.dao.DireccionDAO;
 import app.model.Cliente;
+import app.model.Direccion;
+import app.model.Persona;
 import app.dao.UsuarioDAO;
 import app.dao.PersonaDAO;
 import app.controller.UsuarioEmpleadoTableView;
+import app.model.Usuario;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -24,6 +29,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.scene.control.TableCell;
@@ -40,12 +46,14 @@ public class UsuariosEmpleadoController {
     @FXML private TableColumn<UsuarioEmpleadoTableView, String> ApellidoColumn;
     @FXML private TableColumn<UsuarioEmpleadoTableView, Number> SalarioColumn;
     @FXML private TableColumn<UsuarioEmpleadoTableView, String> EstadoColumn;
+    @FXML private TableColumn<UsuarioEmpleadoTableView, Void> accionUsuarioColumn;
     @FXML private Button modificarUsuarioButton;
     @FXML private TextField filterField;
     @FXML private ChoiceBox<String> estadoUsuarioChoiceBox;
 
     private UsuarioDAO usuarioDAO;
     private PersonaDAO personaDAO;
+    private DireccionDAO direccionDAO;
     private ObservableList<UsuarioEmpleadoTableView> listaUsuariosEmpleados;
     private FilteredList<UsuarioEmpleadoTableView> filteredData;
 
@@ -54,6 +62,7 @@ public class UsuariosEmpleadoController {
     private void initialize() {
         this.usuarioDAO = new UsuarioDAO();
         this.personaDAO = new PersonaDAO();
+        this.direccionDAO = new DireccionDAO();
 
         // Carga el archivo CSS
         usuariosEditableView.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
@@ -179,6 +188,28 @@ public class UsuariosEmpleadoController {
             }
         });
 
+        accionUsuarioColumn.setCellFactory(param -> new TableCell<UsuarioEmpleadoTableView, Void>() {
+            private final Button btn = new Button("Ver Dirección");
+
+            {
+                btn.setMaxWidth(Double.MAX_VALUE);
+                btn.setOnAction(event -> {
+                    UsuarioEmpleadoTableView usuario = getTableView().getItems().get(getIndex());
+                    mostrarDireccionUsuario(usuario.getIdPersona());
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btn);
+                }
+            }
+        });
+
         // Llamada al método refactorizado que carga los datos y configura todos los filtros.
         try {
             cargarDatosyConfigurarFiltros();
@@ -187,6 +218,32 @@ public class UsuariosEmpleadoController {
             mostrarAlerta("Error", "No se pudieron cargar los datos de los usuarios.", Alert.AlertType.ERROR);
         }
     }
+
+    private void mostrarDireccionUsuario(int idPersona) {
+        Direccion direccion = direccionDAO.obtenerPorId(idPersona);
+        if (direccion == null) {
+            mostrarAlerta("Error", "No se encontró la dirección asociada a este cliente.", Alert.AlertType.ERROR);
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/verDireccion.fxml"));
+            Parent root = loader.load();
+
+            VerDireccionController direccionController = loader.getController();
+            direccionController.setDireccion(direccion);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Dirección del Cliente");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo cargar la ventana de dirección.", Alert.AlertType.ERROR);
+        }
+    }
+
 
     private void cargarDatosyConfigurarFiltros() throws SQLException {
         // Carga los datos maestros desde la base de datos

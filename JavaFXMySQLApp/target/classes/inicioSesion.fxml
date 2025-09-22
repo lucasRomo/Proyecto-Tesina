@@ -5,20 +5,38 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0" spacing="10" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.IniciodeSesionController">
+<VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0" spacing="20" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.IniciodeSesionController">
     <children>
         <Label text="Inicio de Sesión">
             <font>
-                <Font name="System Bold" size="24.0" />
+                <Font name="System Bold" size="38.0" />
             </font>
         </Label>
-        <Label text="Usuario:" />
-        <TextField fx:id="UsuarioField" promptText="Ingrese su Usuario" />
-        <Label text="Contraseña:" />
-        <PasswordField fx:id="ContraseniaField" promptText="Ingrese su Contraseña" />
-        <Button onAction="#IniciarSesion" text="Iniciar Sesion" />
+        <Label text="Usuario:">
+         <font>
+            <Font size="18.0" />
+         </font></Label>
+        <TextField fx:id="UsuarioField" maxWidth="300.0" promptText="Ingrese su Usuario">
+         <font>
+            <Font size="14.0" />
+         </font></TextField>
+        <Label text="Contraseña:">
+         <font>
+            <Font size="18.0" />
+         </font></Label>
+        <PasswordField fx:id="ContraseniaField" maxWidth="300.0" promptText="Ingrese su Contraseña">
+         <font>
+            <Font size="14.0" />
+         </font></PasswordField>
+        <Button onAction="#IniciarSesion" text="Iniciar Sesion">
+         <font>
+            <Font size="14.0" />
+         </font></Button>
+        <Button fx:id="volverButton" onAction="#handleVolverButton" text="Volver">
+         <font>
+            <Font size="14.0" />
+         </font></Button>
     </children>
-    <Button fx:id="volverButton" layoutX="1090.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>

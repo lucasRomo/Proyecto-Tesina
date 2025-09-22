@@ -267,6 +267,7 @@ public class ClienteController {
             private final Button btn = new Button("Ver Dirección");
 
             {
+                btn.prefWidthProperty().bind(accionColumn.widthProperty());
                 btn.setOnAction(event -> {
                     Cliente cliente = getTableView().getItems().get(getIndex());
                     mostrarDireccionCliente(cliente.getIdDireccion());
