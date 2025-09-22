@@ -5,6 +5,7 @@ import app.dao.UsuarioDAO;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -47,8 +48,13 @@ public class IniciodeSesionController {
                     Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/menuAbms.fxml")));
 
                     // Crear y establecer la nueva escena
-                    Scene scene = new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT);
+                    Scene scene = new Scene(root);
                     stage.setScene(scene);
+                    stage.setWidth(1800);
+                    stage.setHeight(1000);
+
+                    // Centra la ventana en la pantalla (opcional)
+                    stage.centerOnScreen();
                     stage.setTitle("Menú Principal");
                     stage.show();
 
@@ -75,7 +81,26 @@ public class IniciodeSesionController {
 
     @FXML
     private void handleVolverButton(ActionEvent event) {
-        Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
-        stage.close();
+        try {
+            // Carga el FXML de la pantalla a la que quieres regresar.
+            // Asegúrate de que la ruta sea correcta.
+            Parent root = FXMLLoader.load(getClass().getResource("/menuInicial.fxml"));
+
+            // Obtiene la Stage (ventana) actual del botón
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            // Crea una nueva Scene con la pantalla anterior
+            Scene scene = new Scene(root);
+
+            // Reemplaza la Scene actual con la nueva
+            stage.setScene(scene);
+            stage.setTitle("Menú Principal"); // O el título de la pantalla anterior
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Maneja el error si no se puede cargar el archivo FXML
+        }
     }
+
     }

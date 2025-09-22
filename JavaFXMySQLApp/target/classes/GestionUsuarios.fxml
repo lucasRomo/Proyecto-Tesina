@@ -12,7 +12,7 @@
             </font>
         </Label>
         <!-- Se cambió el tipo genérico a UsuarioEmpleadoView -->
-        <TableView fx:id="usuariosEditableView" editable="true" layoutX="14.0" layoutY="71.0" prefHeight="250.0" prefWidth="1146.0">
+        <TableView fx:id="usuariosEditableView" editable="true" layoutX="14.0" layoutY="71.0" prefHeight="249.0" prefWidth="1146.0">
             <columns>
                 <TableColumn fx:id="idUsuarioColumn" prefWidth="50.0" text="ID" />
                 <TableColumn fx:id="UsuarioColumn" prefWidth="187.0" text="Usuario" />
@@ -31,6 +31,7 @@
             <Font size="14.0" />
          </font>
       </Label>
-      <ChoiceBox fx:id= "estadoUsuarioChoiceBox" layoutX="378.0" layoutY="340.0" prefHeight="25.0" prefWidth="116.0" />
+      <ChoiceBox fx:id="estadoUsuarioChoiceBox" layoutX="378.0" layoutY="340.0" prefHeight="25.0" prefWidth="116.0" />
+        <Button fx:id="volverButton" layoutX="584.0" layoutY="340.0" mnemonicParsing="false" onAction="#handleVolverButton" prefHeight="25.0" prefWidth="116.0" text="Volver" />
     </children>
 </AnchorPane>

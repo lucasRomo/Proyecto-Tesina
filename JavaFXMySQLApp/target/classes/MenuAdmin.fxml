@@ -14,5 +14,6 @@
       <Button mnemonicParsing="false" prefHeight="8.0" prefWidth="200.0" text="Informes" />
       <Button fx:id="Button" onAction="#handleGestionDeUsuariosButton" prefHeight="8.0" prefWidth="200.0" text="Gestión de Usuarios" />
       <Button mnemonicParsing="false" prefHeight="8.0" prefWidth="200.0" text="Historial de Actividad" />
+       <Button fx:id="volverButton" layoutX="1175.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
    </children>
 </VBox>

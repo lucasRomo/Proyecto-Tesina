@@ -129,7 +129,13 @@ public class RegistroController {
                     );
 
                     Stage stage = (Stage)((Button)event.getSource()).getScene().getWindow();
-                    stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT));
+                    Scene scene = new Scene(root);
+                    stage.setScene(scene);
+                    stage.setWidth(1800);
+                    stage.setHeight(1000);
+
+                    // Centra la ventana en la pantalla (opcional)
+                    stage.centerOnScreen();
                     stage.setTitle("Datos del Cliente");
                     stage.show();
                 } else {
