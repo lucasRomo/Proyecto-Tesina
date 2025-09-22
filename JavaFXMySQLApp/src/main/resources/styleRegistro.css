@@ -1,0 +1,74 @@
+/* Estilo para el contenedor principal VBox */
+.vbox {
+    -fx-background-color: #333333; /* Fondo gris oscuro */
+}
+
+/* Estilo para los títulos principales, usando la clase del FXML */
+.titulo-principal {
+    -fx-text-fill: #FFFFFF; /* Texto blanco */
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 0 0 0; /* Padding superior para el título */
+}
+
+/* Estilo para todas las etiquetas Label */
+.label {
+    -fx-text-fill: #FFFFFF; /* Texto blanco para todos los labels */
+    -fx-font-size: 14px;
+}
+
+/* Estilo para los campos de texto TextField */
+.text-field {
+    -fx-background-color: #555555; /* Fondo gris un poco más claro */
+    -fx-text-fill: #FFFFFF; /* Texto blanco */
+    -fx-prompt-text-fill: #AAAAAA; /* Texto de ayuda gris claro */
+    -fx-border-color: #777777; /* Borde gris */
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 5px;
+}
+
+/* Estilo para el ComboBox */
+.combo-box {
+    -fx-background-color: #555555;
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #777777;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+/* Estilo para el texto dentro del ComboBox */
+.combo-box .list-cell {
+    -fx-background-color: #555555;
+    -fx-text-fill: #FFFFFF;
+}
+.root {
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #72757E 0%, #030000 100%);
+}
+
+/* Estilo para el botón "Siguiente" */
+.button {
+    -fx-background-color: #0078D7; /* Un azul vibrante */
+    -fx-text-fill: #FFFFFF; /* Texto blanco */
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand; /* Cambia el cursor para indicar que es clickeable */
+}
+
+/* Efecto al pasar el cursor sobre el botón */
+.button:hover {
+    -fx-background-color: #005A9E; /* Un azul un poco más oscuro */
+}
+
+/* Estilo para los GridPane para que tengan un aspecto más limpio */
+.grid-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 10px;
+}
+.titulo-principal {
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #fffffe;
+}

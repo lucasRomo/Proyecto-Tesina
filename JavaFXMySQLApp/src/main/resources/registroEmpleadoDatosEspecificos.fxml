@@ -8,7 +8,11 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.DatePicker?>
 
+<?import java.net.URL?>
 <VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml" fx:controller="app.controller.EmpleadoController">
+    <stylesheets>
+        <URL value="@styleRegistro.css" />
+    </stylesheets>
     <children>
         <Label text="Datos Específicos del Empleado" styleClass="titulo-principal">
             <font>

@@ -18,7 +18,7 @@
         <URL value="@style.css" />
     </stylesheets>
     <top>
-        <Label text="Gestionar Usuarios Empleados" BorderPane.alignment="CENTER">
+        <Label text="Gestionar Usuarios Empleados" BorderPane.alignment="CENTER" styleClass="titulo-principal">
             <font>
                 <Font name="System Bold" size="24.0" />
             </font>
