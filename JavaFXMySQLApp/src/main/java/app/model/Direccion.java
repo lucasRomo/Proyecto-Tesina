@@ -22,6 +22,10 @@ public class Direccion {
         this.pais = pais;
     }
 
+    public Direccion() {
+
+    }
+
     public int getIdDireccion() { return idDireccion; }
     public void setIdDireccion(int idDireccion) { this.idDireccion = idDireccion; }
     public String getCalle() { return calle; }
@@ -32,4 +36,36 @@ public class Direccion {
     public String getCiudad() { return ciudad; }
     public String getProvincia() { return provincia; }
     public String getPais() { return pais; }
+
+    public void setCalle(String calle) {
+        this.calle = calle;
+    }
+
+    public void setNumero(String numero) {
+        this.numero = numero;
+    }
+
+    public void setPiso(String piso) {
+        this.piso = piso;
+    }
+
+    public void setDepartamento(String departamento) {
+        this.departamento = departamento;
+    }
+
+    public void setCodigoPostal(String codigoPostal) {
+        this.codigoPostal = codigoPostal;
+    }
+
+    public void setCiudad(String ciudad) {
+        this.ciudad = ciudad;
+    }
+
+    public void setProvincia(String provincia) {
+        this.provincia = provincia;
+    }
+
+    public void setPais(String pais) {
+        this.pais = pais;
+    }
 }

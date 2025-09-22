@@ -1,11 +1,10 @@
 package app.controller;
 
-import app.MainApp;
 import app.model.Direccion;
 import app.model.TipoDocumento;
-import app.model.dao.DireccionDAO;
-import app.model.dao.TipoDocumentoDAO;
-import app.model.dao.PersonaDAO;
+import app.dao.DireccionDAO;
+import app.dao.PersonaDAO;
+import app.dao.TipoDocumentoDAO;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -38,6 +37,8 @@ public class RegistroController {
     private TipoDocumentoDAO tipoDocumentoDAO = new TipoDocumentoDAO();
     private DireccionDAO direccionDAO = new DireccionDAO();
     private PersonaDAO personaDAO = new PersonaDAO();
+
+    String email = emailField.getText().trim();
 
     // Referencia al controlador de la ventana principal
     private ClienteController clienteController;
@@ -148,6 +149,10 @@ public class RegistroController {
             this.mostrarAlerta("Advertencia", "Por favor, complete todos los campos personales obligatorios.");
             return false;
         }
+        if (personaDAO.verificarSiMailExiste(email)) {
+            mostrarAlerta("Error de Registro", "El email que ingresó ya se encuentra registrado.");
+            return false; // Detiene la ejecución para no ir a la siguiente pantalla
+        }
         if (!this.validarSoloLetras(this.nombreField.getText())) {
             this.mostrarAlerta("Advertencia", "El nombre no puede contener números. Por favor, ingrese caracteres válidos.");
             return false;
@@ -165,9 +170,12 @@ public class RegistroController {
 
     private boolean validarCamposDireccion() {
         if (calleField.getText().isEmpty() || numeroField.getText().isEmpty() ||
-                codigoPostalField.getText().isEmpty() || ciudadField.getText().isEmpty() ||
-                provinciaField.getText().isEmpty() || paisField.getText().isEmpty()) {
+                codigoPostalField.getText().isEmpty() ) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos de dirección obligatorios.");
+            return false;
+        }
+        if (!this.validarSoloNumeros(this.numeroField.getText())) {
+            this.mostrarAlerta("Advertencia", "El teléfono solo puede contener números.");
             return false;
         }
         return true;

@@ -1,6 +1,7 @@
-package app.model;
+package app.dao;
 
 import app.controller.UsuarioEmpleadoTableView;
+import app.model.Usuario;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

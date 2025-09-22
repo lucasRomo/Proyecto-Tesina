@@ -1,4 +1,4 @@
-package app.model.dao;
+package app.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -44,6 +44,22 @@ public class PersonaDAO {
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, numeroDocumento);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean verificarSiMailExiste(String email) {
+        String sql = "SELECT COUNT(*) FROM Persona WHERE email = ?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next() && rs.getInt(1) > 0) {
                     return true;

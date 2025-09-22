@@ -1,9 +1,9 @@
 package app.controller;
 
-import app.model.Persona;
+import app.dao.PersonaDAO;
 import app.model.TipoDocumento;
-import app.model.dao.DireccionDAO;
-import app.model.dao.TipoDocumentoDAO;
+import app.dao.DireccionDAO;
+import app.dao.TipoDocumentoDAO;
 import app.model.Direccion;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -52,7 +52,8 @@ public class RegistroEmpleadoController {
 
             String tipoDocumentoSeleccionado = tipoDocumentoComboBox.getValue();
             String numeroDocumento = numeroDocumentoField.getText().trim();
-            app.model.dao.PersonaDAO personaDAO = new app.model.dao.PersonaDAO();
+            String email = emailField.getText().trim();
+            PersonaDAO personaDAO = new PersonaDAO();
 
             if (tipoDocumentoSeleccionado == null) {
                 mostrarAlerta("Advertencia", "Por favor, seleccione un tipo de documento.");
@@ -88,6 +89,10 @@ public class RegistroEmpleadoController {
 
             if (personaDAO.verificarSiDocumentoExiste(numeroDocumento)) {
                 mostrarAlerta("Error de Registro", "El número de documento que ingresó ya se encuentra registrado.");
+                return; // Detiene la ejecución para no ir a la siguiente pantalla
+            }
+            if (personaDAO.verificarSiMailExiste(email)) {
+                mostrarAlerta("Error de Registro", "El email que ingresó ya se encuentra registrado.");
                 return; // Detiene la ejecución para no ir a la siguiente pantalla
             }
 
@@ -149,6 +154,7 @@ public class RegistroEmpleadoController {
 
     private boolean validarCampos() {
         // Validar que los campos personales no estén vacíos
+        String regexNumeros = "\\d+";
         if (nombreField.getText().isEmpty() || apellidoField.getText().isEmpty() ||
                 tipoDocumentoComboBox.getValue() == null || numeroDocumentoField.getText().isEmpty() ||
                 emailField.getText().isEmpty() || telefonoField.getText().isEmpty()) {
@@ -156,10 +162,14 @@ public class RegistroEmpleadoController {
             return false;
         }
 
+        if (!numeroField.getText().matches(regexNumeros)) {
+            mostrarAlerta("Advertencia", "El campo 'Número' debe contener solo números.", Alert.AlertType.WARNING);
+            return false;
+        }
+
         // Validar que los campos de dirección no estén vacíos
         if (calleField.getText().isEmpty() || numeroField.getText().isEmpty() ||
-                codigoPostalField.getText().isEmpty() || ciudadField.getText().isEmpty() ||
-                provinciaField.getText().isEmpty() || paisField.getText().isEmpty()) {
+                codigoPostalField.getText().isEmpty()) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos de dirección obligatorios.");
             return false;
         }
@@ -174,6 +184,13 @@ public class RegistroEmpleadoController {
         }
 
         return true;
+    }
+    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
+        Alert alert = new Alert(tipo);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
     }
 
     private void mostrarAlerta(String titulo, String mensaje) {

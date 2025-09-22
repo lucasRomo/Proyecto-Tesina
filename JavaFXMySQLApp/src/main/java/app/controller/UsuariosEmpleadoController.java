@@ -1,7 +1,7 @@
 package app.controller;
 import app.model.Cliente;
-import app.model.UsuarioDAO;
-import app.model.dao.PersonaDAO;
+import app.dao.UsuarioDAO;
+import app.dao.PersonaDAO;
 import app.controller.UsuarioEmpleadoTableView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

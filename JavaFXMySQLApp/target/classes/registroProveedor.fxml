@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane prefHeight="600.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.RegistroProveedorController">
+    <VBox layoutX="25.0" layoutY="25.0" prefWidth="350.0" spacing="15">
+        <padding>
+            <Insets bottom="10" left="10" right="10" top="10" />
+        </padding>
+        <Label text="Registro de Proveedor">
+            <font>
+                <Font name="System Bold" size="20.0" />
+            </font>
+        </Label>
+        <TextField fx:id="nombreField" promptText="Nombre del Proveedor" />
+        <TextField fx:id="contactoField" promptText="Persona de Contacto" />
+        <TextField fx:id="mailField" promptText="Correo Electrónico" />
+        <Separator />
+        <Label text="Dirección">
+            <font>
+                <Font name="System Bold" size="16.0" />
+            </font>
+        </Label>
+        <TextField fx:id="calleField" promptText="Calle" />
+        <TextField fx:id="numeroField" promptText="Número" />
+        <TextField fx:id="pisoField" promptText="Piso (opcional)" />
+        <TextField fx:id="departamentoField" promptText="Departamento (opcional)" />
+        <TextField fx:id="codigoPostalField" promptText="Código Postal" />
+        <TextField fx:id="ciudadField" promptText="Ciudad " />
+        <TextField fx:id="provinciaField" promptText="Provincia " />
+        <TextField fx:id="paisField" promptText="País (opcional)" />
+        <Separator />
+        <Label text="Tipo de Proveedor">
+            <font>
+                <Font name="System Bold" size="16.0" />
+            </font>
+        </Label>
+        <ChoiceBox fx:id="tipoProveedorChoiceBox" prefWidth="350.0" />
+        <HBox alignment="CENTER" spacing="20">
+            <Button onAction="#handleRegistrarProveedor" text="Registrar" />
+            <Button onAction="#handleCancelar" text="Cancelar" />
+            <Button onAction="#handleRegistrarTipoProveedorButton" text="Nuevo Tipo" />
+        </HBox>
+    </VBox>
+</AnchorPane>
