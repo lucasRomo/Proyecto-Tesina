@@ -28,36 +28,19 @@
     -fx-padding: 5px;
 }
 
-/* Estilo para el ChoiceBox */
-.choice-box {
+/* Estilo para el ComboBox */
+.combo-box {
     -fx-background-color: #555555;
-    -fx-text-fill: #FFFFFF; /* Esto afecta al texto seleccionado */
+    -fx-text-fill: #FFFFFF;
     -fx-border-color: #777777;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
 }
 
-/* Estilo para el texto dentro del ChoiceBox cuando está seleccionado */
-.choice-box .label {
+/* Estilo para el texto dentro del ComboBox */
+.combo-box .list-cell {
+    -fx-background-color: #555555;
     -fx-text-fill: #FFFFFF;
-}
-
-/* **ESTILO AGREGADO PARA EL MENÚ DESPLEGABLE** */
-.choice-box .context-menu {
-    -fx-background-color: #333333; /* Fondo oscuro del desplegable */
-    -fx-background-radius: 5px;
-    -fx-padding: 5px;
-}
-
-/* **ESTILO AGREGADO PARA LAS OPCIONES EN EL MENÚ DESPLEGABLE** */
-.choice-box .menu-item .label {
-    -fx-text-fill: #FFFFFF; /* Texto blanco de las opciones */
-}
-
-/* **ESTILO PARA LAS OPCIONES AL PASAR EL MOUSE** */
-.choice-box .menu-item:hover {
-    -fx-background-color: #0078D7; /* Un azul para resaltar la opción */
-    -fx-background-radius: 5px;
 }
 
 /* Estilo para el botón "Siguiente" (o cualquier botón que no tenga un ID específico) */
