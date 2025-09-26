@@ -18,7 +18,7 @@
         </font>
     </Label>
 
-    <Button styleClass="button" onAction="#handleRegistroButton" prefWidth="200.0" text="Pedidos" />
+    <Button styleClass="button" onAction="#handlePedidosButton" prefWidth="200.0" text="Pedidos" />
     <Button styleClass="button" onAction="#handleRegistroButton" prefWidth="200.0" text="Cliente" />
     <Button styleClass="button" onAction="#handleStockabm" prefWidth="200.0" text="Stock" />
     <Button styleClass="button" onAction="#handleOpcionesDeAdminButton" prefWidth="200.0" text="Admin" />

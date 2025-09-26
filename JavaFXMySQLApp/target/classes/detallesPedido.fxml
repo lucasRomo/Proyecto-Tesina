@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.geometry.Insets?>
+
+<VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.DetallesPedidoController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <Label text="Detalles del Pedido">
+        <font>
+            <Font name="System Bold" size="20.0" />
+        </font>
+    </Label>
+
+    <VBox spacing="5.0">
+        <Label fx:id="idPedidoLabel" text="ID Pedido:" />
+        <Label fx:id="estadoLabel" text="Estado:" />
+        <Label fx:id="clienteLabel" text="Cliente:" />
+        <Label fx:id="montoTotalLabel" text="Monto Total:" />
+        <Label fx:id="montoEntregadoLabel" text="Monto Entregado:" />
+        <Label fx:id="fechaCreacionLabel" text="Fecha de Creación:" />
+        <Label fx:id="fechaEntregaEstimadaLabel" text="Fecha de Entrega Estimada:" />
+        <Label fx:id="fechaFinalizacionLabel" text="Fecha de Finalización:" />
+        <Label fx:id="instruccionesLabel" text="Instrucciones:" wrapText="true" />
+        <Label fx:id="empleadoLabel" text="Empleado a cargo:" />
+    </VBox>
+
+    <Button onAction="#handleCerrar" text="Cerrar" />
+
+</VBox>
