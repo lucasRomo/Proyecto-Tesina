@@ -1,5 +1,7 @@
 package app.dao;
 
+import app.model.Empleado;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,23 +16,33 @@ public class EmpleadoDAO {
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
-    public boolean insertarEmpleado(Empleado empleado) {
-        // Incluir 'estado' en la inserción
+    // Archivo: app/dao/EmpleadoDAO.java
+
+    // El método ahora acepta un objeto Connection para ser parte de la transacción.
+    public boolean insertarEmpleado(Empleado empleado, Connection conn) throws SQLException {
+        // Ya no se abre ni se cierra la conexión aquí.
+        // Simplemente se usa la que se pasa como parámetro 'conn'.
         String sql = "INSERT INTO Empleado (fecha_contratacion, cargo, salario, estado, id_persona) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        // El 'try-with-resources' usa 'conn' que se pasa al método.
+        // NOTA: Lanzar 'SQLException' es mejor para que el Controller maneje el 'rollback'.
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setDate(1, java.sql.Date.valueOf(empleado.getFechaContratacion()));
             stmt.setString(2, empleado.getCargo());
             stmt.setDouble(3, empleado.getSalario());
-            stmt.setString(4, empleado.getEstado()); // <-- Añadido el estado
+            stmt.setString(4, empleado.getEstado());
             stmt.setInt(5, empleado.getIdPersona());
+
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
-        } catch (SQLException e) {
-            System.out.println("Error al insertar empleado: " + e.getMessage());
-            return false;
         }
+        // NOTA: Se elimina el bloque catch para propagar SQLException al Controller
+        // y que este pueda hacer el rollback.
     }
+
+// Si deseas mantener el método original de 1 argumento para otras operaciones,
+// puedes renombrar este método a insertarEmpleadoConTransaccion, pero por simplicidad,
+// lo ideal es modificar el que ya existe.
 
     public List<Empleado> getAllEmpleados() {
         List<Empleado> empleados = new ArrayList<>();

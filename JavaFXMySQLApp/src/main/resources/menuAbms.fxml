@@ -20,7 +20,7 @@
     </Label>
 
     <Button styleClass="button" onAction="#handlePedidosButton" prefWidth="200.0" text="Pedidos" />
-    <Button styleClass="button" onAction="#handleRegistroButton" prefWidth="200.0" text="Cliente" />
+    <Button styleClass="button" onAction="#handleClientesButton" prefWidth="200.0" text="Cliente" />
     <Button styleClass="button" onAction="#handleStockabm" prefWidth="200.0" text="Stock" />
     <Button styleClass="button" onAction="#handleOpcionesDeAdminButton" prefWidth="200.0" text="Admin" />
     <Button fx:id="volverButton" layoutX="1175.0" layoutY="387.0" mnemonicParsing="false" onAction="#handleVolverButtonAbms" text="Volver" />

@@ -4,9 +4,9 @@ import app.MainApp;
 import app.model.Cliente;
 import app.model.Empleado;
 import app.model.Pedido;
-import app.model.dao.ClienteDAO;
-import app.model.EmpleadoDAO;
-import app.model.PedidoDAO;
+import app.dao.ClienteDAO;
+import app.dao.EmpleadoDAO;
+import app.dao.PedidoDAO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -151,8 +151,15 @@ public class CrearPedidoController {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/pedidosPrimerMenu.fxml"));
                     Parent root = loader.load();
                     Stage stage = (Stage) clienteComboBox.getScene().getWindow();
-                    stage.setScene(new Scene(root, MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT));
+
+                    // Sustitución de MainApp.WINDOW_WIDTH/HEIGHT por 1800 y 1000
+                    stage.setScene(new Scene(root, 1800, 1000));
+
                     stage.setTitle("Menú de Pedidos");
+
+                    // Añadir centrado de ventana
+                    stage.centerOnScreen();
+
                     stage.show();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -177,8 +184,15 @@ public class CrearPedidoController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/pedidosPrimerMenu.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) clienteComboBox.getScene().getWindow();
-            stage.setScene(new Scene(root, MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT));
+
+            // Aplicamos las dimensiones y centrado de tu ejemplo de 'start'
+            stage.setScene(new Scene(root, 1800, 1000));
+
             stage.setTitle("Menú de Pedidos");
+
+            // Centra la ventana en la pantalla (opcional)
+            stage.centerOnScreen();
+
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

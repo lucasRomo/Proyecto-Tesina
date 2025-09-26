@@ -47,6 +47,12 @@
     -fx-text-fill: #fffffe;
 }
 
+.titulo-principal-grande {
+    -fx-font-size: 80px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #fffffe;
+}
+
 /* From Uiverse.io by Randdose - Adaptado para JavaFX */
 /* El selector 'Button.button' ahora es más específico */
 Button.button {

@@ -41,7 +41,7 @@ public class IniciodeSesionController {
 
                 try {
                     // Carga el FXML de la pantalla de menú del administrador
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/MenuAdmin.fxml"));
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/menuAbms.fxml"));
                     Parent root = loader.load();
 
                     // Obtenemos el controlador del menú de admin

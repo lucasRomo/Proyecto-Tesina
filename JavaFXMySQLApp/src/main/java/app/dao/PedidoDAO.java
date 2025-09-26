@@ -1,9 +1,11 @@
-package app.model;
+package app.dao;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import app.model.Pedido;
 import javafx.collections.ObservableList;
 
 public class PedidoDAO {

@@ -20,13 +20,21 @@ public class PedidosPrimerMenuController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/crearPedido.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root, MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT));
+
+            // CORRECCIÓN: Usar 1800x1000 en lugar de constantes
+            stage.setScene(new Scene(root, 1800, 1000));
+
             stage.setTitle("Crear Pedido");
+
+            // CORRECCIÓN: Centrar la ventana
+            stage.centerOnScreen();
+
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     @FXML
     private void handleVerPedidos(ActionEvent event) {
@@ -35,21 +43,37 @@ public class PedidosPrimerMenuController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/verPedidos.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root, MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT));
+
+            // CORRECCIÓN: Usar 1800x1000 en lugar de constantes
+            stage.setScene(new Scene(root, 1800, 1000));
+
             stage.setTitle("Ver Pedidos");
+
+            // CORRECCIÓN: Centrar la ventana
+            stage.centerOnScreen();
+
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
     @FXML
-    private void handleVolver(ActionEvent event) {
+    private void handleVolverPedido(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/menuInicial.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/menuAbms.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root, MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT));
+
+            // CORRECCIÓN: Usar 1800x1000 en lugar de constantes
+            stage.setScene(new Scene(root, 1800, 1000));
+
             stage.setTitle("Menú Principal");
+
+            // CORRECCIÓN: Centrar la ventana
+            stage.centerOnScreen();
+
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

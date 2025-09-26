@@ -2,7 +2,7 @@ package app.controller;
 
 import app.MainApp;
 import app.model.Pedido;
-import app.model.PedidoDAO;
+import app.dao.PedidoDAO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -12,7 +12,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -82,11 +81,19 @@ public class VerPedidosController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/PedidosPrimerMenu.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root, MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT));
+
+            // CORRECCIÓN: Usar 1800x1000 en lugar de constantes (MainApp.WINDOW_WIDTH/HEIGHT)
+            stage.setScene(new Scene(root, 1800, 1000));
+
             stage.setTitle("Menú de Pedidos");
+
+            // Añadir centrado de ventana
+            stage.centerOnScreen();
+
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
+            // Asegúrate de que 'mostrarAlerta' esté definido en tu controlador.
             mostrarAlerta("Error", "No se pudo volver al menú de pedidos.", Alert.AlertType.ERROR);
         }
     }

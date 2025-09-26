@@ -5,12 +5,16 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
+<?import java.net.URL?>
 <VBox alignment="TOP_CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.CrearPedidoController">
+    <stylesheets>
+        <URL value="@styleRegistro.css" />
+    </stylesheets>
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label text="Crear Nuevo Pedido">
+    <Label text="Crear Nuevo Pedido"  styleClass="titulo-principal">
         <font>
             <Font name="System Bold" size="24.0" />
         </font>

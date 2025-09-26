@@ -12,6 +12,10 @@ public class Persona {
     private final StringProperty telefono = new SimpleStringProperty();
     private final StringProperty email = new SimpleStringProperty();
 
+    // 1. AÑADIR LA PROPIEDAD idTipoPersona
+    private final IntegerProperty idTipoPersona = new SimpleIntegerProperty();
+
+    // Constructor de 7 argumentos (Original)
     public Persona(String nombre, String apellido, int idTipoDocumento, String numeroDocumento, int idDireccion, String telefono, String email) {
         this.nombre.set(nombre);
         this.apellido.set(apellido);
@@ -20,8 +24,23 @@ public class Persona {
         this.idDireccion.set(idDireccion);
         this.telefono.set(telefono);
         this.email.set(email);
+        // Inicializar idTipoPersona por defecto si es necesario (ej: a 0 o 1 para Cliente)
+        this.idTipoPersona.set(0);
     }
 
+    // 2. AÑADIR EL CONSTRUCTOR DE 8 ARGUMENTOS (Requerido por EmpleadoController)
+    public Persona(String nombre, String apellido, int idTipoDocumento, String numeroDocumento, int idDireccion, String telefono, String email, int idTipoPersona) {
+        this.nombre.set(nombre);
+        this.apellido.set(apellido);
+        this.idTipoDocumento.set(idTipoDocumento);
+        this.numeroDocumento.set(numeroDocumento);
+        this.idDireccion.set(idDireccion);
+        this.telefono.set(telefono);
+        this.email.set(email);
+        this.idTipoPersona.set(idTipoPersona); // <--- ESTE ES EL NUEVO VALOR
+    }
+
+    // Constructor de 2 argumentos (Original)
     public Persona(String nombre, String apellido) {
         this.nombre.set(nombre);
         this.apellido.set(apellido);
@@ -30,9 +49,10 @@ public class Persona {
         this.idDireccion.set(0);
         this.telefono.set("");
         this.email.set("");
+        this.idTipoPersona.set(0); // Inicializar idTipoPersona por defecto
     }
 
-    // Getters y Setters con sus respectivos métodos Property()
+    // Getters y Setters con sus respectivos métodos Property() (EXISTENTES)
     public int getIdPersona() { return idPersona.get(); }
     public void setIdPersona(int idPersona) { this.idPersona.set(idPersona); }
     public IntegerProperty idPersonaProperty() { return idPersona; }
@@ -64,4 +84,9 @@ public class Persona {
     public String getEmail() { return email.get(); }
     public StringProperty emailProperty() { return email; }
     public void setEmail(String email) { this.email.set(email); }
+
+    // --- NUEVOS MÉTODOS PARA idTipoPersona ---
+    public int getIdTipoPersona() { return idTipoPersona.get(); }
+    public IntegerProperty idTipoPersonaProperty() { return idTipoPersona; }
+    public void setIdTipoPersona(int idTipoPersona) { this.idTipoPersona.set(idTipoPersona); }
 }
