@@ -101,13 +101,16 @@ public class CrearPedidoController {
     private void handleGuardar() {
         try {
             Cliente clienteSeleccionado = clienteComboBox.getSelectionModel().getSelectedItem();
-            Empleado empleadoSeleccionado = empleadoComboBox.getSelectionModel().getSelectedItem();
+            Empleado empleadoSeleccionado = empleadoComboBox.getSelectionModel().getSelectedItem(); // Este es el empleado que se asignará
 
             if (clienteSeleccionado == null) {
                 mostrarAlerta("Error", "Por favor, seleccione un cliente.", Alert.AlertType.ERROR);
                 return;
             }
 
+            // Aquí decidimos si es obligatorio seleccionar un empleado.
+            // Si es obligatorio, mantenemos esta validación.
+            // Si un pedido puede crearse sin empleado asignado al principio, podemos quitarla.
             if (empleadoSeleccionado == null) {
                 mostrarAlerta("Error", "Por favor, seleccione un empleado.", Alert.AlertType.ERROR);
                 return;
@@ -120,27 +123,28 @@ public class CrearPedidoController {
 
             LocalDateTime fechaCreacion = LocalDateTime.now();
             LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaPicker.getValue() != null) ? fechaEntregaEstimadaPicker.getValue().atStartOfDay() : null;
-            LocalDateTime fechaFinalizacion = null;
+            LocalDateTime fechaFinalizacion = null; // Se establecerá a null al crear
             String estado = estadoComboBox.getSelectionModel().getSelectedItem();
             String instrucciones = instruccionesArea.getText();
             double montoTotal = Double.parseDouble(montoTotalField.getText());
             double montoEntregado = Double.parseDouble(montoEntregadoField.getText());
 
+            // Crear el objeto Pedido con el id del cliente y del empleado
             Pedido nuevoPedido = new Pedido(
                     clienteSeleccionado.getIdCliente(),
-                    empleadoSeleccionado.getIdEmpleado(),
+                    empleadoSeleccionado.getIdEmpleado(), // Pasamos el ID del empleado
                     fechaCreacion,
                     fechaEntregaEstimada,
-                    fechaFinalizacion,
+                    fechaFinalizacion, // null al crear
                     estado,
                     instrucciones,
                     montoTotal,
                     montoEntregado
             );
 
-            boolean exito = pedidoDAO.savePedido(nuevoPedido);
+            boolean exito = pedidoDAO.savePedido(nuevoPedido); // PedidoDAO ahora maneja la transacción de Pedido y AsignacionPedido
             if (exito) {
-                mostrarAlerta("Éxito", "Pedido creado exitosamente.", Alert.AlertType.INFORMATION);
+                mostrarAlerta("Éxito", "Pedido creado exitosamente y empleado asignado.", Alert.AlertType.INFORMATION);
 
                 // Redirigir al menú principal
                 try {
@@ -155,11 +159,14 @@ public class CrearPedidoController {
                 }
 
             } else {
-                mostrarAlerta("Error", "No se pudo crear el pedido.", Alert.AlertType.ERROR);
+                mostrarAlerta("Error", "No se pudo crear el pedido o asignar el empleado.", Alert.AlertType.ERROR);
             }
 
         } catch (NumberFormatException e) {
             mostrarAlerta("Error de Formato", "Por favor, ingrese valores numéricos válidos para los montos.", Alert.AlertType.ERROR);
+        } catch (Exception e) { // Captura cualquier otra excepción inesperada
+            e.printStackTrace();
+            mostrarAlerta("Error Inesperado", "Ocurrió un error al guardar el pedido: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 

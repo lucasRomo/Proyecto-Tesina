@@ -29,6 +29,7 @@ public class EmpleadoController {
         empleadoDAO = new EmpleadoDAO();
     }
 
+
     @FXML
     private void handleGuardar() {
         try {
@@ -39,10 +40,14 @@ public class EmpleadoController {
             double salario = Double.parseDouble(salarioField.getText());
             int idPersona = Integer.parseInt(idPersonaField.getText());
 
-            // Crea el objeto Empleado usando el constructor con todos los datos
-            Empleado nuevoEmpleado = new Empleado(fechaContratacion, cargo, salario, idPersona);
-            nuevoEmpleado.setNombre(nombre);
-            nuevoEmpleado.setApellido(apellido);
+            // Definimos el estado por defecto
+            String estadoPorDefecto = "Activo"; // <-- ¡Aquí se establece el estado por defecto!
+
+            // Crea el objeto Empleado usando el constructor con el estado
+            // Constructor: Empleado(LocalDate fechaContratacion, String cargo, double salario, String estado, int idPersona)
+            Empleado nuevoEmpleado = new Empleado(fechaContratacion, cargo, salario, estadoPorDefecto, idPersona);
+            nuevoEmpleado.setNombre(nombre); // Estos setters son redundantes si el DAO crea el empleado completo
+            nuevoEmpleado.setApellido(apellido); // Considera si EmpleadoDAO.insertarEmpleado necesita nombre/apellido
 
             boolean exito = empleadoDAO.insertarEmpleado(nuevoEmpleado);
 
@@ -56,6 +61,10 @@ public class EmpleadoController {
             }
         } catch (NumberFormatException e) {
             mostrarAlerta("Error", "Por favor, ingrese valores válidos para salario e ID de persona.", Alert.AlertType.ERROR);
+        } catch (Exception e) {
+            // Captura cualquier otra excepción inesperada
+            e.printStackTrace();
+            mostrarAlerta("Error", "Ocurrió un error inesperado al guardar el empleado: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 

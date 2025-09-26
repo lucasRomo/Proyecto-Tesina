@@ -1,6 +1,5 @@
 package app.model;
 
-import app.model.Empleado;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -16,13 +15,15 @@ public class EmpleadoDAO {
     private static final String PASSWORD = "";
 
     public boolean insertarEmpleado(Empleado empleado) {
-        String sql = "INSERT INTO Empleado (fecha_contratacion, cargo, salario, id_persona) VALUES (?, ?, ?, ?)";
+        // Incluir 'estado' en la inserción
+        String sql = "INSERT INTO Empleado (fecha_contratacion, cargo, salario, estado, id_persona) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setDate(1, java.sql.Date.valueOf(empleado.getFechaContratacion()));
             stmt.setString(2, empleado.getCargo());
             stmt.setDouble(3, empleado.getSalario());
-            stmt.setInt(4, empleado.getIdPersona());
+            stmt.setString(4, empleado.getEstado()); // <-- Añadido el estado
+            stmt.setInt(5, empleado.getIdPersona());
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
         } catch (SQLException e) {
@@ -33,7 +34,11 @@ public class EmpleadoDAO {
 
     public List<Empleado> getAllEmpleados() {
         List<Empleado> empleados = new ArrayList<>();
-        String sql = "SELECT e.*, p.nombre, p.apellido FROM Empleado e JOIN Persona p ON e.id_persona = p.id_persona";
+        // Incluir 'e.estado' en la selección
+        String sql = "SELECT e.id_empleado, e.fecha_contratacion, e.cargo, e.salario, e.estado, " + // <-- Añadido el estado
+                "e.id_persona, p.nombre, p.apellido " +
+                "FROM Empleado e JOIN Persona p ON e.id_persona = p.id_persona " +
+                "WHERE e.estado = 'Activo'"; // Opcional: filtrar solo activos
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
@@ -44,6 +49,7 @@ public class EmpleadoDAO {
                         rs.getDate("fecha_contratacion").toLocalDate(),
                         rs.getString("cargo"),
                         rs.getDouble("salario"),
+                        rs.getString("estado"), // <-- Pasar el estado al constructor
                         rs.getInt("id_persona"),
                         rs.getString("nombre"),
                         rs.getString("apellido")
@@ -58,7 +64,8 @@ public class EmpleadoDAO {
 
     public Empleado getEmpleadoById(int id) {
         Empleado empleado = null;
-        String sql = "SELECT e.*, p.nombre, p.apellido FROM Empleado e JOIN Persona p ON e.id_persona = p.id_persona WHERE e.id_empleado = ?";
+        String sql = "SELECT e.id_empleado, e.fecha_contratacion, e.cargo, e.salario, e.estado, " + // <-- Añadido el estado
+                "e.id_persona, p.nombre, p.apellido FROM Empleado e JOIN Persona p ON e.id_persona = p.id_persona WHERE e.id_empleado = ?";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
@@ -69,6 +76,7 @@ public class EmpleadoDAO {
                             rs.getDate("fecha_contratacion").toLocalDate(),
                             rs.getString("cargo"),
                             rs.getDouble("salario"),
+                            rs.getString("estado"), // <-- Pasar el estado al constructor
                             rs.getInt("id_persona"),
                             rs.getString("nombre"),
                             rs.getString("apellido")
