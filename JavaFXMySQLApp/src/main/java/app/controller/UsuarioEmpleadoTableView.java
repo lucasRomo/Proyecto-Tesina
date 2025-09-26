@@ -16,8 +16,9 @@ public class UsuarioEmpleadoTableView {
     private final DoubleProperty salario;
     private final StringProperty estado;
     private final IntegerProperty idPersona;
+    private final IntegerProperty idDireccion;
 
-    public UsuarioEmpleadoTableView(int idUsuario, String usuario, String contrasena, String nombre, String apellido, double salario, String estado, int idPersona) {
+    public UsuarioEmpleadoTableView(int idUsuario, String usuario, String contrasena, String nombre, String apellido, double salario, String estado, int idPersona, int idDireccion) {
         this.idUsuario = new SimpleIntegerProperty(idUsuario);
         this.usuario = new SimpleStringProperty(usuario);
         this.contrasena = new SimpleStringProperty(contrasena);
@@ -26,6 +27,7 @@ public class UsuarioEmpleadoTableView {
         this.salario = new SimpleDoubleProperty(salario);
         this.estado = new SimpleStringProperty(estado);
         this.idPersona = new SimpleIntegerProperty(idPersona);
+        this.idDireccion = new SimpleIntegerProperty(idDireccion);
     }
 
     public int getIdUsuario() {
@@ -60,6 +62,8 @@ public class UsuarioEmpleadoTableView {
         return this.idPersona.get();
     }
 
+    public int getIdDireccion() {return this.idDireccion.get();}
+
     public void setUsuario(String usuario) {
         this.usuario.set(usuario);
     }
@@ -83,6 +87,8 @@ public class UsuarioEmpleadoTableView {
     public void setEstado(String estado) {
         this.estado.set(estado);
     }
+
+    public void setIdDireccion (int idDireccion) {this.idDireccion.set(idDireccion);}
 
     public IntegerProperty idUsuarioProperty() {
         return this.idUsuario;

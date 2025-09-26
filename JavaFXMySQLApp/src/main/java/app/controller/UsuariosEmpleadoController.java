@@ -20,6 +20,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Optional;
+
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
@@ -46,6 +48,9 @@ public class UsuariosEmpleadoController {
     private DireccionDAO direccionDAO;
     private ObservableList<UsuarioEmpleadoTableView> listaUsuariosEmpleados;
     private FilteredList<UsuarioEmpleadoTableView> filteredData;
+    private String loggedInUserPassword;
+    private String loggedInUsername;
+    private int loggedInUserId;
 
 
     @FXML
@@ -146,15 +151,24 @@ public class UsuariosEmpleadoController {
         EstadoColumn.setCellFactory(column -> new TableCell<UsuarioEmpleadoTableView, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
 
+            {
+                choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
+                choiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null && newVal != null && !newVal.equals(oldVal)) {
+                        UsuarioEmpleadoTableView usuario = getTableRow().getItem();
+                        // Llama al método para manejar el cambio de estado con la validación de contraseña
+                        updateUsuarioEstado(usuario, oldVal, newVal);
+                    }
+                });
+            }
+
             @Override
             public void startEdit() {
                 if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable()) {
                     return;
                 }
                 super.startEdit();
-                choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
                 choiceBox.getSelectionModel().select(getItem());
-                choiceBox.setOnAction(event -> commitEdit(choiceBox.getSelectionModel().getSelectedItem()));
                 setGraphic(choiceBox);
                 setText(null);
             }
@@ -203,13 +217,39 @@ public class UsuariosEmpleadoController {
 
         EstadoColumn.setOnEditCommit(event -> {
             UsuarioEmpleadoTableView usuario = event.getRowValue();
+            String estadoOriginal = event.getOldValue();
             String nuevoEstado = event.getNewValue();
-            usuario.setEstado(nuevoEstado);
-            boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
-            if (exito) {
-                mostrarAlerta("Éxito", "Estado del usuario actualizado correctamente.", Alert.AlertType.INFORMATION);
-            } else {
-                mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
+
+            // Si el estado no cambia, no hacemos nada
+            if (nuevoEstado == null || nuevoEstado.equals(estadoOriginal)) {
+                return;
+            }
+
+            // Diálogo de confirmación con contraseña
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Confirmar cambio de estado");
+            dialog.setHeaderText("Verificación de seguridad");
+            dialog.setContentText("Por favor, ingresa tu contraseña para confirmar el cambio de estado:");
+
+            Optional<String> result = dialog.showAndWait();
+
+            result.ifPresent(password -> {
+                if (password.trim().equals(loggedInUserPassword.trim())) {
+                    usuario.setEstado(nuevoEstado);
+                    boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
+                    if (exito) {
+                        mostrarAlerta("Éxito", "Estado del usuario actualizado correctamente.", Alert.AlertType.INFORMATION);
+                    } else {
+                        mostrarAlerta("Error", "No se pudo actualizar el estado en la base de datos.", Alert.AlertType.ERROR);
+                        usuariosEditableView.refresh();
+                    }
+                } else {
+                    mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
+                    usuariosEditableView.refresh();
+                }
+            });
+            // Si el usuario cancela el diálogo, también se revierte el cambio
+            if (!result.isPresent()) {
                 usuariosEditableView.refresh();
             }
         });
@@ -220,8 +260,22 @@ public class UsuariosEmpleadoController {
             {
                 btn.setMaxWidth(Double.MAX_VALUE);
                 btn.setOnAction(event -> {
-                    UsuarioEmpleadoTableView usuario = getTableView().getItems().get(getIndex());
-                    mostrarDireccionUsuario(usuario.getIdPersona());
+                    // Petición de contraseña para ver la dirección
+                    TextInputDialog dialog = new TextInputDialog();
+                    dialog.setTitle("Verificación de Seguridad");
+                    dialog.setHeaderText("Ver dirección");
+                    dialog.setContentText("Por favor, ingrese su contraseña para ver la dirección:");
+
+                    Optional<String> result = dialog.showAndWait();
+
+                    result.ifPresent(password -> {
+                        if (password.trim().equals(loggedInUserPassword.trim())) {
+                            UsuarioEmpleadoTableView usuario = getTableView().getItems().get(getIndex());
+                            mostrarDireccionUsuario(usuario.getIdDireccion());
+                        } else {
+                            mostrarAlerta("Error", "Contraseña incorrecta. No puede ver la dirección.", Alert.AlertType.ERROR);
+                        }
+                    });
                 });
             }
 
@@ -244,10 +298,22 @@ public class UsuariosEmpleadoController {
         }
     }
 
-    private void mostrarDireccionUsuario(int idPersona) {
-        Direccion direccion = direccionDAO.obtenerPorId(idPersona);
+    public void setLoggedInUserPassword(String password) {
+        this.loggedInUserPassword = password;
+    }
+
+    public void setLoggedInUsername(String User) {
+        this.loggedInUsername = User;
+    }
+
+    public void setLoggedInUserId(int userId) {
+        this.loggedInUserId = userId;
+    }
+
+    private void mostrarDireccionUsuario(int idDireccion) {
+        Direccion direccion = direccionDAO.obtenerPorId(idDireccion);
         if (direccion == null) {
-            mostrarAlerta("Error", "No se encontró la dirección asociada a este cliente.", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "No se encontró la dirección asociada a este Usuario.", Alert.AlertType.ERROR);
             return;
         }
 
@@ -298,21 +364,52 @@ public class UsuariosEmpleadoController {
         });
     }
 
-    @FXML
-    public void handleModificarUsuarioButton() {
+    public void handleModificarUsuarioButton(ActionEvent event) {
         UsuarioEmpleadoTableView selectedUsuario = usuariosEditableView.getSelectionModel().getSelectedItem();
         if (selectedUsuario != null) {
-            try {
-                boolean exito = usuarioDAO.modificarUsuariosEmpleados(selectedUsuario);
-                if (exito) {
-                    mostrarAlerta("Éxito", "Usuario modificado exitosamente.", Alert.AlertType.INFORMATION);
+            // Se crea un diálogo de entrada para solicitar la contraseña
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Confirmar Modificación");
+            dialog.setHeaderText("Verificación de Seguridad");
+            dialog.setContentText("Por favor, ingrese su contraseña para confirmar la modificación:");
+
+            // Se obtiene el resultado del diálogo
+            Optional<String> result = dialog.showAndWait();
+
+            // Se valida la contraseña ingresada
+            result.ifPresent(password -> {
+                if (loggedInUserPassword != null && password.trim().equals(loggedInUserPassword.trim())) {
+                    try {
+                        // Obtiene la contraseña original del usuario antes de la modificación
+                        String originalContrasena = usuarioDAO.obtenerContrasenaPorUsuario(selectedUsuario.getUsuario());
+
+                        // Realiza la modificación en la base de datos
+                        boolean exito = usuarioDAO.modificarUsuariosEmpleados(selectedUsuario);
+
+                        if (exito) {
+                            mostrarAlerta("Éxito", "Usuario modificado exitosamente.", Alert.AlertType.INFORMATION);
+
+                            // Si el usuario modificado es el que está logueado y la contraseña ha cambiado, redirigimos
+                            if (selectedUsuario.getIdUsuario() == this.loggedInUserId && !selectedUsuario.getContrasena().equals(originalContrasena)) {
+                                Alert alertaRedirect = new Alert(Alert.AlertType.INFORMATION);
+                                alertaRedirect.setTitle("Credenciales Modificadas");
+                                alertaRedirect.setHeaderText(null);
+                                alertaRedirect.setContentText("Su Usuario y/o contraseña ha sido modificada. Será redirigido al menú de inicio para volver a iniciar sesión.");
+                                alertaRedirect.showAndWait();
+                                redireccionarAInicioSesion(event);
+                            }
+                        } else {
+                            mostrarAlerta("Error", "No se pudo modificar el usuario en la base de datos.", Alert.AlertType.ERROR);
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        mostrarAlerta("Error", "Ocurrió un error al intentar modificar el usuario.", Alert.AlertType.ERROR);
+                    }
                 } else {
-                    mostrarAlerta("Error", "No se pudo modificar el usuario en la base de datos.", Alert.AlertType.ERROR);
+                    mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                mostrarAlerta("Error", "Ocurrió un error al intentar modificar el usuario.", Alert.AlertType.ERROR);
-            }
+            });
         } else {
             mostrarAlerta("Advertencia", "Por favor, seleccione un usuario para modificar.", Alert.AlertType.WARNING);
         }
@@ -325,27 +422,69 @@ public class UsuariosEmpleadoController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
+    private void redireccionarAInicioSesion(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/inicioSesion.fxml"));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Inicio de Sesión");
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateUsuarioEstado(UsuarioEmpleadoTableView usuario, String oldVal, String newVal) {
+        // Diálogo de confirmación con contraseña
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Confirmar cambio de estado");
+        dialog.setHeaderText("Verificación de seguridad");
+        dialog.setContentText("Por favor, ingresa tu contraseña para confirmar el cambio de estado:");
+
+        Optional<String> result = dialog.showAndWait();
+
+        result.ifPresent(password -> {
+            if (password.trim().equals(loggedInUserPassword.trim())) {
+                usuario.setEstado(newVal);
+                boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
+                if (exito) {
+                    mostrarAlerta("Éxito", "Estado del usuario actualizado correctamente.", Alert.AlertType.INFORMATION);
+                    usuariosEditableView.refresh();
+                } else {
+                    mostrarAlerta("Error", "No se pudo actualizar el estado en la base de datos.", Alert.AlertType.ERROR);
+                    usuario.setEstado(oldVal); // Revierte el valor en caso de error
+                    usuariosEditableView.refresh();
+                }
+            } else {
+                mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
+                usuario.setEstado(oldVal); // Revierte el valor
+                usuariosEditableView.refresh();
+            }
+        });
+        // Si el usuario cancela, también se revierte
+        if (!result.isPresent()) {
+            usuario.setEstado(oldVal);
+            usuariosEditableView.refresh();
+        }
+    }
+
+
+
+
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            // Carga el FXML de la pantalla a la que quieres regresar.
-            // Asegúrate de que la ruta sea correcta.
             Parent root = FXMLLoader.load(getClass().getResource("/MenuAdmin.fxml"));
-
-            // Obtiene la Stage (ventana) actual del botón
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            // Crea una nueva Scene con la pantalla anterior
             Scene scene = new Scene(root);
-
-            // Reemplaza la Scene actual con la nueva
             stage.setScene(scene);
-            stage.setTitle("Menú Principal"); // O el título de la pantalla anterior
+            stage.setTitle("Menú Principal");
             stage.show();
 
         } catch (IOException e) {
             e.printStackTrace();
-            // Maneja el error si no se puede cargar el archivo FXML
         }
     }
 }

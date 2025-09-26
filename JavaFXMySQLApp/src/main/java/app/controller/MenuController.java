@@ -12,6 +12,22 @@ import javafx.stage.Stage;
 
 public class MenuController {
 
+    private String loggedInUserPassword;
+    private String loggedInUsername;
+    private int loggedInUserId;
+
+    public void setLoggedInUserPassword(String password) {
+        this.loggedInUserPassword = password;
+    }
+
+    public void setLoggedInUsername(String username) {
+        this.loggedInUsername = username;
+    }
+
+    public void setLoggedInUserId(int userId) {
+        this.loggedInUserId = userId;
+    }
+
     @FXML
     public void handleStock(ActionEvent event){
         try {
@@ -180,23 +196,26 @@ public class MenuController {
         }
     }
 
+    @FXML
     public void handleGestionDeUsuariosButton(ActionEvent event) {
         try {
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            // Carga el FXML de la tabla de usuarios
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/GestionUsuarios.fxml"));
+            Parent root = loader.load();
 
-            // Carga la nueva ventana de registro
-            Parent root = FXMLLoader.load(getClass().getResource("/GestionUsuarios.fxml"));
-            stage.setTitle("Gestión de Usuarios");
+            // Obtiene el controlador de la vista de usuarios
+            UsuariosEmpleadoController usuariosController = loader.getController();
+
+            // Pasa la contraseña del usuario logueado al controlador de usuarios
+            usuariosController.setLoggedInUserPassword(this.loggedInUserPassword);
+            usuariosController.setLoggedInUsername(this.loggedInUsername);
+            usuariosController.setLoggedInUserId(this.loggedInUserId);
+            // Carga la nueva escena
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
-
-            // Centra la ventana en la pantalla (opcional)
-            stage.centerOnScreen();
+            stage.setTitle("Gestión de Usuarios Empleados");
             stage.show();
-
-
 
         } catch (IOException e) {
             e.printStackTrace();

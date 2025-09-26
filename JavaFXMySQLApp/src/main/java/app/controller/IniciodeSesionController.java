@@ -8,13 +8,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Objects;
 
 public class IniciodeSesionController {
     @FXML
@@ -22,19 +20,19 @@ public class IniciodeSesionController {
     @FXML
     private TextField ContraseniaField;
 
-
-    // Desde Aca //
     @FXML
-    private void IniciarSesion() {
-
-        String Usuario = UsuarioField.getText().trim();
-        String Contrasenia = ContraseniaField.getText().trim();
+    private void IniciarSesion(ActionEvent event) {
+        String usuario = UsuarioField.getText().trim();
+        String contrasena = ContraseniaField.getText().trim();
 
         UsuarioDAO usuarioDAO = new UsuarioDAO();
-        if (!Usuario.isEmpty() && !Contrasenia.isEmpty()) {
-            Usuario usuario = new Usuario(Usuario, Contrasenia);
+        if (!usuario.isEmpty() && !contrasena.isEmpty()) {
 
-            if (usuarioDAO.verificarUsuario(Usuario, Contrasenia)) {
+            // Llamamos a un nuevo método que devuelve el objeto Usuario
+            Usuario usuarioLogueado = usuarioDAO.obtenerUsuarioPorCredenciales(usuario, contrasena);
+
+            // Verificamos si se devolvió un objeto Usuario (si no es null)
+            if (usuarioLogueado != null) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Inicio de Sesion Exitoso");
                 alert.setHeaderText(null);
@@ -42,10 +40,20 @@ public class IniciodeSesionController {
                 alert.showAndWait();
 
                 try {
+                    // Carga el FXML de la pantalla de menú del administrador
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/MenuAdmin.fxml"));
+                    Parent root = loader.load();
+
+                    // Obtenemos el controlador del menú de admin
+                    MenuController menuAdminController = loader.getController();
+
+                    // Y le pasamos la información completa del usuario logueado
+                    menuAdminController.setLoggedInUserPassword(usuarioLogueado.getContrasenia());
+                    menuAdminController.setLoggedInUsername(usuarioLogueado.getUsuario());
+                    menuAdminController.setLoggedInUserId(usuarioLogueado.getIdUsuario());
+
                     // Obtener el 'Stage' (ventana) actual desde un elemento de la escena
-                    Stage stage = (Stage) UsuarioField.getScene().getWindow();
-                    // Cargar el nuevo archivo FXML
-                    Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/menuAbms.fxml")));
+                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
                     // Crear y establecer la nueva escena
                     Scene scene = new Scene(root);
@@ -58,26 +66,30 @@ public class IniciodeSesionController {
                     stage.setTitle("Menú Principal");
                     stage.show();
 
-
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Alert alertError = new Alert(Alert.AlertType.ERROR);
+                    alertError.setTitle("Error de Carga");
+                    alertError.setHeaderText(null);
+                    alertError.setContentText("No se pudo cargar la pantalla del menú de administración.");
+                    alertError.showAndWait();
                 }
 
-            }else{
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Inicio de Sesion Fallido");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Usuario o Contraseña Incorrectos.");
-                    alert.showAndWait();
-                }
             } else {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Campos Incompletos");
+                alert.setTitle("Inicio de Sesion Fallido");
                 alert.setHeaderText(null);
-                alert.setContentText("Por favor Rellene uno o ambos campos para continuar.");
+                alert.setContentText("Usuario o Contraseña Incorrectos.");
                 alert.showAndWait();
             }
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Campos Incompletos");
+            alert.setHeaderText(null);
+            alert.setContentText("Por favor Rellene uno o ambos campos para continuar.");
+            alert.showAndWait();
         }
+    }
 
     @FXML
     private void handleVolverButton(ActionEvent event) {
@@ -102,5 +114,4 @@ public class IniciodeSesionController {
             // Maneja el error si no se puede cargar el archivo FXML
         }
     }
-
-    }
+}
