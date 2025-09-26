@@ -8,6 +8,7 @@ public class Usuario {
     private String contrasena;
     private int idPersona; // <-- CAMBIO AGREGADO
     private int idDireccion;
+    private int idUsuario;
 
     // Constructor para inicio de sesion (sin idPersona)
     public Usuario(String usuario, String contrasenia) {
@@ -29,6 +30,18 @@ public class Usuario {
         this.idDireccion = idDireccion;
     }
 
+    public Usuario(int idUsuario, String usuario, String contrasena, int idPersona, int idDireccion) {
+        this.idUsuario = idUsuario;
+        this.usuario = usuario;
+        this.contrasena = contrasena;
+        this.idPersona = idPersona;
+        this.idDireccion = idDireccion;
+    }
+
+    public int getIdUsuario() {
+        return idUsuario;
+    }
+
     public String getUsuario() {
         return usuario;
     }
@@ -37,15 +50,19 @@ public class Usuario {
         return contrasena;
     }
 
-    // <-- METODO AGREGADO
-    public void setIdPersona(int idPersona) {
-        this.idPersona = idPersona;
-    }
-
-    // <-- METODO AGREGADO
     public int getIdPersona() {
         return idPersona;
     }
 
     public int getIdDireccion() { return idDireccion; }
+
+
+    public void setIdPersona(int idPersona) {
+        this.idPersona = idPersona;
+    }
+
+    public void setIdUsuario(int idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
 }

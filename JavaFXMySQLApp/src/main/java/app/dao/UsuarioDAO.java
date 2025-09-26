@@ -38,7 +38,7 @@ public class UsuarioDAO {
 
     public ObservableList<UsuarioEmpleadoTableView> obtenerUsuariosEmpleados() throws SQLException {
         ObservableList<UsuarioEmpleadoTableView> listaUsuarios = FXCollections.observableArrayList();
-        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.nombre, p.apellido, e.salario, e.estado, p.id_persona " +
+        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.nombre, p.apellido, e.salario, e.estado, p.id_persona, p.id_Direccion " +
                 "FROM Usuario u " +
                 "JOIN Empleado e ON u.id_persona = e.id_persona " +
                 "JOIN Persona p ON e.id_persona = p.id_persona";
@@ -56,17 +56,14 @@ public class UsuarioDAO {
                 double salario = rs.getDouble("salario");
                 String estado = rs.getString("estado");
                 int idPersona = rs.getInt("id_persona");
+                int idDireccion = rs.getInt("id_Direccion");
 
-                UsuarioEmpleadoTableView usuarioEmpleado = new UsuarioEmpleadoTableView(idUsuario, usuario, contrasena, nombre, apellido, salario, estado, idPersona);
+                UsuarioEmpleadoTableView usuarioEmpleado = new UsuarioEmpleadoTableView(idUsuario, usuario, contrasena, nombre, apellido, salario, estado, idPersona, idDireccion);
                 listaUsuarios.add(usuarioEmpleado);
             }
         }
         return listaUsuarios;
     }
-
-
-
-
 
     public boolean verificarUsuario(String Usuario, String Contrasenia) {
         String contraseniaHasheada = Contrasenia;
@@ -150,5 +147,72 @@ public class UsuarioDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public String obtenerContrasenaPorUsuario(String nombreUsuario) {
+        String contrasena = null;
+        String sql = "SELECT contrasena FROM Usuario WHERE nombre_usuario = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, nombreUsuario);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    contrasena = rs.getString("contrasena");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener la contraseña del usuario: " + e.getMessage());
+        }
+        return contrasena;
+    }
+
+    public int obtenerIdUsuarioPorCredenciales(String Usuario, String Contrasenia) {
+        String sql = "SELECT id_usuario FROM Usuario WHERE nombre_usuario = ? AND contrasena = ?";
+        int idUsuario = -1;
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, Usuario);
+            pstmt.setString(2, Contrasenia);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    idUsuario = rs.getInt("id_usuario");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return idUsuario;
+    }
+
+    public Usuario obtenerUsuarioPorCredenciales(String nombreUsuario, String contrasena) {
+        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_persona, p.id_direccion FROM Usuario u JOIN Persona p ON u.id_persona = p.id_persona WHERE u.nombre_usuario = ? AND u.contrasena = ?";
+        Usuario usuarioEncontrado = null;
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, nombreUsuario);
+            pstmt.setString(2, contrasena);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    // Si encontramos una coincidencia, creamos y devolvemos el objeto Usuario
+                    usuarioEncontrado = new Usuario(
+                            rs.getInt("id_usuario"),
+                            rs.getString("nombre_usuario"),
+                            rs.getString("contrasena"),
+                            rs.getInt("id_persona"),
+                            rs.getInt("id_direccion")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return usuarioEncontrado;
     }
 }
