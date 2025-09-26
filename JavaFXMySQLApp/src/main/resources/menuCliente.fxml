@@ -4,63 +4,76 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-
 <?import java.net.URL?>
-<BorderPane prefHeight="469.0" prefWidth="1500.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ClienteController">
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+
+<AnchorPane prefHeight="1000.0" prefWidth="1800.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ClienteController">
     <stylesheets>
         <URL value="@style.css" />
     </stylesheets>
-    <center>
-        <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
-            <children>
-                <TableView fx:id="clientesTableView" editable="true" VBox.vgrow="ALWAYS">
-                    <columnResizePolicy>
-                        <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
-                    </columnResizePolicy>
-                    <columns>
-                        <TableColumn fx:id="nombreColumn" prefWidth="100.0" text="Nombre" />
-                        <TableColumn fx:id="apellidoColumn" prefWidth="200.0" text="Apellido" />
-                        <TableColumn fx:id="tipoDocumentoColumn" prefWidth="100.0" text="Tipo Documento" />
-                        <TableColumn fx:id="numeroDocumentoColumn" prefWidth="120.0" text="Número Documento" />
-                        <TableColumn fx:id="telefonoColumn" prefWidth="100.0" text="Teléfono" />
-                        <TableColumn fx:id="emailColumn" prefWidth="250.0" text="Email" />
-                        <TableColumn fx:id="idClienteColumn" prefWidth="50.0" text="ID" />
-                        <TableColumn fx:id="razonSocialColumn" prefWidth="150.0" text="Razón Social" />
-                        <TableColumn fx:id="personaContactoColumn" prefWidth="186.0" text="Persona Contacto" />
-                        <TableColumn fx:id="condicionesPagoColumn" prefWidth="177.0" text="Condiciones de Pago" />
-                        <TableColumn fx:id="estadoColumn" prefWidth="130.0" text="Estado" />
-                        <TableColumn fx:id="accionColumn" prefWidth="178.5" text="Direccion" />
-                    </columns>
-                </TableView>
-                <HBox alignment="CENTER" spacing="10.0">
-                    <children>
-                        <Label text="Estado:" styleClass="label-blanco"/>
-                        <ChoiceBox fx:id="estadoChoiceBox" prefWidth="150.0" />
-                        <TextField fx:id="filterField" prefHeight="25.0" promptText="Buscar por nombre, apellido o documento..." HBox.hgrow="ALWAYS" />
-                    </children>
-                </HBox>
-                <HBox alignment="CENTER" spacing="10.0">
-                    <children>
-                        <Button fx:id="nuevoClienteButton" mnemonicParsing="false" onAction="#handleRegistrarClienteButton" text="Registrar Cliente" textFill="#111111" />
-                        <Button fx:id="modificarClienteButton" mnemonicParsing="false" onAction="#handleModificarClienteButton" text="Modificar Cliente" />
-                        <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
-                        <Button fx:id="volverButton" styleClass="button-volver" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
-                    </children>
-                </HBox>
-            </children>
-            <padding>
-                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
-            </padding>
-        </VBox>
-    </center>
-    <top>
-        <Label text="Menu Cliente" BorderPane.alignment="CENTER" styleClass="titulo-principal">
-            <font>
-                <Font name="System Bold" size="34.0" />
-            </font>
-            <BorderPane.margin>
-                <Insets bottom="10.0" top="10.0" />
-            </BorderPane.margin>
-        </Label>
-    </top>
-</BorderPane>
+
+    <ImageView fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true"
+               AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="20.0">
+        <image>
+            <Image url="@imagenes/Logo_no_bg.png" />
+        </image>
+    </ImageView>
+
+    <Label text="Menu Cliente" styleClass="titulo-principal" alignment="CENTER"
+           AnchorPane.topAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <font>
+            <Font name="System Bold" size="34.0" />
+        </font>
+        <padding>
+            <Insets bottom="10.0" top="10.0" />
+        </padding>
+    </Label>
+
+    <VBox alignment="CENTER" spacing="10.0"
+          AnchorPane.topAnchor="110.0" AnchorPane.bottomAnchor="10.0"
+          AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
+
+        <children>
+            <TableView fx:id="clientesTableView" editable="true" VBox.vgrow="ALWAYS">
+                <columnResizePolicy>
+                    <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
+                <columns>
+                    <TableColumn fx:id="nombreColumn" prefWidth="100.0" text="Nombre" />
+                    <TableColumn fx:id="apellidoColumn" prefWidth="200.0" text="Apellido" />
+                    <TableColumn fx:id="tipoDocumentoColumn" prefWidth="100.0" text="Tipo Documento" />
+                    <TableColumn fx:id="numeroDocumentoColumn" prefWidth="120.0" text="Número Documento" />
+                    <TableColumn fx:id="telefonoColumn" prefWidth="100.0" text="Teléfono" />
+                    <TableColumn fx:id="emailColumn" prefWidth="250.0" text="Email" />
+                    <TableColumn fx:id="idClienteColumn" prefWidth="50.0" text="ID" />
+                    <TableColumn fx:id="razonSocialColumn" prefWidth="150.0" text="Razón Social" />
+                    <TableColumn fx:id="personaContactoColumn" prefWidth="186.0" text="Persona Contacto" />
+                    <TableColumn fx:id="condicionesPagoColumn" prefWidth="177.0" text="Condiciones de Pago" />
+                    <TableColumn fx:id="estadoColumn" prefWidth="130.0" text="Estado" />
+                    <TableColumn fx:id="accionColumn" prefWidth="178.5" text="Direccion" />
+                </columns>
+            </TableView>
+
+            <HBox alignment="CENTER" spacing="10.0">
+                <children>
+                    <Label text="Estado:" styleClass="label-blanco"/>
+                    <ChoiceBox fx:id="estadoChoiceBox" prefWidth="150.0" />
+                    <TextField fx:id="filterField" prefHeight="25.0" promptText="Buscar por nombre, apellido o documento..." HBox.hgrow="ALWAYS" />
+                </children>
+            </HBox>
+
+            <HBox alignment="CENTER" spacing="10.0">
+                <children>
+                    <Button fx:id="nuevoClienteButton" mnemonicParsing="false" onAction="#handleRegistrarClienteButton" text="Registrar Cliente" textFill="#111111" />
+                    <Button fx:id="modificarClienteButton" mnemonicParsing="false" onAction="#handleModificarClienteButton" text="Modificar Cliente" />
+                    <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
+                    <Button fx:id="volverButton" styleClass="button-volver" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
+                </children>
+            </HBox>
+        </children>
+        <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+        </padding>
+    </VBox>
+</AnchorPane>

@@ -1,71 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.URL?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<?import java.net.*?>
 
-<BorderPane prefHeight="469.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ProveedorController">
+<AnchorPane prefHeight="1000.0" prefWidth="1800.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ProveedorController">
     <stylesheets>
         <URL value="@style.css" />
     </stylesheets>
-    <top>
-        <Label text="Menú Proveedores" BorderPane.alignment="CENTER" styleClass="titulo-principal">
-            <font>
-                <Font name="System Bold" size="24.0" />
-            </font>
-            <BorderPane.margin>
-                <Insets bottom="10.0" top="10.0" />
-            </BorderPane.margin>
-        </Label>
-    </top>
-    <center>
-        <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
-            <children>
-                <TableView fx:id="proveedoresTableView" editable="true" VBox.vgrow="ALWAYS">
-                    <columnResizePolicy>
-                        <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
-                    </columnResizePolicy>
-                    <columns>
-                        <TableColumn fx:id="idProveedorColumn" prefWidth="50.0" text="ID" />
-                        <TableColumn fx:id="nombreColumn" prefWidth="272.0" text="Nombre" />
-                        <TableColumn fx:id="contactoColumn" prefWidth="350.0" text="Contacto" />
-                        <TableColumn fx:id="mailColumn" prefWidth="300.0" text="Email" />
-                        <TableColumn fx:id="estadoColumn" prefWidth="200.0" text="Estado" />
-                        <TableColumn fx:id="tipoProveedorColumn" prefWidth="220.0" text="Tipo Proveedor" />
-                        <TableColumn fx:id="accionColumn" prefWidth="350.0" text="Dirección" />
-                    </columns>
-                </TableView>
-                <HBox alignment="CENTER" spacing="10.0">
-                    <children>
-                        <TextField fx:id="filterField" prefHeight="25.0" prefWidth="200.0" promptText="Buscar por nombre, contacto o mail..." HBox.hgrow="ALWAYS" />
-                        <Label text="Estado:" styleClass="label-blanco">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </Label>
-                        <ChoiceBox fx:id="estadoChoiceBox" prefWidth="150.0" />
-                        <Label text="Tipo:" styleClass="label-blanco">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </Label>
-                        <ChoiceBox fx:id="tipoProveedorChoiceBox" prefWidth="150.0" />
-                    </children>
-                </HBox>
-                <HBox alignment="CENTER" spacing="10.0">
-                    <children>
-                        <Button fx:id="nuevoProveedorButton" mnemonicParsing="false" onAction="#handleRegistrarProveedorButton" text="Registrar Proveedor" textFill="#111111" />
-                        <Button fx:id="modificarProveedorButton" mnemonicParsing="false" onAction="#handleModificarProveedorButton" text="Modificar Proveedor" />
-                        <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
-                        <Button fx:id="volverButton" styleClass="button-volver" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
-                    </children>
-                </HBox>
-            </children>
-            <padding>
-                <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
-            </padding>
-        </VBox>
-    </center>
-</BorderPane>
+
+    <ImageView fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true"
+               AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="20.0">
+        <image>
+            <Image url="@imagenes/Logo_no_bg.png" />
+        </image>
+    </ImageView>
+
+    <Label text="Menú Proveedores" styleClass="titulo-principal" alignment="CENTER"
+           AnchorPane.topAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+        <font>
+            <Font name="System Bold" size="34.0" />
+        </font>
+        <padding>
+            <Insets bottom="10.0" top="10.0" />
+        </padding>
+    </Label>
+
+    <VBox alignment="CENTER" spacing="10.0"
+          AnchorPane.topAnchor="110.0" AnchorPane.bottomAnchor="10.0"
+          AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
+
+        <children>
+            <TableView fx:id="proveedoresTableView" editable="true" VBox.vgrow="ALWAYS">
+                <columnResizePolicy>
+                    <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
+                <columns>
+                    <TableColumn fx:id="idProveedorColumn" prefWidth="50.0" text="ID" />
+                    <TableColumn fx:id="nombreColumn" prefWidth="272.0" text="Nombre" />
+                    <TableColumn fx:id="contactoColumn" prefWidth="350.0" text="Contacto" />
+                    <TableColumn fx:id="mailColumn" prefWidth="300.0" text="Email" />
+                    <TableColumn fx:id="estadoColumn" prefWidth="200.0" text="Estado" />
+                    <TableColumn fx:id="tipoProveedorColumn" prefWidth="220.0" text="Tipo Proveedor" />
+                    <TableColumn fx:id="accionColumn" prefWidth="350.0" text="Dirección" />
+                </columns>
+            </TableView>
+
+            <HBox alignment="CENTER" spacing="10.0">
+                <children>
+                    <TextField fx:id="filterField" prefHeight="25.0" prefWidth="200.0" promptText="Buscar por nombre, contacto o mail..." HBox.hgrow="ALWAYS" />
+                    <Label text="Estado:" styleClass="label-blanco">
+                        <font>
+                            <Font size="14.0" />
+                        </font>
+                    </Label>
+                    <ChoiceBox fx:id="estadoChoiceBox" prefWidth="150.0" />
+                    <Label text="Tipo:" styleClass="label-blanco">
+                        <font>
+                            <Font size="14.0" />
+                        </font>
+                    </Label>
+                    <ChoiceBox fx:id="tipoProveedorChoiceBox" prefWidth="150.0" />
+                </children>
+            </HBox>
+
+            <HBox alignment="CENTER" spacing="10.0">
+                <children>
+                    <Button fx:id="nuevoProveedorButton" mnemonicParsing="false" onAction="#handleRegistrarProveedorButton" text="Registrar Proveedor" textFill="#111111" />
+                    <Button fx:id="modificarProveedorButton" mnemonicParsing="false" onAction="#handleModificarProveedorButton" text="Modificar Proveedor" />
+                    <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
+                    <Button fx:id="volverButton" styleClass="button-volver" mnemonicParsing="false" onAction="#handleVolverButton" text="Volver" />
+                </children>
+            </HBox>
+        </children>
+        <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+        </padding>
+    </VBox>
+</AnchorPane>
