@@ -61,6 +61,37 @@ public class ClienteDAO {
         return clientes;
     }
 
+    // Método para obtener un cliente por su ID
+    public Cliente getClienteById(int idCliente) {
+        String sql = "SELECT p.*, c.* FROM Persona p JOIN Cliente c ON p.id_persona = c.id_persona WHERE c.id_cliente = ?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idCliente);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Cliente(
+                            rs.getString("nombre"),
+                            rs.getString("apellido"),
+                            rs.getInt("id_tipo_documento"),
+                            rs.getString("numero_documento"),
+                            rs.getInt("id_direccion"),
+                            rs.getString("telefono"),
+                            rs.getString("email"),
+                            rs.getString("razon_social"),
+                            rs.getString("persona_contacto"),
+                            rs.getString("condiciones_pago"),
+                            rs.getString("estado")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al obtener el cliente por ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null; // Retorna null si no se encuentra el cliente
+    }
+
     // Método para modificar los datos de un cliente en la base de datos (edición en línea)
     public boolean modificarCliente(Cliente cliente) {
         String sql = "UPDATE Cliente c " +

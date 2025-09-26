@@ -1,7 +1,5 @@
 package app.controller;
 
-import java.io.IOException;
-
 import app.MainApp;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,37 +10,28 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class MenuController {
+
+    @FXML
+    private Button pedidosButton;
+    @FXML
+    private Button clientesButton;
+    @FXML
+    private Button stockButton;
+    @FXML
+    private Button adminButton;
 
     @FXML
     public void handlePedidosButton(ActionEvent event) {
         try {
-            // Carga la nueva ventana de registro
-            Parent root = FXMLLoader.load(getClass().getResource("/pedidosInicial.fxml"));
-            Stage stage = new Stage();
-            stage.setTitle("Menu de Proveedor");
-            stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PedidosPrimerMenu.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root, MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT));
+            stage.setTitle("Menú de Pedidos");
             stage.show();
-
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    public void handleStockabm(ActionEvent event){
-        try {
-            // Carga la nueva ventana de registro
-            Parent root = FXMLLoader.load(getClass().getResource("/menuAbmStock.fxml"));
-            Stage stage = new Stage();
-            stage.setTitle("Menu de Proveedor");
-            stage.setScene(new Scene(root, app.MainApp.WINDOW_WIDTH, app.MainApp.WINDOW_HEIGHT));
-            stage.show();
-
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }

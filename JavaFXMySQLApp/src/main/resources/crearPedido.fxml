@@ -1,61 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.DatePicker?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.CrearPedidoController">
+<VBox alignment="TOP_CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.CrearPedidoController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
     <Label text="Crear Nuevo Pedido">
         <font>
-            <Font name="System Bold" size="20.0" />
+            <Font name="System Bold" size="24.0" />
         </font>
     </Label>
 
-    <GridPane hgap="10.0" vgap="10.0">
+    <GridPane alignment="CENTER" hgap="10" vgap="10">
+        <Label text="Cliente:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <ComboBox fx:id="clienteComboBox" promptText="Seleccione Cliente" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+        <Label text="Empleado:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <ComboBox fx:id="empleadoComboBox" promptText="Seleccione Empleado" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+        <Label text="Estado:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <ComboBox fx:id="estadoComboBox" promptText="Seleccione Estado" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+        <Label text="Fecha de Entrega Estimada:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <DatePicker fx:id="fechaEntregaEstimadaPicker" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+        <Label text="Fecha de Finalización:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <DatePicker fx:id="fechaFinalizacionPicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+        <Label text="Monto Total:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <TextField fx:id="montoTotalField" promptText="Monto Total" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+        <Label text="Monto Entregado:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+        <TextField fx:id="montoEntregadoField" promptText="Monto Entregado" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
+        <Label text="Instrucciones:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+        <TextArea fx:id="instruccionesArea" prefHeight="100" promptText="Instrucciones para el pedido" GridPane.columnIndex="1" GridPane.rowIndex="7" />
         <columnConstraints>
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+            <ColumnConstraints />
+            <ColumnConstraints />
         </columnConstraints>
-        <Label text="ID Cliente:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-        <TextField fx:id="idClienteField" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
-        <Label text="Fecha Creación:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-        <DatePicker fx:id="fechaCreacionPicker" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-        <Label text="Fecha Entrega Estimada:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-        <DatePicker fx:id="fechaEntregaEstimadaPicker" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-        <Label text="Fecha Finalización:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        <DatePicker fx:id="fechaFinalizacionPicker" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-
-        <Label text="Estado:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-        <TextField fx:id="estadoField" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-
-        <Label text="Instrucciones:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-        <TextArea fx:id="instruccionesArea" prefHeight="75.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-
-        <Label text="Monto Total:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-        <TextField fx:id="montoTotalField" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-
-        <Label text="Monto Entregado:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
-        <TextField fx:id="montoEntregadoField" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+        <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+        </rowConstraints>
     </GridPane>
 
     <HBox alignment="CENTER" spacing="10.0">
-        <Button onAction="#handleGuardar" prefWidth="100" text="Guardar" />
-        <Button onAction="#handleCancelar" prefWidth="100" text="Cancelar" />
+        <Button onAction="#handleGuardar" prefWidth="150" text="Guardar Pedido" />
+        <Button onAction="#handleCancelar" prefWidth="150" text="Cancelar" />
     </HBox>
 </VBox>
