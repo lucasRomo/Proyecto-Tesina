@@ -212,45 +212,6 @@ public class UsuariosEmpleadoController {
             }
         });
 
-        EstadoColumn.setOnEditCommit(event -> {
-            UsuarioEmpleadoTableView usuario = event.getRowValue();
-            String estadoOriginal = event.getOldValue();
-            String nuevoEstado = event.getNewValue();
-
-            // Si el estado no cambia, no hacemos nada
-            if (nuevoEstado == null || nuevoEstado.equals(estadoOriginal)) {
-                return;
-            }
-
-            // Diálogo de confirmación con contraseña
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Confirmar cambio de estado");
-            dialog.setHeaderText("Verificación de seguridad");
-            dialog.setContentText("Por favor, ingresa tu contraseña para confirmar el cambio de estado:");
-
-            Optional<String> result = dialog.showAndWait();
-
-            result.ifPresent(password -> {
-                String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword();
-                if (password.trim().equals(loggedInUserPassword.trim())) {
-                    usuario.setEstado(nuevoEstado);
-                    boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
-                    if (exito) {
-                        mostrarAlerta("Éxito", "Estado del usuario actualizado correctamente.", Alert.AlertType.INFORMATION);
-                    } else {
-                        mostrarAlerta("Error", "No se pudo actualizar el estado en la base de datos.", Alert.AlertType.ERROR);
-                        usuariosEditableView.refresh();
-                    }
-                } else {
-                    mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
-                    usuariosEditableView.refresh();
-                }
-            });
-            // Si el usuario cancela el diálogo, también se revierte el cambio
-            if (!result.isPresent()) {
-                usuariosEditableView.refresh();
-            }
-        });
 
         accionUsuarioColumn.setCellFactory(param -> new TableCell<UsuarioEmpleadoTableView, Void>() {
             private final Button btn = new Button("Ver Dirección");
@@ -440,7 +401,7 @@ public class UsuariosEmpleadoController {
                 usuario.setEstado(newVal);
                 boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
                 if (exito) {
-                    mostrarAlerta("Éxito", "Estado del usuario actualizado correctamente.", Alert.AlertType.INFORMATION);
+                    mostrarAlerta("Éxito", "Contraseña Correcta, Tiene Permitido Editar El Estado.", Alert.AlertType.INFORMATION);
                     usuariosEditableView.refresh();
                 } else {
                     mostrarAlerta("Error", "No se pudo actualizar el estado en la base de datos.", Alert.AlertType.ERROR);
