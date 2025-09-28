@@ -48,6 +48,10 @@ public class Usuario {
         this.idTipoUsuario = idTipoUsuario;
     }
 
+    public Usuario() {
+
+    }
+
     public int getIdUsuario() {
         return idUsuario;
     }
@@ -70,9 +74,18 @@ public class Usuario {
         return idTipoUsuario;
     }
 
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
+    }
+
+    public void setContrasena(String contrasena) {
+        this.contrasena = contrasena;
+    }
+
     public void setIdPersona(int idPersona) {
         this.idPersona = idPersona;
     }
+
 
     public void setIdUsuario(int idUsuario) {
         this.idUsuario = idUsuario;

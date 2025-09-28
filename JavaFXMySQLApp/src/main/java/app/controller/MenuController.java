@@ -162,10 +162,10 @@ public class MenuController {
     public void handleOpcionesDeAdminButton(ActionEvent event) {
 
         // 1. Obtener el ID del usuario logueado
-        int userId = SessionManager.getInstance().getLoggedInUserId();
+        int userIdType = SessionManager.getInstance().getLoggedInUserIdType();
 
         // 2. Verificar si el ID es 4 (Administrador)
-        if (userId == 4) {
+        if (userIdType == 4) {
             // Si es ID 4, permite el acceso y carga la ventana
             try {
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

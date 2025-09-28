@@ -9,6 +9,7 @@ public class SessionManager {
         private String loggedInUserPassword;
         private String loggedInUsername;
         private int loggedInUserId;
+        private int loggedInUserIdType;
 
         // 3. Constructor privado para evitar instanciación externa
         private SessionManager() {
@@ -16,6 +17,7 @@ public class SessionManager {
             this.loggedInUserPassword = null;
             this.loggedInUsername = null;
             this.loggedInUserId = -1;
+            this.loggedInUserIdType = -1;
         }
 
         // 4. Método estático para obtener la única instancia (el corazón del Singleton)
@@ -48,9 +50,17 @@ public class SessionManager {
             return loggedInUserId;
         }
 
+        public int getLoggedInUserIdType() {
+        return loggedInUserIdType;
+    }
+
         public void setLoggedInUserId(int loggedInUserId) {
             this.loggedInUserId = loggedInUserId;
         }
+
+        public void setLoggedInUserIdType(int loggedInUserIdType) {
+        this.loggedInUserIdType = loggedInUserIdType;
+    }
 
         /**
          * Limpia todos los datos de la sesión (útil para la función de cerrar sesión/logout).

@@ -328,23 +328,38 @@ public class UsuariosEmpleadoController {
             result.ifPresent(password -> {
                 String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword();
                 int loggedInUserId = SessionManager.getInstance().getLoggedInUserId();
+
                 if (loggedInUserPassword != null && password.trim().equals(loggedInUserPassword.trim())) {
                     try {
-                        // Obtiene la contraseña original del usuario antes de la modificación
-                        String originalContrasena = usuarioDAO.obtenerContrasenaPorUsuario(selectedUsuario.getUsuario());
+                        // 1. Obtener la información ORIGINAL del usuario ANTES de la modificación
+                        // Esto se hace por ID, ya que el selectedUsuario puede tener datos editados
+                        Usuario originalUser = usuarioDAO.obtenerUsuarioPorId(selectedUsuario.getIdUsuario());
 
-                        // Realiza la modificación en la base de datos
+                        String originalContrasena = originalUser.getContrasenia(); // Contraseña original
+                        String originalUsuarioNombre = originalUser.getUsuario(); // Nombre de usuario original
+
+                        // 2. Realiza la modificación en la base de datos
                         boolean exito = usuarioDAO.modificarUsuariosEmpleados(selectedUsuario);
 
                         if (exito) {
                             mostrarAlerta("Éxito", "Usuario modificado exitosamente.", Alert.AlertType.INFORMATION);
 
-                            // Si el usuario modificado es el que está logueado y la contraseña ha cambiado, redirigimos
-                            if (selectedUsuario.getIdUsuario() == loggedInUserId && !selectedUsuario.getContrasena().equals(originalContrasena)) {
+                            // 3. Comprobar si el usuario modificado es el que está logueado Y si cambió usuario O contraseña
+                            boolean esUsuarioLogueado = selectedUsuario.getIdUsuario() == loggedInUserId;
+
+                            // Compara el nuevo valor de la tabla con el valor original de la base de datos
+                            boolean cambioContrasena = !selectedUsuario.getContrasena().equals(originalContrasena);
+                            boolean cambioNombreUsuario = !selectedUsuario.getUsuario().equals(originalUsuarioNombre);
+
+                            if (esUsuarioLogueado && (cambioContrasena || cambioNombreUsuario)) {
+
+                                // Cerrar la sesión del usuario actual
+                                SessionManager.getInstance().clearSession();
+
                                 Alert alertaRedirect = new Alert(Alert.AlertType.INFORMATION);
                                 alertaRedirect.setTitle("Credenciales Modificadas");
                                 alertaRedirect.setHeaderText(null);
-                                alertaRedirect.setContentText("Su Usuario y/o contraseña ha sido modificada. Será redirigido al menú de inicio para volver a iniciar sesión.");
+                                alertaRedirect.setContentText("Su nombre de usuario y/o contraseña ha sido modificado. Será redirigido al menú de inicio para volver a iniciar sesión.");
                                 alertaRedirect.showAndWait();
                                 redireccionarAInicioSesion(event);
                             }
@@ -354,7 +369,7 @@ public class UsuariosEmpleadoController {
 
                     } catch (Exception e) {
                         e.printStackTrace();
-                        mostrarAlerta("Error", "Ocurrió un error al intentar modificar el usuario.", Alert.AlertType.ERROR);
+                        mostrarAlerta("Error", "Ocurrió un error al intentar modificar el usuario. " + e.getMessage(), Alert.AlertType.ERROR);
                     }
                 } else {
                     mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);

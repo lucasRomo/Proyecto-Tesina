@@ -38,7 +38,9 @@ public class IniciodeSesionController {
                 SessionManager session = SessionManager.getInstance();
                 session.setLoggedInUserPassword(usuarioLogueado.getContrasenia());
                 session.setLoggedInUsername(usuarioLogueado.getUsuario());
-                session.setLoggedInUserId(usuarioLogueado.getIdTipoUsuario());
+                session.setLoggedInUserId(usuarioLogueado.getIdUsuario());
+                session.setLoggedInUserIdType(usuarioLogueado.getIdTipoUsuario());
+
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Inicio de Sesion Exitoso");

@@ -4,6 +4,7 @@ import app.controller.UsuarioEmpleadoTableView;
 import app.model.Usuario;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import app.dao.UsuarioDAO;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -169,24 +170,30 @@ public class UsuarioDAO {
         return contrasena;
     }
 
-    public int obtenerIdUsuarioPorCredenciales(String Usuario, String Contrasenia) {
-        String sql = "SELECT id_usuario FROM Usuario WHERE nombre_usuario = ? AND contrasena = ?";
-        int idUsuario = -1;
+    public Usuario obtenerUsuarioPorId(int idUsuario) throws SQLException {
+        // Solo necesitamos los campos de la tabla Usuario para la comparación de credenciales
+        String sql = "SELECT id_usuario, nombre_usuario, contrasena FROM Usuario WHERE id_usuario = ?";
 
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, Usuario);
-            pstmt.setString(2, Contrasenia);
+        try (Connection connection = getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
 
-            try (ResultSet rs = pstmt.executeQuery()) {
+            stmt.setInt(1, idUsuario);
+
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    idUsuario = rs.getInt("id_usuario");
+                    Usuario user = new Usuario();
+                    user.setIdUsuario(rs.getInt("id_usuario"));
+                    user.setUsuario(rs.getString("nombre_usuario"));
+                    user.setContrasena(rs.getString("contrasena"));
+
+                    return user;
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al obtener usuario por ID: " + e.getMessage());
+            throw e; // Relanza la excepción para que el controlador la maneje
         }
-        return idUsuario;
+        return null;
     }
 
     public Usuario obtenerUsuarioPorCredenciales(String nombreUsuario, String contrasena) {
