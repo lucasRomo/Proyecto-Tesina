@@ -9,6 +9,7 @@ public class Usuario {
     private int idPersona; // <-- CAMBIO AGREGADO
     private int idDireccion;
     private int idUsuario;
+    private int idTipoUsuario;
 
     // Constructor para inicio de sesion (sin idPersona)
     public Usuario(String usuario, String contrasenia) {
@@ -38,6 +39,15 @@ public class Usuario {
         this.idDireccion = idDireccion;
     }
 
+    public Usuario(int idUsuario, String usuario, String contrasena, int idPersona, int idDireccion, int idTipoUsuario) {
+        this.idUsuario = idUsuario;
+        this.usuario = usuario;
+        this.contrasena = contrasena;
+        this.idPersona = idPersona;
+        this.idDireccion = idDireccion;
+        this.idTipoUsuario = idTipoUsuario;
+    }
+
     public int getIdUsuario() {
         return idUsuario;
     }
@@ -56,6 +66,9 @@ public class Usuario {
 
     public int getIdDireccion() { return idDireccion; }
 
+    public int getIdTipoUsuario() {
+        return idTipoUsuario;
+    }
 
     public void setIdPersona(int idPersona) {
         this.idPersona = idPersona;
@@ -65,4 +78,7 @@ public class Usuario {
         this.idUsuario = idUsuario;
     }
 
+    public void setIdTipoUsuario(int idTipoUsuario) {
+        this.idTipoUsuario = idTipoUsuario;
+    }
 }

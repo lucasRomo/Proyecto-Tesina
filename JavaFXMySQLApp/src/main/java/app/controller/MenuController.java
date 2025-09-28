@@ -7,8 +7,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
+import app.controller.SessionManager;
 
 public class MenuController {
 
@@ -158,25 +160,38 @@ public class MenuController {
         }
     }
     public void handleOpcionesDeAdminButton(ActionEvent event) {
-        try {
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            // Carga la nueva ventana de registro
-            Parent root = FXMLLoader.load(getClass().getResource("/MenuAdmin.fxml"));
-            stage.setTitle("Menú de Admin");
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
+        // 1. Obtener el ID del usuario logueado
+        int userId = SessionManager.getInstance().getLoggedInUserId();
 
-            // Centra la ventana en la pantalla (opcional)
-            stage.centerOnScreen();
-            stage.show();
+        // 2. Verificar si el ID es 4 (Administrador)
+        if (userId == 4) {
+            // Si es ID 4, permite el acceso y carga la ventana
+            try {
+                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
+                // Carga la nueva ventana de Admin
+                Parent root = FXMLLoader.load(getClass().getResource("/MenuAdmin.fxml"));
+                stage.setTitle("Menú de Admin");
+                Scene scene = new Scene(root);
+                stage.setScene(scene);
+                stage.setWidth(1800);
+                stage.setHeight(1000);
 
+                // Centra la ventana en la pantalla (opcional)
+                stage.centerOnScreen();
+                stage.show();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            // Si NO es ID 4, deniega el acceso y muestra una alerta
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Acceso Denegado");
+            alert.setHeaderText(null);
+            alert.setContentText("No tienes permiso para acceder. Esta sección está restringida al usuario Administrador");
+            alert.showAndWait();
         }
     }
 

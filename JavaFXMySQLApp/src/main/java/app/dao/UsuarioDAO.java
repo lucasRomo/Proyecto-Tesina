@@ -190,7 +190,13 @@ public class UsuarioDAO {
     }
 
     public Usuario obtenerUsuarioPorCredenciales(String nombreUsuario, String contrasena) {
-        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_persona, p.id_direccion FROM Usuario u JOIN Persona p ON u.id_persona = p.id_persona WHERE u.nombre_usuario = ? AND u.contrasena = ?";
+
+        // CORRECCIÓN FINAL: Usamos p.id_tipo_persona según el esquema DDL proporcionado.
+        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_persona, p.id_direccion, p.id_tipo_persona " +
+                "FROM Usuario u " +
+                "JOIN Persona p ON u.id_persona = p.id_persona " +
+                "WHERE u.nombre_usuario = ? AND u.contrasena = ?";
+
         Usuario usuarioEncontrado = null;
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -200,13 +206,17 @@ public class UsuarioDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    // Si encontramos una coincidencia, creamos y devolvemos el objeto Usuario
+                    // Recuperamos el ID de Tipo de Persona (el rol)
+                    int idTipoUsuario = rs.getInt("id_tipo_persona");
+
+                    // Creamos el objeto Usuario con todos los datos
                     usuarioEncontrado = new Usuario(
                             rs.getInt("id_usuario"),
                             rs.getString("nombre_usuario"),
                             rs.getString("contrasena"),
                             rs.getInt("id_persona"),
-                            rs.getInt("id_direccion")
+                            rs.getInt("id_direccion"),
+                            idTipoUsuario
                     );
                 }
             }

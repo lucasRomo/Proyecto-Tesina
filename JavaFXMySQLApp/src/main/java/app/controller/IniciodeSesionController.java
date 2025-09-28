@@ -38,7 +38,7 @@ public class IniciodeSesionController {
                 SessionManager session = SessionManager.getInstance();
                 session.setLoggedInUserPassword(usuarioLogueado.getContrasenia());
                 session.setLoggedInUsername(usuarioLogueado.getUsuario());
-                session.setLoggedInUserId(usuarioLogueado.getIdUsuario());
+                session.setLoggedInUserId(usuarioLogueado.getIdTipoUsuario());
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Inicio de Sesion Exitoso");
@@ -48,7 +48,7 @@ public class IniciodeSesionController {
 
                 try {
                     // Carga el FXML de la pantalla de menú del administrador
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/MenuAdmin.fxml"));
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/MenuAbms.fxml"));
                     Parent root = loader.load();
 
                     // Obtenemos el controlador del menú de admin
