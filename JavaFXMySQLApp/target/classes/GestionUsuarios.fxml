@@ -41,7 +41,7 @@
                 </TableView>
                 <HBox alignment="CENTER" spacing="10.0">
                     <children>
-                        <TextField fx:id="filterField" prefHeight="25.0" prefWidth="273.0" promptText="Buscar por Usuario o Nombre..." HBox.hgrow="ALWAYS" />
+                        <TextField fx:id="filterField" prefHeight="25.0" prefWidth="273.0" promptText="Buscar por Usuario, Nombre o Apellido..." HBox.hgrow="ALWAYS" />
                         <Label styleClass="label-blanco" text="Estado:">
                             <font>
                                 <Font size="14.0" />
