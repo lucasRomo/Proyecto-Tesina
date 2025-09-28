@@ -10,6 +10,7 @@ app\model\Usuario.class
 app\model\Empleado.class
 app\controller\MenuController.class
 app\model\Direccion.class
+app\controller\SessionManager.class
 app\model\Persona.class
 app\model\Cliente.class
 app\controller\RegistroEmpleadoController.class

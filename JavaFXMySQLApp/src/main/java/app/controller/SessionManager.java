@@ -1,0 +1,70 @@
+package app.controller;
+
+public class SessionManager {
+
+        // 1. Instancia estática de la clase SessionManager
+        private static SessionManager instance;
+
+        // 2. Variables de la sesión
+        private String loggedInUserPassword;
+        private String loggedInUsername;
+        private int loggedInUserId;
+
+        // 3. Constructor privado para evitar instanciación externa
+        private SessionManager() {
+            // Inicializa variables si es necesario
+            this.loggedInUserPassword = null;
+            this.loggedInUsername = null;
+            this.loggedInUserId = -1;
+        }
+
+        // 4. Método estático para obtener la única instancia (el corazón del Singleton)
+        public static SessionManager getInstance() {
+            if (instance == null) {
+                instance = new SessionManager();
+            }
+            return instance;
+        }
+
+        // --- Getters y Setters para la información de la sesión ---
+
+        public String getLoggedInUserPassword() {
+            return loggedInUserPassword;
+        }
+
+        public void setLoggedInUserPassword(String loggedInUserPassword) {
+            this.loggedInUserPassword = loggedInUserPassword;
+        }
+
+        public String getLoggedInUsername() {
+            return loggedInUsername;
+        }
+
+        public void setLoggedInUsername(String loggedInUsername) {
+            this.loggedInUsername = loggedInUsername;
+        }
+
+        public int getLoggedInUserId() {
+            return loggedInUserId;
+        }
+
+        public void setLoggedInUserId(int loggedInUserId) {
+            this.loggedInUserId = loggedInUserId;
+        }
+
+        /**
+         * Limpia todos los datos de la sesión (útil para la función de cerrar sesión/logout).
+         */
+        public void clearSession() {
+            this.loggedInUserPassword = null;
+            this.loggedInUsername = null;
+            this.loggedInUserId = -1;
+        }
+
+        /**
+         * Verifica si hay una sesión activa.
+         */
+        public boolean isAuthenticated() {
+            return this.loggedInUserPassword != null && this.loggedInUserId != -1;
+        }
+}

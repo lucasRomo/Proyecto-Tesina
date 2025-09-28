@@ -26,6 +26,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.scene.control.TableCell;
+import app.controller.SessionManager;
 
 public class UsuariosEmpleadoController {
 
@@ -48,10 +49,6 @@ public class UsuariosEmpleadoController {
     private DireccionDAO direccionDAO;
     private ObservableList<UsuarioEmpleadoTableView> listaUsuariosEmpleados;
     private FilteredList<UsuarioEmpleadoTableView> filteredData;
-    private String loggedInUserPassword;
-    private String loggedInUsername;
-    private int loggedInUserId;
-
 
     @FXML
     private void initialize() {
@@ -234,6 +231,7 @@ public class UsuariosEmpleadoController {
             Optional<String> result = dialog.showAndWait();
 
             result.ifPresent(password -> {
+                String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword();
                 if (password.trim().equals(loggedInUserPassword.trim())) {
                     usuario.setEstado(nuevoEstado);
                     boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
@@ -269,6 +267,7 @@ public class UsuariosEmpleadoController {
                     Optional<String> result = dialog.showAndWait();
 
                     result.ifPresent(password -> {
+                        String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword();
                         if (password.trim().equals(loggedInUserPassword.trim())) {
                             UsuarioEmpleadoTableView usuario = getTableView().getItems().get(getIndex());
                             mostrarDireccionUsuario(usuario.getIdDireccion());
@@ -296,18 +295,6 @@ public class UsuariosEmpleadoController {
             e.printStackTrace();
             mostrarAlerta("Error", "No se pudieron cargar los datos de los usuarios.", Alert.AlertType.ERROR);
         }
-    }
-
-    public void setLoggedInUserPassword(String password) {
-        this.loggedInUserPassword = password;
-    }
-
-    public void setLoggedInUsername(String User) {
-        this.loggedInUsername = User;
-    }
-
-    public void setLoggedInUserId(int userId) {
-        this.loggedInUserId = userId;
     }
 
     private void mostrarDireccionUsuario(int idDireccion) {
@@ -378,6 +365,8 @@ public class UsuariosEmpleadoController {
 
             // Se valida la contraseña ingresada
             result.ifPresent(password -> {
+                String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword();
+                int loggedInUserId = SessionManager.getInstance().getLoggedInUserId();
                 if (loggedInUserPassword != null && password.trim().equals(loggedInUserPassword.trim())) {
                     try {
                         // Obtiene la contraseña original del usuario antes de la modificación
@@ -390,7 +379,7 @@ public class UsuariosEmpleadoController {
                             mostrarAlerta("Éxito", "Usuario modificado exitosamente.", Alert.AlertType.INFORMATION);
 
                             // Si el usuario modificado es el que está logueado y la contraseña ha cambiado, redirigimos
-                            if (selectedUsuario.getIdUsuario() == this.loggedInUserId && !selectedUsuario.getContrasena().equals(originalContrasena)) {
+                            if (selectedUsuario.getIdUsuario() == loggedInUserId && !selectedUsuario.getContrasena().equals(originalContrasena)) {
                                 Alert alertaRedirect = new Alert(Alert.AlertType.INFORMATION);
                                 alertaRedirect.setTitle("Credenciales Modificadas");
                                 alertaRedirect.setHeaderText(null);
@@ -446,6 +435,7 @@ public class UsuariosEmpleadoController {
         Optional<String> result = dialog.showAndWait();
 
         result.ifPresent(password -> {
+            String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword();
             if (password.trim().equals(loggedInUserPassword.trim())) {
                 usuario.setEstado(newVal);
                 boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);

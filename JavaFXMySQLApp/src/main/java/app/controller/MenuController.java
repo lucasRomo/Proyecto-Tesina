@@ -12,22 +12,6 @@ import javafx.stage.Stage;
 
 public class MenuController {
 
-    private String loggedInUserPassword;
-    private String loggedInUsername;
-    private int loggedInUserId;
-
-    public void setLoggedInUserPassword(String password) {
-        this.loggedInUserPassword = password;
-    }
-
-    public void setLoggedInUsername(String username) {
-        this.loggedInUsername = username;
-    }
-
-    public void setLoggedInUserId(int userId) {
-        this.loggedInUserId = userId;
-    }
-
     @FXML
     public void handleStock(ActionEvent event){
         try {
@@ -203,13 +187,6 @@ public class MenuController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/GestionUsuarios.fxml"));
             Parent root = loader.load();
 
-            // Obtiene el controlador de la vista de usuarios
-            UsuariosEmpleadoController usuariosController = loader.getController();
-
-            // Pasa la contraseña del usuario logueado al controlador de usuarios
-            usuariosController.setLoggedInUserPassword(this.loggedInUserPassword);
-            usuariosController.setLoggedInUsername(this.loggedInUsername);
-            usuariosController.setLoggedInUserId(this.loggedInUserId);
             // Carga la nueva escena
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
