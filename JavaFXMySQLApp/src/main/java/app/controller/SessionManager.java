@@ -62,18 +62,12 @@ public class SessionManager {
         this.loggedInUserIdType = loggedInUserIdType;
     }
 
-        /**
-         * Limpia todos los datos de la sesión (útil para la función de cerrar sesión/logout).
-         */
         public void clearSession() {
             this.loggedInUserPassword = null;
             this.loggedInUsername = null;
             this.loggedInUserId = -1;
         }
 
-        /**
-         * Verifica si hay una sesión activa.
-         */
         public boolean isAuthenticated() {
             return this.loggedInUserPassword != null && this.loggedInUserId != -1;
         }

@@ -9,10 +9,13 @@ app\model\TipoDocumento.class
 app\model\Usuario.class
 app\model\Empleado.class
 app\controller\MenuController.class
+app\dao\FacturaDAO.class
+app\controller\FacturasAdminTableView.class
 app\model\Direccion.class
 app\controller\SessionManager.class
 app\model\Persona.class
 app\model\Cliente.class
 app\controller\RegistroEmpleadoController.class
+app\controller\FacturasController.class
 app\controller\UsuariosEmpleadoController$2.class
 app\controller\UsuariosEmpleadoController.class

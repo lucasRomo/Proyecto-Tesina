@@ -159,6 +159,8 @@ public class MenuController {
             e.printStackTrace();
         }
     }
+
+    @FXML
     public void handleOpcionesDeAdminButton(ActionEvent event) {
 
         // 1. Obtener el ID del usuario logueado
@@ -207,6 +209,44 @@ public class MenuController {
             Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.setTitle("Gestión de Usuarios Empleados");
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void handleInformesMenu(ActionEvent event) {
+        try {
+            // Carga el FXML de la tabla de usuarios
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/InformesAdmin.fxml"));
+            Parent root = loader.load();
+
+            // Carga la nueva escena
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Menu de Informes");
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void handleFacturas(ActionEvent event) {
+        try {
+            // Carga el FXML de la tabla de usuarios
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FacturasAdmin.fxml"));
+            Parent root = loader.load();
+
+            // Carga la nueva escena
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Menu de Informes");
             stage.show();
 
         } catch (IOException e) {
