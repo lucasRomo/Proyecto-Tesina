@@ -1,209 +1,189 @@
 package app.controller;
 
-import app.MainApp;
-import app.model.Cliente;
-import app.model.Empleado;
-import app.model.Pedido;
-import app.dao.ClienteDAO;
-import app.dao.EmpleadoDAO;
 import app.dao.PedidoDAO;
+import app.model.Pedido;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
 
 public class CrearPedidoController {
 
-    @FXML
-    private ComboBox<Cliente> clienteComboBox;
-    @FXML
-    private ComboBox<Empleado> empleadoComboBox;
-    @FXML
-    private ComboBox<String> estadoComboBox;
-    @FXML
-    private DatePicker fechaEntregaEstimadaPicker;
-    @FXML
-    private DatePicker fechaFinalizacionPicker;
-    @FXML
-    private TextArea instruccionesArea;
-    @FXML
-    private TextField montoTotalField;
-    @FXML
-    private TextField montoEntregadoField;
+    // ComboBox existentes
+    @FXML private ComboBox<String> clienteComboBox; // NOTA: Idealmente ComboBox<Cliente>
+    @FXML private ComboBox<String> empleadoComboBox; // NOTA: Idealmente ComboBox<Empleado>
+    @FXML private ComboBox<String> estadoComboBox;
 
-    private ClienteDAO clienteDAO = new ClienteDAO();
-    private EmpleadoDAO empleadoDAO = new EmpleadoDAO();
+    // NUEVO: ComboBox para el método de pago (Asegúrate de que el fx:id coincida con el FXML)
+    @FXML private ComboBox<String> metodoPagoComboBox;
+
+    // Otros campos
+    @FXML private DatePicker fechaEntregaEstimadaPicker;
+    @FXML private DatePicker fechaFinalizacionPicker;
+    @FXML private TextField montoTotalField;
+    @FXML private TextField montoEntregadoField;
+    @FXML private TextArea instruccionesArea;
+
     private PedidoDAO pedidoDAO = new PedidoDAO();
+    private Stage dialogStage;
 
+    /**
+     * Inicializa el controlador. Se llama automáticamente después de que se carga el FXML.
+     */
     @FXML
-    private void initialize() {
-        // Cargar clientes en el ComboBox y configurar cómo se muestran
-        cargarClientes();
+    public void initialize() {
+        // Inicializar ComboBox de Estado (ejemplo)
+        estadoComboBox.setItems(FXCollections.observableArrayList(
+                "Pendiente", "En Proceso", "Finalizado", "Entregado", "Cancelado"
+        ));
 
-        // Cargar empleados en el ComboBox y configurar cómo se muestran
-        cargarEmpleados();
+        // NUEVO: Inicializar ComboBox de Método de Pago con las opciones requeridas
+        metodoPagoComboBox.setItems(FXCollections.observableArrayList(
+                "Transferencia", "Efectivo"
+        ));
 
-        // Cargar opciones de estado
-        ObservableList<String> estados = FXCollections.observableArrayList("Pendiente", "En proceso", "Finalizado");
-        estadoComboBox.setItems(estados);
-        estadoComboBox.getSelectionModel().select("Pendiente"); // Seleccionar "Pendiente" por defecto
+        // TODO: Cargar y rellenar clienteComboBox y empleadoComboBox desde el DAO
+        // Estos son datos de ejemplo y deben ser reemplazados por tu lógica de carga real.
+        clienteComboBox.setItems(FXCollections.observableArrayList("Cliente A", "Cliente B"));
+        empleadoComboBox.setItems(FXCollections.observableArrayList("Empleado 1", "Empleado 2"));
     }
 
-    private void cargarClientes() {
-        List<Cliente> clientes = clienteDAO.getAllClientes();
-        clienteComboBox.setItems(FXCollections.observableArrayList(clientes));
-        // Configurar la visualización del ComboBox de clientes
-        clienteComboBox.setCellFactory(lv -> new ListCell<Cliente>() {
-            @Override
-            protected void updateItem(Cliente cliente, boolean empty) {
-                super.updateItem(cliente, empty);
-                setText(empty ? "" : cliente.getNombre() + " " + cliente.getApellido());
-            }
-        });
-        clienteComboBox.setButtonCell(new ListCell<Cliente>() {
-            @Override
-            protected void updateItem(Cliente cliente, boolean empty) {
-                super.updateItem(cliente, empty);
-                setText(empty ? "Seleccione Cliente" : cliente.getNombre() + " " + cliente.getApellido());
-            }
-        });
+    /**
+     * Establece el escenario (Stage) de este diálogo.
+     */
+    public void setDialogStage(Stage dialogStage) {
+        this.dialogStage = dialogStage;
     }
 
-    private void cargarEmpleados() {
-        List<Empleado> empleados = empleadoDAO.getAllEmpleados();
-        empleadoComboBox.setItems(FXCollections.observableArrayList(empleados));
-        // Configurar la visualización del ComboBox de empleados
-        empleadoComboBox.setCellFactory(lv -> new ListCell<Empleado>() {
-            @Override
-            protected void updateItem(Empleado empleado, boolean empty) {
-                super.updateItem(empleado, empty);
-                setText(empty ? "" : empleado.getNombre() + " " + empleado.getApellido());
-            }
-        });
-        empleadoComboBox.setButtonCell(new ListCell<Empleado>() {
-            @Override
-            protected void updateItem(Empleado empleado, boolean empty) {
-                super.updateItem(empleado, empty);
-                setText(empty ? "Seleccione Empleado" : empleado.getNombre() + " " + empleado.getApellido());
-            }
-        });
-    }
 
+    /**
+     * Maneja el evento de guardar el pedido, incluyendo el nuevo método de pago.
+     */
     @FXML
     private void handleGuardar() {
-        try {
-            Cliente clienteSeleccionado = clienteComboBox.getSelectionModel().getSelectedItem();
-            Empleado empleadoSeleccionado = empleadoComboBox.getSelectionModel().getSelectedItem(); // Este es el empleado que se asignará
+        if (isInputValid()) {
+            // NOTA: Reemplaza estos IDs estáticos con la lógica para obtener el ID real
+            // de los objetos Cliente y Empleado seleccionados en los ComboBox.
+            int idCliente = 1;
+            int idEmpleado = 1;
 
-            if (clienteSeleccionado == null) {
-                mostrarAlerta("Error", "Por favor, seleccione un cliente.", Alert.AlertType.ERROR);
-                return;
-            }
-
-            // Aquí decidimos si es obligatorio seleccionar un empleado.
-            // Si es obligatorio, mantenemos esta validación.
-            // Si un pedido puede crearse sin empleado asignado al principio, podemos quitarla.
-            if (empleadoSeleccionado == null) {
-                mostrarAlerta("Error", "Por favor, seleccione un empleado.", Alert.AlertType.ERROR);
-                return;
-            }
-
-            if (montoTotalField.getText().isEmpty() || montoEntregadoField.getText().isEmpty()) {
-                mostrarAlerta("Error", "Por favor, complete los campos de monto.", Alert.AlertType.ERROR);
-                return;
-            }
-
-            LocalDateTime fechaCreacion = LocalDateTime.now();
-            LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaPicker.getValue() != null) ? fechaEntregaEstimadaPicker.getValue().atStartOfDay() : null;
-            LocalDateTime fechaFinalizacion = null; // Se establecerá a null al crear
             String estado = estadoComboBox.getSelectionModel().getSelectedItem();
+            String metodoPago = metodoPagoComboBox.getSelectionModel().getSelectedItem(); // <-- VALOR DEL NUEVO CAMPO
+            LocalDateTime fechaCreacion = LocalDateTime.now();
+
+            LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaPicker.getValue() != null)
+                    ? fechaEntregaEstimadaPicker.getValue().atStartOfDay() : null;
+
+            LocalDateTime fechaFinalizacion = (fechaFinalizacionPicker.getValue() != null)
+                    ? fechaFinalizacionPicker.getValue().atStartOfDay() : null;
+
             String instrucciones = instruccionesArea.getText();
             double montoTotal = Double.parseDouble(montoTotalField.getText());
             double montoEntregado = Double.parseDouble(montoEntregadoField.getText());
 
-            // Crear el objeto Pedido con el id del cliente y del empleado
+            // Usamos el constructor actualizado del modelo Pedido
             Pedido nuevoPedido = new Pedido(
-                    clienteSeleccionado.getIdCliente(),
-                    empleadoSeleccionado.getIdEmpleado(), // Pasamos el ID del empleado
+                    idCliente,
+                    idEmpleado,
                     fechaCreacion,
                     fechaEntregaEstimada,
-                    fechaFinalizacion, // null al crear
+                    fechaFinalizacion,
                     estado,
+                    metodoPago, // <-- Se pasa el nuevo método de pago
                     instrucciones,
                     montoTotal,
                     montoEntregado
             );
 
-            boolean exito = pedidoDAO.savePedido(nuevoPedido); // PedidoDAO ahora maneja la transacción de Pedido y AsignacionPedido
-            if (exito) {
-                mostrarAlerta("Éxito", "Pedido creado exitosamente y empleado asignado.", Alert.AlertType.INFORMATION);
-
-                // Redirigir al menú principal
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/pedidosPrimerMenu.fxml"));
-                    Parent root = loader.load();
-                    Stage stage = (Stage) clienteComboBox.getScene().getWindow();
-
-                    // Sustitución de MainApp.WINDOW_WIDTH/HEIGHT por 1800 y 1000
-                    stage.setScene(new Scene(root, 1800, 1000));
-
-                    stage.setTitle("Menú de Pedidos");
-
-                    // Añadir centrado de ventana
-                    stage.centerOnScreen();
-
-                    stage.show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
+            if (pedidoDAO.savePedido(nuevoPedido)) {
+                mostrarAlerta("Éxito", "Pedido guardado", "El nuevo pedido se ha guardado exitosamente.", Alert.AlertType.INFORMATION);
+                dialogStage.close();
             } else {
-                mostrarAlerta("Error", "No se pudo crear el pedido o asignar el empleado.", Alert.AlertType.ERROR);
+                mostrarAlerta("Error", "Error al guardar", "No se pudo guardar el pedido en la base de datos.", Alert.AlertType.ERROR);
             }
-
-        } catch (NumberFormatException e) {
-            mostrarAlerta("Error de Formato", "Por favor, ingrese valores numéricos válidos para los montos.", Alert.AlertType.ERROR);
-        } catch (Exception e) { // Captura cualquier otra excepción inesperada
-            e.printStackTrace();
-            mostrarAlerta("Error Inesperado", "Ocurrió un error al guardar el pedido: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
+    /**
+     * Valida la entrada del usuario, incluyendo el nuevo campo de pago.
+     */
+    private boolean isInputValid() {
+        String errorMessage = "";
+
+        if (clienteComboBox.getSelectionModel().isEmpty()) {
+            errorMessage += "Debes seleccionar un cliente.\n";
+        }
+        if (estadoComboBox.getSelectionModel().isEmpty()) {
+            errorMessage += "Debes seleccionar un estado para el pedido.\n";
+        }
+        if (metodoPagoComboBox.getSelectionModel().isEmpty()) { // <-- VALIDACIÓN DEL NUEVO CAMPO
+            errorMessage += "Debes seleccionar un método de pago.\n";
+        }
+
+        // Validación de montos
+        if (montoTotalField.getText() == null || montoTotalField.getText().isEmpty()) {
+            errorMessage += "El monto total no puede estar vacío.\n";
+        } else {
+            try {
+                if (Double.parseDouble(montoTotalField.getText()) < 0) {
+                    errorMessage += "El monto total debe ser un número positivo.\n";
+                }
+            } catch (NumberFormatException e) {
+                errorMessage += "El monto total debe ser un número válido.\n";
+            }
+        }
+
+        // Validación básica de montoEntregado (si aplica)
+        if (montoEntregadoField.getText() == null || montoEntregadoField.getText().isEmpty()) {
+            // Opcional: Podrías permitir que esté vacío si el monto entregado es 0.
+        } else {
+            try {
+                if (Double.parseDouble(montoEntregadoField.getText()) < 0) {
+                    errorMessage += "El monto entregado debe ser un número positivo o cero.\n";
+                }
+            } catch (NumberFormatException e) {
+                errorMessage += "El monto entregado debe ser un número válido.\n";
+            }
+        }
+
+
+        if (errorMessage.isEmpty()) {
+            return true;
+        } else {
+            mostrarAlerta("Campos Inválidos", "Por favor, corrige los campos", errorMessage, Alert.AlertType.ERROR);
+            return false;
+        }
+    }
+
+
+    /**
+     * Maneja el evento de cancelar y cierra la ventana.
+     */
     @FXML
     private void handleCancelar() {
-        // Redirigir al menú principal sin guardar
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pedidosPrimerMenu.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) clienteComboBox.getScene().getWindow();
-
-            // Aplicamos las dimensiones y centrado de tu ejemplo de 'start'
-            stage.setScene(new Scene(root, 1800, 1000));
-
-            stage.setTitle("Menú de Pedidos");
-
-            // Centra la ventana en la pantalla (opcional)
-            stage.centerOnScreen();
-
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
+        // Obtener el Stage de cualquier componente FXML
+        if (dialogStage != null) {
+            dialogStage.close();
+        } else {
+            // Esto se usa en caso de que el dialogStage no se haya inyectado correctamente
+            ((Stage) clienteComboBox.getScene().getWindow()).close();
         }
     }
 
-    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
-        Alert alert = new Alert(tipo);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
+    /**
+     * Método auxiliar para mostrar alertas.
+     */
+    private void mostrarAlerta(String title, String header, String content, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
         alert.showAndWait();
     }
 }

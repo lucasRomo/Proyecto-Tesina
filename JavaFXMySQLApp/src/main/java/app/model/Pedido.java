@@ -5,28 +5,30 @@ import java.time.LocalDateTime;
 public class Pedido {
     private int idPedido;
     private int idCliente;
-    private int idEmpleado; // <-- IMPORTANTE: atributo para almacenar el ID del empleado seleccionado
-    private String nombreCliente; // Para visualización en tablas/combos
-    private String nombreEmpleado; // Para visualización en tablas/combos
+    private int idEmpleado;
+    private String nombreCliente;
+    private String nombreEmpleado;
 
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaEntregaEstimada;
     private LocalDateTime fechaFinalizacion;
     private String estado;
+    private String metodoPago; // <-- NUEVO: Atributo para almacenar el método de pago
     private String instrucciones;
     private double montoTotal;
     private double montoEntregado;
 
     // Constructor para crear un NUEVO Pedido desde la UI (ej. CrearPedidoController)
     public Pedido(int idCliente, int idEmpleado, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada,
-                  LocalDateTime fechaFinalizacion, String estado, String instrucciones,
-                  double montoTotal, double montoEntregado) {
+                  LocalDateTime fechaFinalizacion, String estado, String metodoPago, String instrucciones,
+                  double montoTotal, double montoEntregado) { // <-- Añadido metodoPago
         this.idCliente = idCliente;
-        this.idEmpleado = idEmpleado; // Asignamos el ID del empleado aquí
+        this.idEmpleado = idEmpleado;
         this.fechaCreacion = fechaCreacion;
         this.fechaEntregaEstimada = fechaEntregaEstimada;
         this.fechaFinalizacion = fechaFinalizacion;
         this.estado = estado;
+        this.metodoPago = metodoPago; // <-- Asignación del nuevo campo
         this.instrucciones = instrucciones;
         this.montoTotal = montoTotal;
         this.montoEntregado = montoEntregado;
@@ -34,7 +36,7 @@ public class Pedido {
 
     // Constructor COMPLETO para cuando se recuperan Pedidos con sus nombres (ej. PedidoDAO.getAllPedidos)
     public Pedido(int idPedido, int idCliente, String nombreCliente, int idEmpleado, String nombreEmpleado,
-                  String estado, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada,
+                  String estado, String metodoPago, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada, // <-- Añadido metodoPago
                   LocalDateTime fechaFinalizacion, String instrucciones, double montoTotal, double montoEntregado) {
         this.idPedido = idPedido;
         this.idCliente = idCliente;
@@ -42,6 +44,7 @@ public class Pedido {
         this.idEmpleado = idEmpleado;
         this.nombreEmpleado = nombreEmpleado;
         this.estado = estado;
+        this.metodoPago = metodoPago; // <-- Asignación del nuevo campo
         this.fechaCreacion = fechaCreacion;
         this.fechaEntregaEstimada = fechaEntregaEstimada;
         this.fechaFinalizacion = fechaFinalizacion;
@@ -57,7 +60,6 @@ public class Pedido {
     public int getIdCliente() { return idCliente; }
     public void setIdCliente(int idCliente) { this.idCliente = idCliente; }
 
-    // Getter para el ID del empleado
     public int getIdEmpleado() { return idEmpleado; }
     public void setIdEmpleado(int idEmpleado) { this.idEmpleado = idEmpleado; }
 
@@ -78,6 +80,10 @@ public class Pedido {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    // NUEVO: Getter y Setter para metodoPago
+    public String getMetodoPago() { return metodoPago; }
+    public void setMetodoPago(String metodoPago) { this.metodoPago = metodoPago; }
 
     public String getInstrucciones() { return instrucciones; }
     public void setInstrucciones(String instrucciones) { this.instrucciones = instrucciones; }

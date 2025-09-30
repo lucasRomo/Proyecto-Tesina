@@ -30,25 +30,29 @@
         <Label text="Estado:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <ComboBox fx:id="estadoComboBox" promptText="Seleccione Estado" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-        <Label text="Fecha de Entrega Estimada:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        <DatePicker fx:id="fechaEntregaEstimadaPicker" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <Label text="Método de Pago:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <ComboBox fx:id="metodoPagoComboBox" promptText="Seleccione Método" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-        <Label text="Fecha de Finalización:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-        <DatePicker fx:id="fechaFinalizacionPicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+        <Label text="Fecha de Entrega Estimada:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <DatePicker fx:id="fechaEntregaEstimadaPicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
-        <Label text="Monto Total:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-        <TextField fx:id="montoTotalField" promptText="Monto Total" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        <Label text="Fecha de Finalización:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <DatePicker fx:id="fechaFinalizacionPicker" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
-        <Label text="Monto Entregado:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-        <TextField fx:id="montoEntregadoField" promptText="Monto Entregado" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+        <Label text="Monto Total:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+        <TextField fx:id="montoTotalField" promptText="Monto Total" GridPane.columnIndex="1" GridPane.rowIndex="6" />
 
-        <Label text="Instrucciones:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
-        <TextArea fx:id="instruccionesArea" prefHeight="100" promptText="Instrucciones para el pedido" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+        <Label text="Monto Entregado:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+        <TextField fx:id="montoEntregadoField" promptText="Monto Entregado" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+
+        <Label text="Instrucciones:" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+        <TextArea fx:id="instruccionesArea" prefHeight="100" promptText="Instrucciones para el pedido" GridPane.columnIndex="1" GridPane.rowIndex="8" />
         <columnConstraints>
             <ColumnConstraints />
             <ColumnConstraints />
         </columnConstraints>
         <rowConstraints>
+            <RowConstraints />
             <RowConstraints />
             <RowConstraints />
             <RowConstraints />

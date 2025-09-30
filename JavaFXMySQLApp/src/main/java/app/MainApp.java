@@ -21,8 +21,8 @@ public class MainApp extends Application {
         stage.setScene(scene);
 
 
-        stage.setWidth(1800);
-        stage.setHeight(1000);
+        stage.setWidth(1366);
+        stage.setHeight(768);
 
         // Centra la ventana en la pantalla (opcional)
         stage.centerOnScreen();

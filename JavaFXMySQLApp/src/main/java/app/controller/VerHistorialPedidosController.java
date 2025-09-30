@@ -1,7 +1,7 @@
 package app.controller;
 
 import app.dao.PedidoDAO;
-import app.model.Pedido; // Asegúrate de que tu clase Pedido está importada y tiene el getter getMetodoPago()
+import app.model.Pedido;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,7 +19,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class VerPedidosController {
+public class VerHistorialPedidosController {
 
     @FXML
     private TableView<Pedido> pedidosTable;
@@ -31,21 +31,19 @@ public class VerPedidosController {
     private TableColumn<Pedido, String> empleadoColumn;
     @FXML
     private TableColumn<Pedido, String> estadoColumn;
-
-    // NUEVA COLUMNA: Método de Pago
     @FXML
     private TableColumn<Pedido, String> metodoPagoColumn;
-
     @FXML
     private TableColumn<Pedido, Double> montoTotalColumn;
     @FXML
     private TableColumn<Pedido, Double> montoEntregadoColumn;
     @FXML
-    private TableColumn<Pedido, String> fechaEntregaEstimadaColumn; // Puede ser String o LocalDate
+    private TableColumn<Pedido, String> fechaEntregaEstimadaColumn;
     @FXML
     private TableColumn<Pedido, String> instruccionesColumn;
 
     private PedidoDAO pedidoDAO;
+    private static final String ESTADO_RETIRADO = "Retirado";
 
     @FXML
     private void initialize() {
@@ -56,35 +54,41 @@ public class VerPedidosController {
         clienteColumn.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         empleadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombreEmpleado"));
         estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
-
-        // Inicialización de la nueva columna (se vincula al campo 'metodoPago' del objeto Pedido)
         metodoPagoColumn.setCellValueFactory(new PropertyValueFactory<>("metodoPago"));
-
         montoTotalColumn.setCellValueFactory(new PropertyValueFactory<>("montoTotal"));
         montoEntregadoColumn.setCellValueFactory(new PropertyValueFactory<>("montoEntregado"));
         fechaEntregaEstimadaColumn.setCellValueFactory(new PropertyValueFactory<>("fechaEntregaEstimada"));
         instruccionesColumn.setCellValueFactory(new PropertyValueFactory<>("instrucciones"));
 
-        // Cargar los pedidos en la tabla
-        cargarPedidos();
+        // Cargar SOLO los pedidos con estado 'Retirado'
+        cargarPedidosRetirados();
     }
 
-    private void cargarPedidos() {
-        // Obtiene la lista de pedidos del DAO (que ahora incluye metodo_pago gracias a las modificaciones anteriores)
-        ObservableList<Pedido> pedidos = FXCollections.observableArrayList(pedidoDAO.getAllPedidos());
-        // Asigna la ObservableList a la tabla
-        pedidosTable.setItems(pedidos);
+    /**
+     * Carga y filtra los pedidos con estado "Retirado".
+     * Si el DAO no soporta filtrado SQL, se filtra en memoria.
+     */
+    private void cargarPedidosRetirados() {
+        System.out.println("Cargando historial de pedidos con estado: " + ESTADO_RETIRADO);
+
+        // Carga todos los pedidos y luego filtra en memoria.
+        // Se recomienda modificar PedidoDAO para usar un método SQL de filtrado para mayor eficiencia.
+        ObservableList<Pedido> todosPedidos = FXCollections.observableArrayList(pedidoDAO.getAllPedidos());
+        ObservableList<Pedido> pedidosRetirados = todosPedidos.filtered(
+                // El método .filtered() solo conserva los elementos que cumplen la condición:
+                pedido -> ESTADO_RETIRADO.equalsIgnoreCase(pedido.getEstado())
+        );
+
+        pedidosTable.setItems(pedidosRetirados);
+
+        if (pedidosRetirados.isEmpty()) {
+            System.out.println("No hay pedidos con estado '" + ESTADO_RETIRADO + "' para mostrar.");
+        }
     }
 
-    @FXML
-    private void handleGuardarCambios(ActionEvent event) {
-        // Lógica para guardar cambios en la base de datos
-        // ... (Aquí iría la lógica para actualizar la base de datos si la tabla fuese editable)
-
-        System.out.println("Guardando cambios...");
-        mostrarAlerta("Éxito", "Cambios guardados correctamente.", Alert.AlertType.INFORMATION);
-    }
-
+    /**
+     * Vuelve al menú principal de pedidos.
+     */
     @FXML
     private void handleVolver(ActionEvent event) {
         try {
@@ -92,12 +96,10 @@ public class VerPedidosController {
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            // Usando un tamaño de ventana fijo (1800x1000)
             stage.setScene(new Scene(root, 1800, 1000));
 
             stage.setTitle("Menú de Pedidos");
 
-            // Añadir centrado de ventana
             stage.centerOnScreen();
 
             stage.show();

@@ -6,8 +6,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
 <?import java.net.URL?>
-
-<VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerPedidosController">
+<VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerHistorialPedidosController">
     <stylesheets>
         <URL value="@style.css" />
     </stylesheets>
@@ -15,13 +14,13 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label text="Ver y Editar Pedidos" styleClass="titulo-principal">
+    <Label text="Historial de Pedidos (Estado: Retirado)" styleClass="titulo-principal">
         <font>
             <Font name="System Bold" size="20.0" />
         </font>
     </Label>
 
-    <TableView fx:id="pedidosTable" VBox.vgrow="ALWAYS" editable="true">
+    <TableView fx:id="pedidosTable" VBox.vgrow="ALWAYS" editable="false">
         <columns>
             <TableColumn fx:id="idPedidoColumn" text="ID" prefWidth="75.0">
                 <cellValueFactory>
@@ -43,13 +42,11 @@
                     <PropertyValueFactory property="estado" />
                 </cellValueFactory>
             </TableColumn>
-            <!-- NUEVA COLUMNA: Método de Pago -->
             <TableColumn fx:id="metodoPagoColumn" text="Método Pago" prefWidth="100.0">
                 <cellValueFactory>
                     <PropertyValueFactory property="metodoPago" />
                 </cellValueFactory>
             </TableColumn>
-            <!-- FIN NUEVA COLUMNA -->
             <TableColumn fx:id="montoTotalColumn" text="Monto Total" prefWidth="100.0">
                 <cellValueFactory>
                     <PropertyValueFactory property="montoTotal" />
@@ -74,8 +71,8 @@
     </TableView>
 
     <HBox spacing="10.0" alignment="CENTER">
-        <Button onAction="#handleGuardarCambios" text="Guardar Cambios" />
-        <Button onAction="#handleVolver" text="Volver" styleClass="button-volver"/>
+        <!-- El historial no requiere guardar cambios, solo el botón de volver -->
+        <Button onAction="#handleVolver" text="Volver al Menú" styleClass="button-volver"/>
     </HBox>
 
 </VBox>

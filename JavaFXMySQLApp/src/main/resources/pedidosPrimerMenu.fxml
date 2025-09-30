@@ -22,6 +22,9 @@
     </Label>
 
     <Button onAction="#handlecrearPedido" prefWidth="200.0" text="Crear Pedido" />
-    <Button onAction="#handleVerPedidos" prefWidth="200.0" text="Ver Pedidos" />
+    <Button onAction="#handleVerPedidos" prefWidth="200.0" text="Ver Pedidos (Activos)" />
+    <!-- NUEVO BOTÓN PARA EL HISTORIAL -->
+    <Button onAction="#handleVerHistorial" prefWidth="200.0" text="Historial de Pedidos (Retirados)" />
+
     <Button onAction="#handleVolverPedido" prefWidth="200.0" text="Volver" />
 </VBox>

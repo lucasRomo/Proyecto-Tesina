@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-
 <?import javafx.scene.layout.*?>
-
 <?import javafx.scene.text.Font?>
-
 <?import javafx.geometry.Insets?>
-
 <?import javafx.scene.control.cell.PropertyValueFactory?>
-
 <?import java.net.URL?>
+
 <VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerPedidosController">
     <stylesheets>
         <URL value="@style.css" />
@@ -47,6 +43,13 @@
                     <PropertyValueFactory property="estado" />
                 </cellValueFactory>
             </TableColumn>
+            <!-- NUEVA COLUMNA: Método de Pago -->
+            <TableColumn fx:id="metodoPagoColumn" text="Método Pago" prefWidth="100.0">
+                <cellValueFactory>
+                    <PropertyValueFactory property="metodoPago" />
+                </cellValueFactory>
+            </TableColumn>
+            <!-- FIN NUEVA COLUMNA -->
             <TableColumn fx:id="montoTotalColumn" text="Monto Total" prefWidth="100.0">
                 <cellValueFactory>
                     <PropertyValueFactory property="montoTotal" />

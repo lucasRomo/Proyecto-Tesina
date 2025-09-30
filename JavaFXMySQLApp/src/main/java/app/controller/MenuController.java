@@ -56,7 +56,7 @@ public class MenuController {
             // Usar las dimensiones estándar de MainApp, si existen, como en Balles
             // Si no existen, puedes usar las dimensiones de Lucas (1800x1000)
             // Asumiendo que MainApp existe:
-            Scene scene = new Scene(root, 1800, 1000); // Usando las dimensiones grandes de Lucas
+            Scene scene = new Scene(root, 1366, 768); // Usando las dimensiones grandes de Lucas
 
             stage.setScene(scene);
             stage.setTitle("Menú de Pedidos");
@@ -77,7 +77,7 @@ public class MenuController {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
             // Usar las dimensiones grandes de Lucas
-            Scene scene = new Scene(root, 1800, 1000);
+            Scene scene = new Scene(root, 1366, 768);
 
             stage.setScene(scene);
             stage.setTitle("Registro de Cliente");
@@ -100,8 +100,8 @@ public class MenuController {
             Parent root = FXMLLoader.load(getClass().getResource("/menuStock.fxml"));
             Scene scene = new Scene(root);
             stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
+            stage.setWidth(1366);
+            stage.setHeight(768);
             stage.centerOnScreen();
             stage.setTitle("Menú de Stock");
             stage.show();
@@ -118,8 +118,8 @@ public class MenuController {
             stage.setTitle("Menu de Proveedor"); // Nota: el título dice "Proveedor" pero el FXML es "AbmStock"
             Scene scene = new Scene(root);
             stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
+            stage.setWidth(1366);
+            stage.setHeight(768);
             stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
@@ -135,8 +135,8 @@ public class MenuController {
             stage.setTitle("Menu de Proveedor");
             Scene scene = new Scene(root);
             stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
+            stage.setWidth(1366);
+            stage.setHeight(768);
             stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
@@ -152,8 +152,8 @@ public class MenuController {
             stage.setTitle("Inicio de sesion");
             Scene scene = new Scene(root);
             stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
+            stage.setWidth(1366);
+            stage.setHeight(768);
             stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
@@ -169,8 +169,8 @@ public class MenuController {
             stage.setTitle("Registro de Empleado");
             Scene scene = new Scene(root);
             stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
+            stage.setWidth(1366);
+            stage.setHeight(768);
             stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
@@ -186,8 +186,8 @@ public class MenuController {
             stage.setTitle("Menú de Admin");
             Scene scene = new Scene(root);
             stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
+            stage.setWidth(1366);
+            stage.setHeight(768);
             stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {

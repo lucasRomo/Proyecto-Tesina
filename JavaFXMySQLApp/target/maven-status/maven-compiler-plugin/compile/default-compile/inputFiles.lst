@@ -1,27 +1,43 @@
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\AsignarPedidoController.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\ClienteController.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\CrearPedidoController.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\EmpleadoController.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\PedidosPrimerMenuController.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\RegistroClienteDatosEspecificosController.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\RegistroController.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\RegistroEmpleadoController.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\controller\VerPedidosController.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\MainApp.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\AsignacionPedido.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\Cliente.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\ClienteDAO.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\Direccion.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\DireccionDAO.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\Empleado.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\EmpleadoDAO.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\Pedido.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\PedidoDAO.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\Persona.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\PersonaDAO.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\TipoDocumento.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\TipoDocumentoDAO.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\Usuario.java
-C:\Users\SFC\OneDrive\Escritorio\tesina github\JavaFXMySQLApp\src\main\java\app\model\UsuarioDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\AsignarPedidoController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\ClienteController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\CrearPedidoController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\EmpleadoController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\PedidosPrimerMenuController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\ProveedorController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\RegistroClienteDatosEspecificosController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\RegistroController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\RegistroEmpleadoController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\RegistroInsumoController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\RegistroProveedorController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\RegistroTipoProveedorController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\StockController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\UsuarioEmpleadoTableView.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\UsuariosEmpleadoController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\VerDireccionController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\VerHistorialPedidosController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\VerPedidosController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\VerProveedoresController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\ClienteDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\DireccionDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\EmpleadoDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\InsumoDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\PedidoDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\PersonaDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\ProveedorDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\TipoDocumentoDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\TipoProveedorDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\UsuarioDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\MainApp.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\AsignacionPedido.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Cliente.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Direccion.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Empleado.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Insumo.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Pedido.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Persona.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Proveedor.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\TipoDocumento.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\TipoProveedor.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Usuario.java

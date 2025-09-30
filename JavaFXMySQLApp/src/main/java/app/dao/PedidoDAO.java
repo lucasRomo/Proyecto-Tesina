@@ -1,23 +1,39 @@
 package app.dao;
 
-import java.sql.*;
+import app.model.Pedido;
+import javafx.collections.ObservableList;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import app.model.Pedido;
-import javafx.collections.ObservableList;
-
+/**
+ * DAO (Data Access Object) para la entidad Pedido.
+ * Maneja la persistencia de los objetos Pedido en la base de datos.
+ */
 public class PedidoDAO {
 
     private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
+    /**
+     * Guarda un nuevo pedido en la tabla Pedido y, si aplica, la asignación en AsignacionPedido.
+     * Incluye el campo 'metodo_pago' en la inserción de Pedido.
+     * @param pedido El objeto Pedido a guardar.
+     * @return true si el pedido y la asignación (si la hay) se guardaron exitosamente, false en caso contrario.
+     */
     public boolean savePedido(Pedido pedido) {
-        // SQL para insertar en la tabla Pedido (NO INCLUYE id_empleado)
-        String sqlPedido = "INSERT INTO Pedido (id_cliente, estado, fecha_creacion, fecha_entrega_estimada, fecha_finalizacion, instrucciones, monto_total, monto_entregado) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"; // 8 parámetros para la tabla Pedido
+        // ACTUALIZACIÓN: Se agrega 'metodo_pago' a la consulta INSERT.
+        String sqlPedido = "INSERT INTO Pedido (id_cliente, estado, fecha_creacion, fecha_entrega_estimada, fecha_finalizacion, instrucciones, monto_total, monto_entregado, metodo_pago) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 9 parámetros para la tabla Pedido (antes 8)
 
         Connection conn = null;
         PreparedStatement stmtPedido = null;
@@ -28,7 +44,7 @@ public class PedidoDAO {
             conn.setAutoCommit(false); // Iniciar transacción
 
             // 1. Insertar en la tabla Pedido
-            stmtPedido = conn.prepareStatement(sqlPedido, Statement.RETURN_GENERATED_KEYS); // Para obtener el ID autogenerado
+            stmtPedido = conn.prepareStatement(sqlPedido, Statement.RETURN_GENERATED_KEYS);
 
             stmtPedido.setInt(1, pedido.getIdCliente());
             stmtPedido.setString(2, pedido.getEstado());
@@ -52,10 +68,13 @@ public class PedidoDAO {
             stmtPedido.setDouble(7, pedido.getMontoTotal());
             stmtPedido.setDouble(8, pedido.getMontoEntregado());
 
+            // NUEVO: Se añade el método de pago en la posición 9
+            stmtPedido.setString(9, pedido.getMetodoPago());
+
             int affectedRowsPedido = stmtPedido.executeUpdate();
 
             if (affectedRowsPedido == 0) {
-                conn.rollback(); // Si no se insertó el pedido, revertir la transacción
+                conn.rollback();
                 return false;
             }
 
@@ -64,7 +83,7 @@ public class PedidoDAO {
             try (ResultSet generatedKeys = stmtPedido.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     idPedidoGenerado = generatedKeys.getInt(1);
-                    pedido.setIdPedido(idPedidoGenerado); // Asignar el ID al objeto Pedido
+                    pedido.setIdPedido(idPedidoGenerado);
                 } else {
                     conn.rollback();
                     throw new SQLException("Error al obtener el ID generado para el pedido.");
@@ -72,26 +91,23 @@ public class PedidoDAO {
             }
 
             // 2. Insertar en la tabla AsignacionPedido (SIEMPRE que haya un id_empleado válido)
-            if (pedido.getIdEmpleado() > 0) { // Asumimos que 0 o negativo no es un ID válido
+            if (pedido.getIdEmpleado() > 0) {
                 String sqlAsignacion = "INSERT INTO AsignacionPedido (id_pedido, id_empleado, fecha_asignacion) VALUES (?, ?, ?)";
                 stmtAsignacion = conn.prepareStatement(sqlAsignacion);
                 stmtAsignacion.setInt(1, idPedidoGenerado);
                 stmtAsignacion.setInt(2, pedido.getIdEmpleado());
-                stmtAsignacion.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now())); // Fecha actual de asignación
+                stmtAsignacion.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
 
                 int affectedRowsAsignacion = stmtAsignacion.executeUpdate();
                 if (affectedRowsAsignacion == 0) {
-                    conn.rollback(); // Si no se pudo asignar, revertir toda la transacción
+                    conn.rollback();
                     return false;
                 }
             } else {
-                // Opcional: Si un pedido NO necesita un empleado asignado al crearse,
-                // puedes decidir si esto es un error o simplemente no se crea la asignación.
-                // Por ahora, si idEmpleado no es válido, no se crea la asignación pero el pedido SÍ se guarda.
                 System.out.println("Advertencia: Pedido creado sin empleado asignado. idEmpleado: " + pedido.getIdEmpleado());
             }
 
-            conn.commit(); // Confirmar la transacción si todo fue exitoso
+            conn.commit(); // Confirmar la transacción
             return true;
 
         } catch (SQLException e) {
@@ -107,7 +123,7 @@ public class PedidoDAO {
             e.printStackTrace();
             return false;
         } finally {
-            // Cerrar recursos en el bloque finally para asegurar que se cierren siempre
+            // Cerrar recursos
             try {
                 if (stmtAsignacion != null) stmtAsignacion.close();
                 if (stmtPedido != null) stmtPedido.close();
@@ -118,21 +134,23 @@ public class PedidoDAO {
         }
     }
 
-    // --- getAllPedidos() MODIFICADO ---
-    // Ahora hará un JOIN con AsignacionPedido y luego con Empleado/Persona
-    // para obtener el nombre del empleado asignado.
+    /**
+     * Recupera todos los pedidos de la base de datos, incluyendo datos del cliente y empleado asignado.
+     * Incluye la columna 'metodo_pago'.
+     * @return Una lista de objetos Pedido.
+     */
     public List<Pedido> getAllPedidos() {
         List<Pedido> pedidos = new ArrayList<>();
         String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
-                "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
-                "c.nombre AS nombre_cliente, c.apellido AS apellido_cliente, " + // Asumo que Cliente tiene nombre y apellido de Persona
+                "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, p.metodo_pago, " + // NUEVO: Se agrega p.metodo_pago
+                "c.nombre AS nombre_cliente, c.apellido AS apellido_cliente, " +
                 "e.id_empleado, pr.nombre AS nombre_empleado, pr.apellido AS apellido_empleado " +
                 "FROM Pedido p " +
                 "LEFT JOIN Cliente cl ON p.id_cliente = cl.id_cliente " +
-                "LEFT JOIN Persona c ON cl.id_persona = c.id_persona " + // Obtener nombre/apellido del cliente
-                "LEFT JOIN AsignacionPedido ap ON p.id_pedido = ap.id_pedido " + // Un pedido puede tener 0 o 1 asignación principal aquí
+                "LEFT JOIN Persona c ON cl.id_persona = c.id_persona " +
+                "LEFT JOIN AsignacionPedido ap ON p.id_pedido = ap.id_pedido " +
                 "LEFT JOIN Empleado e ON ap.id_empleado = e.id_empleado " +
-                "LEFT JOIN Persona pr ON e.id_persona = pr.id_persona"; // Obtener nombre/apellido del empleado
+                "LEFT JOIN Persona pr ON e.id_persona = pr.id_persona";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -142,28 +160,46 @@ public class PedidoDAO {
                 int idCliente = rs.getInt("id_cliente");
                 String nombreCliente = rs.getString("nombre_cliente") + " " + rs.getString("apellido_cliente");
 
-                // id_empleado puede ser 0 si no hay asignación
                 int idEmpleado = rs.getInt("id_empleado");
                 String nombreEmpleado = "";
-                if (rs.wasNull()) { // Si el LEFT JOIN no encontró empleado asignado
-                    idEmpleado = 0; // O un valor que indique "ninguno"
+                if (rs.wasNull()) {
+                    idEmpleado = 0;
                     nombreEmpleado = "Sin Asignar";
                 } else {
                     nombreEmpleado = rs.getString("nombre_empleado") + " " + rs.getString("apellido_empleado");
                 }
 
-
                 String estado = rs.getString("estado");
+
+                // NUEVO: Extracción del método de pago
+                String metodoPago = rs.getString("metodo_pago");
+
                 LocalDateTime fechaCreacion = rs.getTimestamp("fecha_creacion").toLocalDateTime();
                 Timestamp fechaEntregaEstimadaTimestamp = rs.getTimestamp("fecha_entrega_estimada");
                 LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaTimestamp != null) ? fechaEntregaEstimadaTimestamp.toLocalDateTime() : null;
                 Timestamp fechaFinalizacionTimestamp = rs.getTimestamp("fecha_finalizacion");
                 LocalDateTime fechaFinalizacion = (fechaFinalizacionTimestamp != null) ? fechaFinalizacionTimestamp.toLocalDateTime() : null;
+
                 String instrucciones = rs.getString("instrucciones");
                 double montoTotal = rs.getDouble("monto_total");
                 double montoEntregado = rs.getDouble("monto_entregado");
 
-                pedidos.add(new Pedido(idPedido, idCliente, nombreCliente, idEmpleado, nombreEmpleado, estado, fechaCreacion, fechaEntregaEstimada, fechaFinalizacion, instrucciones, montoTotal, montoEntregado));
+                // Uso del constructor actualizado con 'metodoPago'
+                pedidos.add(new Pedido(
+                        idPedido,
+                        idCliente,
+                        nombreCliente,
+                        idEmpleado,
+                        nombreEmpleado,
+                        estado,
+                        metodoPago, // <-- Campo añadido
+                        fechaCreacion,
+                        fechaEntregaEstimada,
+                        fechaFinalizacion,
+                        instrucciones,
+                        montoTotal,
+                        montoEntregado
+                ));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -171,13 +207,14 @@ public class PedidoDAO {
         return pedidos;
     }
 
-    // --- Otros métodos (updatePedido, deletePedido, etc.) también necesitarán revisión ---
-    // Si cambias un pedido y un empleado, deberías actualizar la tabla AsignacionPedido
-    // (insertar nuevo, borrar viejo, o modificar existente si es que un pedido solo tiene una asignación activa).
-    // Por simplicidad, no los incluyo en este ejemplo, pero tenlo en cuenta.
-    // Aquí está un ejemplo básico de cómo sería un update para Pedido, sin tocar AsignacionPedido:
+    /**
+     * Actualiza los datos de un pedido, excluyendo el campo de asignación de empleado
+     * (asume que la asignación se maneja en otro método o parte).
+     * Incluye la actualización del campo 'metodo_pago'.
+     */
     public boolean updatePedido(Pedido pedido) {
-        String sql = "UPDATE Pedido SET id_cliente = ?, estado = ?, fecha_entrega_estimada = ?, fecha_finalizacion = ?, instrucciones = ?, monto_total = ?, monto_entregado = ? WHERE id_pedido = ?";
+        // ACTUALIZACIÓN: Se agrega 'metodo_pago = ?' al SET.
+        String sql = "UPDATE Pedido SET id_cliente = ?, estado = ?, fecha_entrega_estimada = ?, fecha_finalizacion = ?, instrucciones = ?, monto_total = ?, monto_entregado = ?, metodo_pago = ? WHERE id_pedido = ?";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -198,7 +235,11 @@ public class PedidoDAO {
             stmt.setString(5, pedido.getInstrucciones());
             stmt.setDouble(6, pedido.getMontoTotal());
             stmt.setDouble(7, pedido.getMontoEntregado());
-            stmt.setInt(8, pedido.getIdPedido());
+
+            // NUEVO: Método de pago
+            stmt.setString(8, pedido.getMetodoPago());
+
+            stmt.setInt(9, pedido.getIdPedido()); // Cláusula WHERE
 
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
@@ -208,12 +249,8 @@ public class PedidoDAO {
         }
     }
 
-    // El método actualizarPedidos(ObservableList<Pedido> pedidos) también necesitaría
-    // ser revisado para manejar AsignacionPedido si se cambia el empleado.
-    // Por ahora, dejo la versión que solo actualiza la tabla Pedido.
     public boolean actualizarPedidos(ObservableList<Pedido> pedidos) {
         // ... (Tu implementación existente, que solo actualiza la tabla Pedido)
-        // Deberías añadir lógica para AsignacionPedido aquí si los cambios de empleado se manejan así.
         return false; // Implementar la lógica de actualización para la lista de pedidos
     }
 }
