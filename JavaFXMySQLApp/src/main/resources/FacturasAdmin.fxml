@@ -37,7 +37,7 @@
         </TableView>
 
         <!-- Barra de búsqueda -->
-        <TextField fx:id="filterField" prefWidth="1787.0" promptText="Buscar por N° Factura, Id Factura o Estado de Pago..." />
+        <TextField fx:id="filterField" prefWidth="1787.0" promptText="Buscar por Nombre del Cliente o Razon Social..." />
 
     </children>
     <!-- Se agrega el padding para crear el espacio alrededor de todos los elementos -->

@@ -131,7 +131,7 @@ public class FacturasController {
                 btn.setOnAction(event -> {
                     FacturasAdminTableView factura = getTableView().getItems().get(getIndex());
                     // Lógica para abrir o descargar el archivo de la factura
-                    System.out.println("Clic en 'Ver Archivo' para Factura ID: " + factura.getIdFactura() +
+                    System.out.println("Clic en 'Ver Link de la Factura' para Factura ID: " + factura.getIdFactura() +
                             " - Número: " + factura.getNumeroFactura());
 
                     // Aquí puedes implementar una ventana modal para ver el detalle o llamar a un servicio de descarga.
