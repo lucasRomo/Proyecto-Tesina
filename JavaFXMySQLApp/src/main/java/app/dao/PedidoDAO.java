@@ -26,14 +26,12 @@ public class PedidoDAO {
 
     /**
      * Guarda un nuevo pedido en la tabla Pedido y, si aplica, la asignación en AsignacionPedido.
-     * Incluye el campo 'metodo_pago' en la inserción de Pedido.
      * @param pedido El objeto Pedido a guardar.
      * @return true si el pedido y la asignación (si la hay) se guardaron exitosamente, false en caso contrario.
      */
     public boolean savePedido(Pedido pedido) {
-        // ACTUALIZACIÓN: Se agrega 'metodo_pago' a la consulta INSERT.
         String sqlPedido = "INSERT INTO Pedido (id_cliente, estado, fecha_creacion, fecha_entrega_estimada, fecha_finalizacion, instrucciones, monto_total, monto_entregado, metodo_pago) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 9 parámetros para la tabla Pedido (antes 8)
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
         PreparedStatement stmtPedido = null;
@@ -67,8 +65,6 @@ public class PedidoDAO {
             stmtPedido.setString(6, pedido.getInstrucciones());
             stmtPedido.setDouble(7, pedido.getMontoTotal());
             stmtPedido.setDouble(8, pedido.getMontoEntregado());
-
-            // NUEVO: Se añade el método de pago en la posición 9
             stmtPedido.setString(9, pedido.getMetodoPago());
 
             int affectedRowsPedido = stmtPedido.executeUpdate();
@@ -136,13 +132,12 @@ public class PedidoDAO {
 
     /**
      * Recupera todos los pedidos de la base de datos, incluyendo datos del cliente y empleado asignado.
-     * Incluye la columna 'metodo_pago'.
      * @return Una lista de objetos Pedido.
      */
     public List<Pedido> getAllPedidos() {
         List<Pedido> pedidos = new ArrayList<>();
         String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
-                "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, p.metodo_pago, " + // NUEVO: Se agrega p.metodo_pago
+                "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, p.metodo_pago, " +
                 "c.nombre AS nombre_cliente, c.apellido AS apellido_cliente, " +
                 "e.id_empleado, pr.nombre AS nombre_empleado, pr.apellido AS apellido_empleado " +
                 "FROM Pedido p " +
@@ -170,8 +165,6 @@ public class PedidoDAO {
                 }
 
                 String estado = rs.getString("estado");
-
-                // NUEVO: Extracción del método de pago
                 String metodoPago = rs.getString("metodo_pago");
 
                 LocalDateTime fechaCreacion = rs.getTimestamp("fecha_creacion").toLocalDateTime();
@@ -184,7 +177,6 @@ public class PedidoDAO {
                 double montoTotal = rs.getDouble("monto_total");
                 double montoEntregado = rs.getDouble("monto_entregado");
 
-                // Uso del constructor actualizado con 'metodoPago'
                 pedidos.add(new Pedido(
                         idPedido,
                         idCliente,
@@ -192,7 +184,7 @@ public class PedidoDAO {
                         idEmpleado,
                         nombreEmpleado,
                         estado,
-                        metodoPago, // <-- Campo añadido
+                        metodoPago,
                         fechaCreacion,
                         fechaEntregaEstimada,
                         fechaFinalizacion,
@@ -208,35 +200,38 @@ public class PedidoDAO {
     }
 
     /**
-     * Actualiza los datos de un pedido, excluyendo el campo de asignación de empleado
-     * (asume que la asignación se maneja en otro método o parte).
-     * Incluye la actualización del campo 'metodo_pago'.
+     * RENOMBRADO: Antes era updatePedido.
+     * Actualiza los datos de un pedido en la base de datos (sobrescribe los anteriores).
+     * @param pedido El objeto Pedido con los datos actualizados.
+     * @return true si el pedido fue modificado exitosamente, false en caso contrario.
      */
-    public boolean updatePedido(Pedido pedido) {
-        // ACTUALIZACIÓN: Se agrega 'metodo_pago = ?' al SET.
+    public boolean modificarPedido(Pedido pedido) {
         String sql = "UPDATE Pedido SET id_cliente = ?, estado = ?, fecha_entrega_estimada = ?, fecha_finalizacion = ?, instrucciones = ?, monto_total = ?, monto_entregado = ?, metodo_pago = ? WHERE id_pedido = ?";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, pedido.getIdCliente());
             stmt.setString(2, pedido.getEstado());
+
             // Manejo de fecha_entrega_estimada (puede ser null)
             if (pedido.getFechaEntregaEstimada() != null) {
                 stmt.setTimestamp(3, Timestamp.valueOf(pedido.getFechaEntregaEstimada()));
             } else {
                 stmt.setNull(3, java.sql.Types.TIMESTAMP);
             }
+
             // Manejo de fecha_finalizacion (puede ser null)
             if (pedido.getFechaFinalizacion() != null) {
                 stmt.setTimestamp(4, Timestamp.valueOf(pedido.getFechaFinalizacion()));
             } else {
                 stmt.setNull(4, java.sql.Types.TIMESTAMP);
             }
+
             stmt.setString(5, pedido.getInstrucciones());
             stmt.setDouble(6, pedido.getMontoTotal());
             stmt.setDouble(7, pedido.getMontoEntregado());
 
-            // NUEVO: Método de pago
+            // Método de pago
             stmt.setString(8, pedido.getMetodoPago());
 
             stmt.setInt(9, pedido.getIdPedido()); // Cláusula WHERE
@@ -249,8 +244,11 @@ public class PedidoDAO {
         }
     }
 
+    // Nota: El método actualizarPedidos no es necesario si utilizas modificarPedido()
+    // en el evento onEditCommit de cada celda, que es el enfoque implementado en el Controller.
     public boolean actualizarPedidos(ObservableList<Pedido> pedidos) {
-        // ... (Tu implementación existente, que solo actualiza la tabla Pedido)
-        return false; // Implementar la lógica de actualización para la lista de pedidos
+        // Esta implementación solo devuelve false, es mejor usar modificarPedido()
+        // en el controlador para guardar fila por fila, como ya lo hicimos.
+        return false;
     }
 }

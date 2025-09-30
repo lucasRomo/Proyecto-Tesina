@@ -3,7 +3,12 @@ package app.controller;
 import app.dao.PedidoDAO;
 import app.model.Pedido;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
@@ -11,17 +16,16 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 public class CrearPedidoController {
 
     // ComboBox existentes
-    @FXML private ComboBox<String> clienteComboBox; // NOTA: Idealmente ComboBox<Cliente>
-    @FXML private ComboBox<String> empleadoComboBox; // NOTA: Idealmente ComboBox<Empleado>
+    @FXML private ComboBox<String> clienteComboBox;
+    @FXML private ComboBox<String> empleadoComboBox;
     @FXML private ComboBox<String> estadoComboBox;
-
-    // NUEVO: ComboBox para el método de pago (Asegúrate de que el fx:id coincida con el FXML)
-    @FXML private ComboBox<String> metodoPagoComboBox;
+    @FXML private ComboBox<String> metodoPagoComboBox; // ComboBox para el método de pago
 
     // Otros campos
     @FXML private DatePicker fechaEntregaEstimadaPicker;
@@ -31,6 +35,7 @@ public class CrearPedidoController {
     @FXML private TextArea instruccionesArea;
 
     private PedidoDAO pedidoDAO = new PedidoDAO();
+    // Ya no es necesario dialogStage si no se usa como modal, pero lo mantenemos como buena práctica.
     private Stage dialogStage;
 
     /**
@@ -43,19 +48,18 @@ public class CrearPedidoController {
                 "Pendiente", "En Proceso", "Finalizado", "Entregado", "Cancelado"
         ));
 
-        // NUEVO: Inicializar ComboBox de Método de Pago con las opciones requeridas
+        // Inicializar ComboBox de Método de Pago con las opciones requeridas
         metodoPagoComboBox.setItems(FXCollections.observableArrayList(
                 "Transferencia", "Efectivo"
         ));
 
         // TODO: Cargar y rellenar clienteComboBox y empleadoComboBox desde el DAO
-        // Estos son datos de ejemplo y deben ser reemplazados por tu lógica de carga real.
         clienteComboBox.setItems(FXCollections.observableArrayList("Cliente A", "Cliente B"));
         empleadoComboBox.setItems(FXCollections.observableArrayList("Empleado 1", "Empleado 2"));
     }
 
     /**
-     * Establece el escenario (Stage) de este diálogo.
+     * Establece el escenario (Stage) de este diálogo (usado solo si se abre como modal).
      */
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
@@ -63,18 +67,17 @@ public class CrearPedidoController {
 
 
     /**
-     * Maneja el evento de guardar el pedido, incluyendo el nuevo método de pago.
+     * Maneja el evento de guardar el pedido y regresa al menú de pedidos.
      */
     @FXML
-    private void handleGuardar() {
+    private void handleGuardar(ActionEvent event) {
         if (isInputValid()) {
             // NOTA: Reemplaza estos IDs estáticos con la lógica para obtener el ID real
-            // de los objetos Cliente y Empleado seleccionados en los ComboBox.
             int idCliente = 1;
             int idEmpleado = 1;
 
             String estado = estadoComboBox.getSelectionModel().getSelectedItem();
-            String metodoPago = metodoPagoComboBox.getSelectionModel().getSelectedItem(); // <-- VALOR DEL NUEVO CAMPO
+            String metodoPago = metodoPagoComboBox.getSelectionModel().getSelectedItem();
             LocalDateTime fechaCreacion = LocalDateTime.now();
 
             LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaPicker.getValue() != null)
@@ -87,7 +90,6 @@ public class CrearPedidoController {
             double montoTotal = Double.parseDouble(montoTotalField.getText());
             double montoEntregado = Double.parseDouble(montoEntregadoField.getText());
 
-            // Usamos el constructor actualizado del modelo Pedido
             Pedido nuevoPedido = new Pedido(
                     idCliente,
                     idEmpleado,
@@ -95,7 +97,7 @@ public class CrearPedidoController {
                     fechaEntregaEstimada,
                     fechaFinalizacion,
                     estado,
-                    metodoPago, // <-- Se pasa el nuevo método de pago
+                    metodoPago,
                     instrucciones,
                     montoTotal,
                     montoEntregado
@@ -103,7 +105,8 @@ public class CrearPedidoController {
 
             if (pedidoDAO.savePedido(nuevoPedido)) {
                 mostrarAlerta("Éxito", "Pedido guardado", "El nuevo pedido se ha guardado exitosamente.", Alert.AlertType.INFORMATION);
-                dialogStage.close();
+                // Si se guarda exitosamente, volvemos al menú anterior.
+                volverAlMenuPedidos(event);
             } else {
                 mostrarAlerta("Error", "Error al guardar", "No se pudo guardar el pedido en la base de datos.", Alert.AlertType.ERROR);
             }
@@ -111,22 +114,21 @@ public class CrearPedidoController {
     }
 
     /**
-     * Valida la entrada del usuario, incluyendo el nuevo campo de pago.
+     * Valida la entrada del usuario. (Sin cambios en la lógica de validación)
      */
     private boolean isInputValid() {
         String errorMessage = "";
-
+        // ... (Tu lógica de validación anterior)
         if (clienteComboBox.getSelectionModel().isEmpty()) {
             errorMessage += "Debes seleccionar un cliente.\n";
         }
         if (estadoComboBox.getSelectionModel().isEmpty()) {
             errorMessage += "Debes seleccionar un estado para el pedido.\n";
         }
-        if (metodoPagoComboBox.getSelectionModel().isEmpty()) { // <-- VALIDACIÓN DEL NUEVO CAMPO
+        if (metodoPagoComboBox.getSelectionModel().isEmpty()) {
             errorMessage += "Debes seleccionar un método de pago.\n";
         }
 
-        // Validación de montos
         if (montoTotalField.getText() == null || montoTotalField.getText().isEmpty()) {
             errorMessage += "El monto total no puede estar vacío.\n";
         } else {
@@ -139,10 +141,7 @@ public class CrearPedidoController {
             }
         }
 
-        // Validación básica de montoEntregado (si aplica)
-        if (montoEntregadoField.getText() == null || montoEntregadoField.getText().isEmpty()) {
-            // Opcional: Podrías permitir que esté vacío si el monto entregado es 0.
-        } else {
+        if (montoEntregadoField.getText() != null && !montoEntregadoField.getText().isEmpty()) {
             try {
                 if (Double.parseDouble(montoEntregadoField.getText()) < 0) {
                     errorMessage += "El monto entregado debe ser un número positivo o cero.\n";
@@ -163,16 +162,34 @@ public class CrearPedidoController {
 
 
     /**
-     * Maneja el evento de cancelar y cierra la ventana.
+     * Maneja el evento de cancelar y vuelve al menú de pedidos anterior.
      */
     @FXML
-    private void handleCancelar() {
-        // Obtener el Stage de cualquier componente FXML
-        if (dialogStage != null) {
-            dialogStage.close();
-        } else {
-            // Esto se usa en caso de que el dialogStage no se haya inyectado correctamente
-            ((Stage) clienteComboBox.getScene().getWindow()).close();
+    private void handleCancelar(ActionEvent event) {
+        volverAlMenuPedidos(event);
+    }
+
+    /**
+     * Lógica compartida para volver a la vista del menú de Pedidos.
+     */
+    private void volverAlMenuPedidos(ActionEvent event) {
+        try {
+            // Carga la vista del menú de pedidos
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pedidosPrimerMenu.fxml"));
+            Parent root = loader.load();
+
+            // Obtiene el Stage actual (la ventana)
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            // Configura la nueva escena
+            stage.setScene(new Scene(root, 1800, 1000));
+            stage.setTitle("Menú de Pedidos");
+            stage.centerOnScreen();
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error de Carga", "No se pudo volver al menú de pedidos.", "Hubo un error al cargar 'pedidosPrimerMenu.fxml'.", Alert.AlertType.ERROR);
         }
     }
 

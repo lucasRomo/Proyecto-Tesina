@@ -20,7 +20,7 @@ public class PedidosPrimerMenuController {
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            stage.setScene(new Scene(root, 1800, 1000));
+            stage.setScene(new Scene(root, 1366, 768));
 
             stage.setTitle("Crear Pedido");
 
@@ -42,7 +42,7 @@ public class PedidosPrimerMenuController {
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            stage.setScene(new Scene(root, 1800, 1000));
+            stage.setScene(new Scene(root, 1366, 768));
 
             stage.setTitle("Ver Pedidos (Activos)");
 
@@ -68,7 +68,7 @@ public class PedidosPrimerMenuController {
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            stage.setScene(new Scene(root, 1800, 1000));
+            stage.setScene(new Scene(root, 1366, 768));
 
             stage.setTitle("Historial de Pedidos (Retirados)");
 
@@ -89,7 +89,7 @@ public class PedidosPrimerMenuController {
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            stage.setScene(new Scene(root, 1800, 1000));
+            stage.setScene(new Scene(root, 1366, 768));
 
             stage.setTitle("Menú Principal");
 

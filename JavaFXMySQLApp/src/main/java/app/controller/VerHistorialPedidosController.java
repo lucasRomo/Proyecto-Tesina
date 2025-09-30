@@ -8,6 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable; // Importación CLAVE
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,9 +19,13 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.net.URL; // Necesario para Initializable
+import java.util.ResourceBundle; // Necesario para Initializable
 
-public class VerHistorialPedidosController {
+// 1. Implementar la interfaz Initializable
+public class VerHistorialPedidosController implements Initializable {
 
+    // Campos FXML (Están correctos)
     @FXML
     private TableView<Pedido> pedidosTable;
     @FXML
@@ -45,11 +50,13 @@ public class VerHistorialPedidosController {
     private PedidoDAO pedidoDAO;
     private static final String ESTADO_RETIRADO = "Retirado";
 
-    @FXML
-    private void initialize() {
+    // 2. Usar la firma correcta del método initialize (sin @FXML)
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
         pedidoDAO = new PedidoDAO();
 
         // Configurar las columnas de la tabla
+        // Estas llamadas ahora funcionarán porque las columnas ya fueron inyectadas.
         idPedidoColumn.setCellValueFactory(new PropertyValueFactory<>("idPedido"));
         clienteColumn.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         empleadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombreEmpleado"));
@@ -72,7 +79,6 @@ public class VerHistorialPedidosController {
         System.out.println("Cargando historial de pedidos con estado: " + ESTADO_RETIRADO);
 
         // Carga todos los pedidos y luego filtra en memoria.
-        // Se recomienda modificar PedidoDAO para usar un método SQL de filtrado para mayor eficiencia.
         ObservableList<Pedido> todosPedidos = FXCollections.observableArrayList(pedidoDAO.getAllPedidos());
         ObservableList<Pedido> pedidosRetirados = todosPedidos.filtered(
                 // El método .filtered() solo conserva los elementos que cumplen la condición:
