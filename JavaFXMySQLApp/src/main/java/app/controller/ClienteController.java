@@ -140,21 +140,22 @@ public class ClienteController {
             }
         });
 
+        // =========================================================================================
+        // === MODIFICACIÓN DE VALIDACIÓN DE EMAIL AL PRESIONAR ENTER (ON EDIT COMMIT) ===========
+        // =========================================================================================
         emailColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         emailColumn.setOnEditCommit(event -> {
+            Cliente cliente = event.getRowValue();
             String nuevoEmail = event.getNewValue();
-            if (nuevoEmail == null || nuevoEmail.trim().isEmpty()) {
-                mostrarAlerta("Advertencia", "El email no puede quedar vacío.", Alert.AlertType.WARNING);
-                clientesTableView.refresh();
-                return;
+            String emailOriginal = event.getOldValue(); // Obtenemos el valor original
+
+            // Llama a la lógica unificada de validación y commit en el modelo
+            if (!validarYGuardarEmail(cliente, nuevoEmail, emailOriginal)) {
+                clientesTableView.refresh(); // Fallo: revierte el valor visible de la tabla
             }
-            if (validarEmail(nuevoEmail)) {
-                event.getRowValue().setEmail(nuevoEmail);
-            } else {
-                mostrarAlerta("Advertencia", "El formato del correo electrónico no es válido.", Alert.AlertType.WARNING);
-                clientesTableView.refresh();
-            }
+            // Si tiene éxito, el modelo se actualiza dentro de validarYGuardarEmail
         });
+        // =========================================================================================
 
         razonSocialColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         razonSocialColumn.setOnEditCommit(event -> {
@@ -396,10 +397,32 @@ public class ClienteController {
         refreshClientesTable();
     }
 
+    // =========================================================================================
+    // === MODIFICACIÓN DE VALIDACIÓN DE EMAIL AL PRESIONAR BOTÓN MODIFICAR ====================
+    // =========================================================================================
     @FXML
     public void handleModificarClienteButton(ActionEvent event) {
         Cliente selectedCliente = clientesTableView.getSelectionModel().getSelectedItem();
         if (selectedCliente != null) {
+
+            String emailEnModelo = selectedCliente.getEmail();
+
+            // 1. Validar formato de email
+            if (!validarFormatoEmail(emailEnModelo)) {
+                mostrarAlerta("Error de Modificación", "El formato del email ('" + emailEnModelo + "') es inválido.", Alert.AlertType.ERROR);
+                clientesTableView.refresh();
+                return;
+            }
+
+            // 2. Validar duplicidad de email (excluyendo a la persona actual)
+            // Se asume que el email fue modificado y ahora debe validarse su unicidad.
+            if (personaDAO.verificarSiMailExisteParaOtro(emailEnModelo, selectedCliente.getIdPersona())) {
+                mostrarAlerta("Error de Modificación", "El email ingresado ya está registrado para otro cliente.", Alert.AlertType.ERROR);
+                clientesTableView.refresh();
+                return;
+            }
+            // =========================================================================================
+
             boolean exito = clienteDAO.modificarCliente(selectedCliente);
             if (exito) {
                 mostrarAlerta("Éxito", "Cliente modificado exitosamente.", Alert.AlertType.INFORMATION);
@@ -424,17 +447,41 @@ public class ClienteController {
         return longitudTelefono >= 7 && longitudTelefono <= 11;
     }
 
+    /**
+     * Valida formato y unicidad del email. Actualiza el modelo si es válido.
+     */
+    private boolean validarYGuardarEmail(Cliente cliente, String nuevoEmail, String emailOriginal) {
+        String trimmedEmail = nuevoEmail != null ? nuevoEmail.trim() : "";
 
-    private boolean validarEmailRepetido(String email){
-        boolean bol = true;
-        if (personaDAO.verificarSiMailExiste(email)) {
-            mostrarAlerta("Error de Registro", "El email que ingresó ya se encuentra registrado.", Alert.AlertType.WARNING);
+        // 1. Validación de vacío
+        if (trimmedEmail.isEmpty()) {
+            mostrarAlerta("Advertencia", "El email no puede quedar vacío.", Alert.AlertType.WARNING);
             return false;
         }
-        return bol;
+
+        // 2. Validación de formato
+        if (!validarFormatoEmail(trimmedEmail)) {
+            mostrarAlerta("Advertencia", "El formato del correo electrónico no es válido.", Alert.AlertType.WARNING);
+            return false;
+        }
+
+        // 3. Validación de duplicidad
+        // Solo verifica duplicidad si el email realmente cambió
+        if (!trimmedEmail.equalsIgnoreCase(emailOriginal)) {
+            // Utilizamos verificarSiMailExisteParaOtro(email, idPersonaActual) del DAO
+            if (personaDAO.verificarSiMailExisteParaOtro(trimmedEmail, cliente.getIdPersona())) {
+                mostrarAlerta("Error de Modificación", "El email que ingresó ya se encuentra registrado para otro cliente.", Alert.AlertType.WARNING);
+                return false;
+            }
+        }
+
+        // Si pasa todas las validaciones, actualiza el modelo
+        cliente.setEmail(trimmedEmail);
+        return true;
     }
 
-    private boolean validarEmail(String email) {
+    // Renombramos el antiguo validarEmail para que se centre solo en el formato
+    private boolean validarFormatoEmail(String email) {
         String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(email);

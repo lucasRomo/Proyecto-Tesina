@@ -87,3 +87,41 @@
     -fx-font-weight: bold;
     -fx-text-fill: #fffffe;
 }
+
+.choice-box {
+    -fx-background-color: #555555; /* Fondo gris oscuro */
+    -fx-border-color: #777777;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+/* 2. Estilo del texto dentro de la caja principal (cuando está cerrado) */
+.choice-box .label {
+    -fx-text-fill: #FFFFFF; /* Letras Blancas para que se vean sobre el #555555 */
+}
+
+/* 3. Estilo del Menú Desplegable (Context Menu) */
+.choice-box .context-menu {
+    -fx-background-color: #333333; /* Fondo negro/gris muy oscuro para el menú */
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.8) , 5, 0.0 , 0 , 5 );
+    -fx-padding: 0;
+}
+
+/* 4. Estilo de los Items individuales en la lista (List Cell) */
+.choice-box .menu-item .label,
+.choice-box .menu-item .text {
+    -fx-text-fill: #FFFFFF; /* Letras blancas para los ítems */
+}
+
+/* 5. Estilo de los Items al pasar el ratón (Hover) */
+.choice-box .menu-item:focused,
+.choice-box .menu-item:hover {
+    -fx-background-color: #0078D7; /* Azul vibrante al pasar el ratón */
+    -fx-text-fill: #FFFFFF;
+}
+
+/* 6. Estilo del texto del Item al pasar el ratón (asegura el blanco) */
+.choice-box .menu-item:focused .label,
+.choice-box .menu-item:hover .label {
+    -fx-text-fill: #FFFFFF;
+}

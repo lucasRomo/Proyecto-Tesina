@@ -88,4 +88,22 @@ public class PersonaDAO {
         }
         return false;
     }
+
+    // Este método debe ser implementado en tu PersonaDAO.java
+    public boolean verificarSiMailExisteParaOtro(String email, int idPersonaActual) {
+        String sql = "SELECT COUNT(*) FROM Persona WHERE email = ? AND id_persona != ?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            stmt.setInt(2, idPersonaActual); // Excluye a la persona que estamos editando
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return true; // Existe otra persona con ese email
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

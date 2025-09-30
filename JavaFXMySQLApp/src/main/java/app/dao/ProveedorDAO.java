@@ -78,6 +78,30 @@ public class ProveedorDAO {
         }
     }
 
+    public boolean verificarSiMailExisteParaOtro(String email, int idProveedorActual) {
+        // La consulta busca el email, pero excluye el ID del proveedor actual (id_proveedor != ?)
+        String sql = "SELECT COUNT(*) FROM Proveedor WHERE mail = ? AND id_proveedor != ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            stmt.setInt(2, idProveedorActual); // <-- Cláusula de exclusión
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return true; // Existe al menos otro registro con ese email.
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al verificar email de proveedor para edición.");
+            e.printStackTrace();
+            // En caso de error de BD, asumimos que no hay duplicado para no bloquear
+            // la operación, aunque lo ideal es manejar el error.
+        }
+        return false;
+    }
+
     // Nuevo método para modificar todos los campos de un proveedor
     public boolean modificarProveedor(Proveedor proveedor) {
         String sql = "UPDATE Proveedor SET nombre = ?, contacto = ?, mail = ?, estado = ?, id_tipo_proveedor = ? WHERE id_proveedor = ?";

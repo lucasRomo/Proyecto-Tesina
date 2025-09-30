@@ -88,18 +88,25 @@ public class ProveedorController {
             }
         });
 
+        // =========================================================================================
+        // === VALIDACIÓN DE EMAIL (MANTENIDA) =====================================================
+        // =========================================================================================
         mailColumn.setCellValueFactory(new PropertyValueFactory<>("mail"));
         mailColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         mailColumn.setOnEditCommit(event -> {
-            if (validarEmail(event.getNewValue())) {
-                event.getRowValue().setMail(event.getNewValue());
-            } else {
-                mostrarAlerta("Advertencia", "El formato del correo electrónico no es válido.", Alert.AlertType.WARNING);
+            Proveedor proveedor = event.getRowValue();
+            String nuevoMail = event.getNewValue();
+            String mailOriginal = event.getOldValue();
+
+            if (!validarYGuardarMail(proveedor, nuevoMail, mailOriginal)) {
                 proveedoresTableView.refresh();
             }
         });
+        // =========================================================================================
 
-        // Configuración para que TipoProveedor sea editable con un ChoiceBox
+        // =========================================================================================
+        // === CORRECCIÓN DEL TIPO DE PROVEEDOR (REMOVIDO setOnAction) =============================
+        // =========================================================================================
         tipoProveedorColumn.setCellValueFactory(cellData -> cellData.getValue().descripcionTipoProveedorProperty());
         tipoProveedorColumn.setCellFactory(column -> new TableCell<Proveedor, String>() {
             private final ChoiceBox<TipoProveedor> choiceBox = new ChoiceBox<>();
@@ -127,11 +134,8 @@ public class ProveedorController {
                     mostrarAlerta("Error de Carga", "No se pudieron cargar los tipos de proveedor para la edición.", Alert.AlertType.ERROR);
                 }
 
-                choiceBox.setOnAction(e -> {
-                    if (isEditing) {
-                        commitEdit(choiceBox.getValue().getDescripcion());
-                    }
-                });
+                // *** ¡CORRECCIÓN! Se remueve choiceBox.setOnAction para que el ChoiceBox se despliegue ***
+                // El commitEdit ocurrirá automáticamente cuando el usuario seleccione un valor y pierda el foco.
             }
 
             @Override
@@ -150,6 +154,7 @@ public class ProveedorController {
 
                 setGraphic(choiceBox);
                 setText(null);
+                choiceBox.show(); // Ayuda a que se despliegue inmediatamente
             }
 
             @Override
@@ -161,13 +166,27 @@ public class ProveedorController {
             }
 
             @Override
+            public void commitEdit(String newValue) {
+                // Si el valor no ha cambiado, no forzamos el commit para evitar el onEditCommit
+                if (newValue != null && !newValue.equals(getItem())) {
+                    super.commitEdit(newValue);
+                } else if (newValue != null && newValue.equals(getItem())) {
+                    // Si el usuario seleccionó el mismo valor, solo cancelamos la edición para cerrar el editor.
+                    cancelEdit();
+                } else {
+                    super.commitEdit(newValue);
+                }
+            }
+
+
+            @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    if (isEditing) {
+                    if (isEditing()) {
                         setGraphic(choiceBox);
                         setText(null);
                     } else {
@@ -178,6 +197,7 @@ public class ProveedorController {
             }
         });
 
+        // La lógica de guardado (onEditCommit) sigue igual, ya que solo se ejecuta cuando la edición finaliza.
         tipoProveedorColumn.setOnEditCommit(event -> {
             Proveedor proveedor = event.getRowValue();
             String nuevaDescripcion = event.getNewValue();
@@ -185,19 +205,27 @@ public class ProveedorController {
             try {
                 TipoProveedor nuevoTipo = tipoProveedorDAO.getTipoProveedorByDescription(nuevaDescripcion);
                 if (nuevoTipo != null) {
-                    proveedor.setIdTipoProveedor(nuevoTipo.getId());
-                    proveedor.setDescripcionTipoProveedor(nuevoTipo.getDescripcion());
 
-                    boolean exito = proveedorDAO.modificarProveedor(proveedor);
+                    // Solo modificamos si el ID es diferente
+                    if(proveedor.getIdTipoProveedor() != nuevoTipo.getId()){
+                        proveedor.setIdTipoProveedor(nuevoTipo.getId());
+                        proveedor.setDescripcionTipoProveedor(nuevoTipo.getDescripcion());
 
-                    if (exito) {
-                        mostrarAlerta("Éxito", "Tipo de proveedor actualizado.", Alert.AlertType.INFORMATION);
+                        boolean exito = proveedorDAO.modificarProveedor(proveedor);
+
+                        if (exito) {
+                            mostrarAlerta("Éxito", "Tipo de proveedor actualizado.", Alert.AlertType.INFORMATION);
+                        } else {
+                            mostrarAlerta("Error", "No se pudo actualizar el tipo de proveedor en la base de datos.", Alert.AlertType.ERROR);
+                            // Revertir el modelo al valor original si falla la BD
+                            proveedor.setDescripcionTipoProveedor(event.getOldValue());
+                        }
                     } else {
-                        mostrarAlerta("Error", "No se pudo actualizar el tipo de proveedor en la base de datos.", Alert.AlertType.ERROR);
-                        proveedor.setDescripcionTipoProveedor(event.getOldValue());
+                        // El valor es el mismo, no hacemos nada ni alertamos
                     }
                 } else {
                     mostrarAlerta("Error", "Tipo de proveedor no encontrado.", Alert.AlertType.ERROR);
+                    // Revertir el modelo al valor original si es inválido
                     proveedor.setDescripcionTipoProveedor(event.getOldValue());
                 }
             } catch (SQLException e) {
@@ -208,8 +236,10 @@ public class ProveedorController {
                 proveedoresTableView.refresh();
             }
         });
+        // =========================================================================================
 
-        // Configuración de la celda de estado con estilo
+
+        // Configuración de la celda de estado con estilo (MANTENIDO)
         estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
         estadoColumn.setCellFactory(column -> new TableCell<Proveedor, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
@@ -222,6 +252,7 @@ public class ProveedorController {
                 super.startEdit();
                 choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
                 choiceBox.getSelectionModel().select(getItem());
+                // En el ChoiceBox de Estado, SÍ queremos el setOnAction, ya que no tiene un conversor complejo
                 choiceBox.setOnAction(event -> commitEdit(choiceBox.getSelectionModel().getSelectedItem()));
                 setGraphic(choiceBox);
                 setText(null);
@@ -407,6 +438,23 @@ public class ProveedorController {
     public void handleModificarProveedorButton(ActionEvent event) {
         Proveedor selectedProveedor = proveedoresTableView.getSelectionModel().getSelectedItem();
         if (selectedProveedor != null) {
+
+            String emailEnModelo = selectedProveedor.getMail();
+
+            // 1. Validar formato de email
+            if (!validarFormatoEmail(emailEnModelo)) {
+                mostrarAlerta("Error de Modificación", "El formato del email ('" + emailEnModelo + "') es inválido.", Alert.AlertType.ERROR);
+                proveedoresTableView.refresh();
+                return;
+            }
+
+            // 2. Validar duplicidad de email (excluyendo al proveedor actual)
+            if (proveedorDAO.verificarSiMailExisteParaOtro(emailEnModelo, selectedProveedor.getIdProveedor())) {
+                mostrarAlerta("Error de Modificación", "El email ingresado ya está registrado para otro proveedor.", Alert.AlertType.ERROR);
+                proveedoresTableView.refresh();
+                return;
+            }
+
             boolean exito = proveedorDAO.modificarProveedor(selectedProveedor);
             if (exito) {
                 mostrarAlerta("Éxito", "Proveedor modificado exitosamente.", Alert.AlertType.INFORMATION);
@@ -442,7 +490,31 @@ public class ProveedorController {
         return texto.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+");
     }
 
-    private boolean validarEmail(String email) {
+    private boolean validarYGuardarMail(Proveedor proveedor, String nuevoMail, String mailOriginal) {
+        String trimmedMail = nuevoMail != null ? nuevoMail.trim() : "";
+
+        if (trimmedMail.isEmpty()) {
+            mostrarAlerta("Advertencia", "El email no puede quedar vacío.", Alert.AlertType.WARNING);
+            return false;
+        }
+
+        if (!validarFormatoEmail(trimmedMail)) {
+            mostrarAlerta("Advertencia", "El formato del correo electrónico no es válido.", Alert.AlertType.WARNING);
+            return false;
+        }
+
+        if (!trimmedMail.equalsIgnoreCase(mailOriginal)) {
+            if (proveedorDAO.verificarSiMailExisteParaOtro(trimmedMail, proveedor.getIdProveedor())) {
+                mostrarAlerta("Error de Modificación", "El email que ingresó ya se encuentra registrado para otro proveedor.", Alert.AlertType.WARNING);
+                return false;
+            }
+        }
+
+        proveedor.setMail(trimmedMail);
+        return true;
+    }
+
+    private boolean validarFormatoEmail(String email) {
         String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(email);
