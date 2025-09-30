@@ -44,8 +44,10 @@ public class FacturaDAO {
                 f.fecha_emision,
                 f.monto_total,
                 f.estado_pago,
-                -- Usamos COALESCE: si el cliente tiene 'razon_social', la usa; si no, usa 'nombre' y 'apellido' de Persona.
-                COALESCE(c.razon_social, CONCAT(p.nombre, ' ', p.apellido)) AS nombre_cliente
+                TRIM(CONCAT_WS(' - ',\s
+                                        c.razon_social,
+                                        CONCAT(p.nombre, ' ', p.apellido)
+                                    )) AS nombre_cliente
             FROM
                 Factura f
             INNER JOIN

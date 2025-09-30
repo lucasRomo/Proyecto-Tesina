@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import java.time.LocalDateTime;
@@ -127,6 +128,9 @@ public class FacturasController {
                 // Configuración de estilo básico para el botón
                 btn.setStyle("-fx-background-color: #5d5dff; -fx-text-fill: white; -fx-cursor: hand;");
 
+                btn.setMaxWidth(Double.MAX_VALUE);
+                btn.setMaxHeight(Double.MAX_VALUE);
+
                 // Manejador de eventos al hacer clic en el botón
                 btn.setOnAction(event -> {
                     FacturasAdminTableView factura = getTableView().getItems().get(getIndex());
@@ -144,8 +148,11 @@ public class FacturasController {
                 super.updateItem(item, empty);
                 if (empty) {
                     setGraphic(null);
+                    setAlignment(null);
                 } else {
                     setGraphic(btn);
+                    setText(null);
+                    setStyle("-fx-padding: 0;");
                 }
             }
         });

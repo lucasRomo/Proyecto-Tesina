@@ -1,39 +1,39 @@
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\ClienteController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\EmpleadoController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\FacturasAdminTableView.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\FacturasController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\ProveedorController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroClienteDatosEspecificosController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroEmpleadoController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroInsumoController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroProveedorController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroTipoProveedorController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\SessionManager.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\StockController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\UsuarioEmpleadoTableView.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\UsuariosEmpleadoController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\VerDireccionController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\VerProveedoresController.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\ClienteDAO.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\DireccionDAO.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\EmpleadoDAO.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\FacturaDAO.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\InsumoDAO.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\PersonaDAO.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\ProveedorDAO.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\TipoDocumentoDAO.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\TipoProveedorDAO.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\UsuarioDAO.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\MainApp.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Cliente.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Direccion.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Empleado.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Insumo.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Persona.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Proveedor.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\TipoDocumento.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\TipoProveedor.java
-D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Usuario.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\ClienteController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\EmpleadoController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\FacturasAdminTableView.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\FacturasController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\ProveedorController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroClienteDatosEspecificosController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroEmpleadoController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroInsumoController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroProveedorController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\RegistroTipoProveedorController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\SessionManager.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\StockController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\UsuarioEmpleadoTableView.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\UsuariosEmpleadoController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\VerDireccionController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\VerProveedoresController.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\ClienteDAO.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\DireccionDAO.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\EmpleadoDAO.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\FacturaDAO.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\InsumoDAO.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\PersonaDAO.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\ProveedorDAO.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\TipoDocumentoDAO.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\TipoProveedorDAO.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\UsuarioDAO.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\MainApp.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Cliente.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Direccion.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Empleado.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Insumo.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Persona.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Proveedor.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\TipoDocumento.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\TipoProveedor.java
+C:\Users\Usuario\OneDrive\Desktop\Tesina Papelera\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\model\Usuario.java
