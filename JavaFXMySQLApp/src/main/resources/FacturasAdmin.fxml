@@ -1,27 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="646.0" prefWidth="1786.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.FacturasController">
-   <children>
-      <Label layoutX="274.0" layoutY="30.0" prefHeight="48.0" prefWidth="113.0" text="Facturas">
-         <font>
-            <Font name="System Bold" size="28.0" />
-         </font>
-      </Label>
-      <TableView layoutX="29.0" layoutY="70.0" prefHeight="562.0" prefWidth="1786.0">
-        <columns>
-          <TableColumn fx:id="IdFacturaColumn" prefWidth="120.0" text="Id Factura" />
-          <TableColumn fx:id="IdPedidoColumn" prefWidth="130.0" text="Id Pedido" />
-            <TableColumn fx:id="IdClienteColumn" prefWidth="135.0" text="Id Cliente" />
-            <TableColumn fx:id="NumeroFacturaColumn" prefWidth="189.0" text="N° Factura" />
-            <TableColumn fx:id="FechaEmisionColumn" prefWidth="356.0" text="Fecha Emision" />
-            <TableColumn fx:id="MontoTotalColumn" prefWidth="295.0" text="Monto Total" />
-            <TableColumn fx:id="EstadoPagoColumn" prefWidth="280.0" text="Estado Pago" />
-            <TableColumn fx:id="AccionArchivoColumn" prefWidth="279.0" text="Archivo" />
-        </columns>
-      </TableView>
-   </children>
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="646.0" prefWidth="1789.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.FacturasController">
+    <children>
+        <!-- Título de la vista -->
+        <Label layoutX="274.0" layoutY="30.0" prefHeight="48.0" prefWidth="113.0" text="Facturas">
+            <font>
+                <Font name="System Bold" size="28.0" />
+            </font>
+        </Label>
+
+        <!-- Tabla de Facturas -->
+        <TableView fx:id="facturasAdminTableView" editable="true" VBox.vgrow="ALWAYS">
+            <columns>
+                <!-- 1. idFacturaColumn -->
+                <TableColumn fx:id="idFacturaColumn" prefWidth="120.0" text="Id Factura" />
+                <!-- 2. idPedidoColumn -->
+                <TableColumn fx:id="idPedidoColumn" prefWidth="130.0" text="Id Pedido" />
+                <!-- 3. idClienteColumn -->
+                <TableColumn fx:id="idClienteColumn" prefWidth="135.0" text="Id Cliente" />
+                <!-- 4. numeroFacturaColumn -->
+                <TableColumn fx:id="numeroFacturaColumn" prefWidth="189.0" text="N° Factura" />
+                <!-- 5. fechaEmisionColumn -->
+                <TableColumn fx:id="fechaEmisionColumn" prefWidth="356.0" text="Fecha Emision" />
+                <!-- 6. montoTotalColumn -->
+                <TableColumn fx:id="montoTotalColumn" prefWidth="295.0" text="Monto Total" />
+                <!-- 7. estadoPagoColumn -->
+                <TableColumn fx:id="estadoPagoColumn" prefWidth="280.0" text="Estado Pago" />
+                <!-- 8. accionArchivoColumn (Botón "Ver Archivo" en el Controller) -->
+                <TableColumn fx:id="accionArchivoColumn" prefWidth="279.0" text="Link Arca" />
+            </columns>
+        </TableView>
+
+        <!-- Barra de búsqueda -->
+        <TextField fx:id="filterField" prefWidth="1787.0" promptText="Buscar por N° Factura, Id Factura o Estado de Pago..." />
+
+    </children>
+    <!-- Se agrega el padding para crear el espacio alrededor de todos los elementos -->
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
 </VBox>

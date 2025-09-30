@@ -2,6 +2,7 @@ app\controller\ClienteController.class
 app\controller\UsuariosEmpleadoController$1.class
 app\controller\RegistroController.class
 app\controller\IniciodeSesionController.class
+app\controller\FacturasController$1.class
 app\MainApp.class
 app\controller\EmpleadoController.class
 app\controller\UsuarioEmpleadoTableView.class
