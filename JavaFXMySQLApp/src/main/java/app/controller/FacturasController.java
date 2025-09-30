@@ -97,31 +97,11 @@ public class FacturasController {
 
                 String lowerCaseFilter = newValue.toLowerCase();
 
-                // 3. Lógica de búsqueda: busca coincidencia en cualquiera de los campos
+                // *** LÓGICA DE BÚSQUEDA EXCLUSIVA POR NOMBRE DEL CLIENTE ***
+                if (factura.getNombreCliente() != null && factura.getNombreCliente().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Coincidencia por Nombre del Cliente
+                }
 
-                // Coincidencia por ID de Factura
-                if (String.valueOf(factura.getIdFactura()).contains(lowerCaseFilter)) {
-                    return true;
-                }
-                // Coincidencia por ID de Cliente
-                else if (String.valueOf(factura.getIdCliente()).contains(lowerCaseFilter)) {
-                    return true;
-                }
-                // Coincidencia por Número de Factura
-                else if (factura.getNumeroFactura().toLowerCase().contains(lowerCaseFilter)) {
-                    return true;
-                }
-                // Coincidencia por Estado de Pago
-                else if (factura.getEstadoPago().toLowerCase().contains(lowerCaseFilter)) {
-                    return true;
-                }
-                // *** ÚNICO CAMBIO: Lógica de filtrado por Nombre del Cliente ***
-                else if (factura.getNombreCliente() != null && factura.getNombreCliente().toLowerCase().contains(lowerCaseFilter)) {
-                    return true; // Coincidencia por Nombre del Cliente (asumiendo que FacturasAdminTableView tiene getNombreCliente())
-                }
-                // *************************************************************
-
-                // Se podría agregar filtrado por fecha o monto si es necesario
                 return false; // No hay coincidencia
             });
         });
@@ -130,7 +110,6 @@ public class FacturasController {
         SortedList<FacturasAdminTableView> sortedData = new SortedList<>(filteredData);
 
         // 5. Enlaza el comparador de SortedList con el comparador de TableView
-        // Esto asegura que la vista siempre esté ordenada por la columna seleccionada por el usuario.
         sortedData.comparatorProperty().bind(facturasAdminTableView.comparatorProperty());
 
         // 6. Aplica los datos ordenados y filtrados a la TableView
