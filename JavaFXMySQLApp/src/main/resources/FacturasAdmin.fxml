@@ -38,6 +38,7 @@
 
         <!-- Barra de búsqueda -->
         <TextField fx:id="filterField" prefWidth="1787.0" promptText="Buscar por Nombre del Cliente o Razon Social..." />
+      <Button fx:id="VolverButton" mnemonicParsing="false" onAction="#handleVolverMenuInformesButton" prefHeight="25.0" prefWidth="188.0" text="Volver" />
 
     </children>
     <!-- Se agrega el padding para crear el espacio alrededor de todos los elementos -->

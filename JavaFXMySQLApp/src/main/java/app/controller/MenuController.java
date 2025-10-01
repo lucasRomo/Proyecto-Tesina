@@ -15,7 +15,7 @@ import app.controller.SessionManager;
 public class MenuController {
 
     @FXML
-    public void handleStock(ActionEvent event){
+    public void handleStock(ActionEvent event) {
         try {
             // Carga la nueva ventana de registro
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -40,7 +40,7 @@ public class MenuController {
     }
 
     @FXML
-    public void handleStockabm(ActionEvent event){
+    public void handleStockabm(ActionEvent event) {
         try {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             // Carga la nueva ventana de registro
@@ -57,14 +57,13 @@ public class MenuController {
             stage.show();
 
 
-
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @FXML
-    public void handleProveedor(ActionEvent event){
+    public void handleProveedor(ActionEvent event) {
         try {
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
@@ -80,7 +79,6 @@ public class MenuController {
             // Centra la ventana en la pantalla (opcional)
             stage.centerOnScreen();
             stage.show();
-
 
 
         } catch (IOException e) {
@@ -106,7 +104,6 @@ public class MenuController {
             stage.show();
 
 
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -130,7 +127,6 @@ public class MenuController {
             stage.show();
 
 
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -152,7 +148,6 @@ public class MenuController {
             // Centra la ventana en la pantalla (opcional)
             stage.centerOnScreen();
             stage.show();
-
 
 
         } catch (IOException e) {
@@ -255,6 +250,26 @@ public class MenuController {
     }
 
     @FXML
+    public void handleComprobantes(ActionEvent event) {
+        try {
+            // Carga el FXML de la tabla de usuarios
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ComprobantesAdmin.fxml"));
+            Parent root = loader.load();
+
+            // Carga la nueva escena
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Menu de Informes");
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
             // Carga el FXML de la pantalla a la que quieres regresar.
@@ -277,6 +292,7 @@ public class MenuController {
             // Maneja el error si no se puede cargar el archivo FXML
         }
     }
+
     @FXML
     private void handleVolverButtonAbms(ActionEvent event) {
         try {
@@ -300,6 +316,7 @@ public class MenuController {
             // Maneja el error si no se puede cargar el archivo FXML
         }
     }
+
     @FXML
     private void handleVolverButtonStock(ActionEvent event) {
         try {
@@ -323,4 +340,55 @@ public class MenuController {
             // Maneja el error si no se puede cargar el archivo FXML
         }
     }
+
+    @FXML
+    private void handleVolverButtonInformes(ActionEvent event) {
+        try {
+            // Carga el FXML de la pantalla a la que quieres regresar.
+            // Asegúrate de que la ruta sea correcta.
+            Parent root = FXMLLoader.load(getClass().getResource("/menuAbms.fxml"));
+
+            // Obtiene la Stage (ventana) actual del botón
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            // Crea una nueva Scene con la pantalla anterior
+            Scene scene = new Scene(root);
+
+            // Reemplaza la Scene actual con la nueva
+            stage.setScene(scene);
+            stage.setTitle("Menú Principal"); // O el título de la pantalla anterior
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Maneja el error si no se puede cargar el archivo FXML
+        }
+    }
+
+    @FXML
+    private void handleVolverButtonComprobantes(ActionEvent event) {
+        try {
+            // Carga el FXML de la pantalla a la que quieres regresar.
+            // Asegúrate de que la ruta sea correcta.
+            Parent root = FXMLLoader.load(getClass().getResource("/InformesAdmin.fxml"));
+
+            // Obtiene la Stage (ventana) actual del botón
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            // Crea una nueva Scene con la pantalla anterior
+            Scene scene = new Scene(root);
+
+            // Reemplaza la Scene actual con la nueva
+            stage.setScene(scene);
+            stage.setTitle("Menú Principal"); // O el título de la pantalla anterior
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Maneja el error si no se puede cargar el archivo FXML
+        }
+    }
+
+
+
 }

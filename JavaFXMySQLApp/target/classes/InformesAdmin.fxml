@@ -12,6 +12,7 @@
          </font>
       </Label>
       <Button fx:id="Buton" layoutX="32.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleFacturas" prefHeight="58.0" prefWidth="154.0" text="Facturas" />
-      <Button fx:id="Button" layoutX="32.0" layoutY="190.0" mnemonicParsing="false" prefHeight="58.0" prefWidth="154.0" text="Comprobantes" />
+      <Button fx:id="Button" layoutX="32.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleComprobantes" prefHeight="58.0" prefWidth="154.0" text="Comprobantes" />
+      <Button  fx:id="Buttton" mnemonicParsing="false" onAction="#handleVolverButtonInformes" prefHeight="27.0" prefWidth="102.0" text="Volver" />
    </children>
 </VBox>

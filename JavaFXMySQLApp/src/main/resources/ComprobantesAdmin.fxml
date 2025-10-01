@@ -5,10 +5,10 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="646.0" prefWidth="1783.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.FacturasController">
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="646.0" prefWidth="1785.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuController">
     <children>
         <!-- Título de la vista -->
-        <Label layoutX="274.0" layoutY="30.0" prefHeight="48.0" prefWidth="113.0" text="Facturas">
+        <Label layoutX="274.0" layoutY="30.0" prefHeight="48.0" prefWidth="113.0" text="Comprobantes">
             <font>
                 <Font name="System Bold" size="28.0" />
             </font>
@@ -18,27 +18,29 @@
         <TableView fx:id="facturasAdminTableView" editable="true" VBox.vgrow="ALWAYS">
             <columns>
                 <!-- 1. idFacturaColumn -->
-                <TableColumn fx:id="idFacturaColumn" prefWidth="120.0" text="Id Factura" />
+                <TableColumn fx:id="idFacturaColumn" prefWidth="120.0" text="Id Comprobante" />
                 <!-- 2. idPedidoColumn -->
                 <TableColumn fx:id="idPedidoColumn" prefWidth="130.0" text="Id Pedido" />
                 <!-- 3. idClienteColumn -->
                 <TableColumn fx:id="idClienteColumn" prefWidth="135.0" text="Id Cliente" />
                 <!-- 4. numeroFacturaColumn -->
-                <TableColumn fx:id="numeroFacturaColumn" prefWidth="189.0" text="N° Factura" />
+                <TableColumn fx:id="numeroFacturaColumn" prefWidth="213.0" text="Tipo de Pago" />
                 <!-- 5. fechaEmisionColumn -->
-                <TableColumn fx:id="fechaEmisionColumn" prefWidth="356.0" text="Fecha Emision" />
+                <TableColumn fx:id="fechaEmisionColumn" prefWidth="267.0" text="Monto de Pago" />
                 <!-- 6. montoTotalColumn -->
-                <TableColumn fx:id="montoTotalColumn" prefWidth="295.0" text="Monto Total" />
+                <TableColumn fx:id="montoTotalColumn" prefWidth="278.0" text="Fecha de Carga" />
                 <!-- 7. estadoPagoColumn -->
-                <TableColumn fx:id="estadoPagoColumn" prefWidth="280.0" text="Estado Pago" />
+                <TableColumn fx:id="estadoPagoColumn" prefWidth="214.0" text="Fecha de Verificación" />
                 <!-- 8. accionArchivoColumn (Botón "Ver Archivo" en el Controller) -->
-                <TableColumn fx:id="accionArchivoColumn" prefWidth="237.0" text="Link Arca" />
+                <TableColumn prefWidth="218.0" text="Estado Verificación" />
+
+                      <TableColumn fx:id="accionArchivoColumn" prefWidth="168.0" text="Archivo" />
             </columns>
         </TableView>
 
         <!-- Barra de búsqueda -->
         <TextField fx:id="filterField" prefWidth="1787.0" promptText="Buscar por Nombre del Cliente o Razon Social..." />
-      <Button fx:id="VolverButton" mnemonicParsing="false" onAction="#handleVolverMenuInformesButton" prefHeight="25.0" prefWidth="188.0" text="Volver" />
+        <Button fx:id="VolverButton" mnemonicParsing="false" onAction="#handleVolverButtonComprobantes" prefHeight="25.0" prefWidth="188.0" text="Volver" />
 
     </children>
     <!-- Se agrega el padding para crear el espacio alrededor de todos los elementos -->
