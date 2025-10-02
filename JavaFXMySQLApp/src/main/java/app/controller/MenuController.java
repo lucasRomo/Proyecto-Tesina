@@ -346,7 +346,7 @@ public class MenuController {
         try {
             // Carga el FXML de la pantalla a la que quieres regresar.
             // Asegúrate de que la ruta sea correcta.
-            Parent root = FXMLLoader.load(getClass().getResource("/menuAbms.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("/menuAdmin.fxml"));
 
             // Obtiene la Stage (ventana) actual del botón
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
