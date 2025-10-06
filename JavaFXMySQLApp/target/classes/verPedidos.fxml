@@ -1,75 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<?import java.net.URL?>
-<!-- IMPORTS CLAVE AGREGADOS para PropertyValueFactory -->
-<?import javafx.scene.control.cell.PropertyValueFactory?>
 
 <VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerPedidosController">
     <stylesheets>
-        <!-- SINTAXIS CORREGIDA: Ya no se usa 'value="@style.css"', sino solo el URL -->
         <URL value="@style.css" />
     </stylesheets>
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label text="Ver y Editar Pedidos" styleClass="titulo-principal">
+    <Label styleClass="titulo-principal" text="Ver y Editar Pedidos">
         <font>
             <Font name="System Bold" size="20.0" />
         </font>
     </Label>
 
-    <TableView fx:id="pedidosTable" VBox.vgrow="ALWAYS" editable="true">
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label text="Filtrar por Empleado Asignado:" textFill="#fff8f8">
+            <font>
+                <Font size="14.0" />
+            </font>
+        </Label>
+        <ComboBox fx:id="empleadoFilterComboBox" prefWidth="200.0" promptText="Seleccionar Empleado" />
+    </HBox>
+    <TableView fx:id="pedidosTable" editable="true" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="idPedidoColumn" text="ID" prefWidth="75.0">
+            <TableColumn fx:id="idPedidoColumn" prefWidth="75.0" text="ID">
                 <cellValueFactory>
-                    <!-- PropertyValueFactory AHORA ES RECONOCIDA -->
                     <PropertyValueFactory property="idPedido" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="clienteColumn" text="Cliente" prefWidth="150.0">
+            <TableColumn fx:id="clienteColumn" prefWidth="150.0" text="Cliente">
                 <cellValueFactory>
                     <PropertyValueFactory property="nombreCliente" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="empleadoColumn" text="Empleado" prefWidth="150.0">
+            <TableColumn fx:id="empleadoColumn" prefWidth="150.0" text="Empleado">
                 <cellValueFactory>
                     <PropertyValueFactory property="nombreEmpleado" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="estadoColumn" text="Estado" prefWidth="100.0">
+            <TableColumn fx:id="estadoColumn" prefWidth="100.0" text="Estado">
                 <cellValueFactory>
                     <PropertyValueFactory property="estado" />
                 </cellValueFactory>
             </TableColumn>
-            <!-- COLUMNA METODO DE PAGO SIGUE COMENTADA PARA EVITAR EL ERROR DE 'setMetodoPago' EN EL CONTROLLER -->
-            <!--
-            <TableColumn fx:id="metodoPagoColumn" text="Método Pago" prefWidth="100.0">
-                <cellValueFactory>
-                    <PropertyValueFactory property="metodoPago" />
-                </cellValueFactory>
-            </TableColumn>
-            -->
-            <TableColumn fx:id="montoTotalColumn" text="Monto Total" prefWidth="100.0">
+            <TableColumn fx:id="montoTotalColumn" prefWidth="100.0" text="Monto Total">
                 <cellValueFactory>
                     <PropertyValueFactory property="montoTotal" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="montoEntregadoColumn" text="Monto Entregado" prefWidth="120.0">
+            <TableColumn fx:id="montoEntregadoColumn" prefWidth="120.0" text="Monto Entregado">
                 <cellValueFactory>
                     <PropertyValueFactory property="montoEntregado" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="fechaEntregaEstimadaColumn" text="Fecha de Entrega" prefWidth="150.0">
+            <TableColumn fx:id="fechaEntregaEstimadaColumn" prefWidth="150.0" text="Fecha de Entrega">
                 <cellValueFactory>
                     <PropertyValueFactory property="fechaEntregaEstimada" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="instruccionesColumn" text="Instrucciones" prefWidth="250.0">
+            <TableColumn fx:id="instruccionesColumn" prefWidth="250.0" text="Instrucciones">
                 <cellValueFactory>
                     <PropertyValueFactory property="instrucciones" />
                 </cellValueFactory>
@@ -77,9 +74,9 @@
         </columns>
     </TableView>
 
-    <HBox spacing="10.0" alignment="CENTER">
+    <HBox alignment="CENTER" spacing="10.0">
         <Button onAction="#handleGuardarCambios" text="Guardar Cambios" />
-        <Button onAction="#handleVolver" text="Volver" styleClass="button-volver"/>
+        <Button onAction="#handleVolver" styleClass="button-volver" text="Volver" />
     </HBox>
 
 </VBox>

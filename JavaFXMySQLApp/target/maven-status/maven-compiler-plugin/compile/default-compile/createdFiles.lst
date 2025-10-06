@@ -1,11 +1,9 @@
 app\controller\ClienteController.class
+app\controller\VerHistorialPedidosController$3.class
 app\controller\RegistroController.class
 app\controller\IniciodeSesionController.class
 app\controller\CrearPedidoController.class
-app\controller\AsignarPedidoController.class
-app\controller\VerHistorialPedidosController.class
 app\model\Pedido.class
-app\MainApp.class
 app\controller\EmpleadoController.class
 app\model\TipoDocumento.class
 app\model\Usuario.class
@@ -13,8 +11,13 @@ app\model\Empleado.class
 app\controller\VerPedidosController.class
 app\controller\MenuController.class
 app\controller\PedidosPrimerMenuController.class
+app\controller\VerHistorialPedidosController$1.class
 app\model\AsignacionPedido.class
 app\model\Direccion.class
-app\model\Persona.class
 app\model\Cliente.class
 app\controller\RegistroEmpleadoController.class
+app\controller\AsignarPedidoController.class
+app\controller\VerHistorialPedidosController.class
+app\MainApp.class
+app\controller\VerHistorialPedidosController$2.class
+app\model\Persona.class

@@ -13,13 +13,12 @@ public class Pedido {
     private LocalDateTime fechaEntregaEstimada;
     private LocalDateTime fechaFinalizacion;
     private String estado;
-    // private String metodoPago; // <-- ELIMINADO
+    private String metodoPago; // <-- REINCORPORADO
     private String instrucciones;
     private double montoTotal;
     private double montoEntregado;
 
     // Constructor para crear un NUEVO Pedido desde la UI (ej. CrearPedidoController)
-    // Ya no recibe 'metodoPago'
     public Pedido(int idCliente, int idEmpleado, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada,
                   LocalDateTime fechaFinalizacion, String estado, String instrucciones,
                   double montoTotal, double montoEntregado) {
@@ -32,13 +31,12 @@ public class Pedido {
         this.instrucciones = instrucciones;
         this.montoTotal = montoTotal;
         this.montoEntregado = montoEntregado;
+        this.metodoPago = null; // Inicializado como nulo al crear el pedido
     }
 
     // Constructor COMPLETO para cuando se recuperan Pedidos con sus nombres (ej. PedidoDAO.getAllPedidos)
-    // El argumento String 'metodoPagoPlaceholder' se mantiene para compatibilidad con la firma antigua,
-    // pero no se usa internamente en el modelo Pedido.
     public Pedido(int idPedido, int idCliente, String nombreCliente, int idEmpleado, String nombreEmpleado,
-                  String estado, String metodoPagoPlaceholder, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada,
+                  String estado, String metodoPago, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada,
                   LocalDateTime fechaFinalizacion, String instrucciones, double montoTotal, double montoEntregado) {
         this.idPedido = idPedido;
         this.idCliente = idCliente;
@@ -46,7 +44,7 @@ public class Pedido {
         this.idEmpleado = idEmpleado;
         this.nombreEmpleado = nombreEmpleado;
         this.estado = estado;
-        // La información de pago se buscaría ahora en ComprobantePago si se necesitara mostrar.
+        this.metodoPago = metodoPago; // <-- Asignado desde el DAO
         this.fechaCreacion = fechaCreacion;
         this.fechaEntregaEstimada = fechaEntregaEstimada;
         this.fechaFinalizacion = fechaFinalizacion;
@@ -82,6 +80,10 @@ public class Pedido {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    // MÉTODO REQUERIDO POR EL CONTROLADOR PARA MOSTRAR Y FILTRAR
+    public String getMetodoPago() { return metodoPago; }
+    public void setMetodoPago(String metodoPago) { this.metodoPago = metodoPago; }
 
     public String getInstrucciones() { return instrucciones; }
     public void setInstrucciones(String instrucciones) { this.instrucciones = instrucciones; }
