@@ -4,6 +4,7 @@ import app.controller.UsuarioEmpleadoTableView;
 import app.model.Usuario;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import app.dao.UsuarioDAO;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -169,28 +170,40 @@ public class UsuarioDAO {
         return contrasena;
     }
 
-    public int obtenerIdUsuarioPorCredenciales(String Usuario, String Contrasenia) {
-        String sql = "SELECT id_usuario FROM Usuario WHERE nombre_usuario = ? AND contrasena = ?";
-        int idUsuario = -1;
+    public Usuario obtenerUsuarioPorId(int idUsuario) throws SQLException {
+        // Solo necesitamos los campos de la tabla Usuario para la comparación de credenciales
+        String sql = "SELECT id_usuario, nombre_usuario, contrasena FROM Usuario WHERE id_usuario = ?";
 
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, Usuario);
-            pstmt.setString(2, Contrasenia);
+        try (Connection connection = getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
 
-            try (ResultSet rs = pstmt.executeQuery()) {
+            stmt.setInt(1, idUsuario);
+
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    idUsuario = rs.getInt("id_usuario");
+                    Usuario user = new Usuario();
+                    user.setIdUsuario(rs.getInt("id_usuario"));
+                    user.setUsuario(rs.getString("nombre_usuario"));
+                    user.setContrasena(rs.getString("contrasena"));
+
+                    return user;
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error al obtener usuario por ID: " + e.getMessage());
+            throw e; // Relanza la excepción para que el controlador la maneje
         }
-        return idUsuario;
+        return null;
     }
 
     public Usuario obtenerUsuarioPorCredenciales(String nombreUsuario, String contrasena) {
-        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_persona, p.id_direccion FROM Usuario u JOIN Persona p ON u.id_persona = p.id_persona WHERE u.nombre_usuario = ? AND u.contrasena = ?";
+
+        // CORRECCIÓN FINAL: Usamos p.id_tipo_persona según el esquema DDL proporcionado.
+        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_persona, p.id_direccion, p.id_tipo_persona " +
+                "FROM Usuario u " +
+                "JOIN Persona p ON u.id_persona = p.id_persona " +
+                "WHERE u.nombre_usuario = ? AND u.contrasena = ?";
+
         Usuario usuarioEncontrado = null;
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -200,13 +213,17 @@ public class UsuarioDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    // Si encontramos una coincidencia, creamos y devolvemos el objeto Usuario
+                    // Recuperamos el ID de Tipo de Persona (el rol)
+                    int idTipoUsuario = rs.getInt("id_tipo_persona");
+
+                    // Creamos el objeto Usuario con todos los datos
                     usuarioEncontrado = new Usuario(
                             rs.getInt("id_usuario"),
                             rs.getString("nombre_usuario"),
                             rs.getString("contrasena"),
                             rs.getInt("id_persona"),
-                            rs.getInt("id_direccion")
+                            rs.getInt("id_direccion"),
+                            idTipoUsuario
                     );
                 }
             }

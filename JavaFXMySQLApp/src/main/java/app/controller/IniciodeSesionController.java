@@ -31,8 +31,17 @@ public class IniciodeSesionController {
             // Llamamos a un nuevo método que devuelve el objeto Usuario
             Usuario usuarioLogueado = usuarioDAO.obtenerUsuarioPorCredenciales(usuario, contrasena);
 
+
             // Verificamos si se devolvió un objeto Usuario (si no es null)
             if (usuarioLogueado != null) {
+
+                SessionManager session = SessionManager.getInstance();
+                session.setLoggedInUserPassword(usuarioLogueado.getContrasenia());
+                session.setLoggedInUsername(usuarioLogueado.getUsuario());
+                session.setLoggedInUserId(usuarioLogueado.getIdUsuario());
+                session.setLoggedInUserIdType(usuarioLogueado.getIdTipoUsuario());
+
+
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Inicio de Sesion Exitoso");
                 alert.setHeaderText(null);
@@ -41,16 +50,11 @@ public class IniciodeSesionController {
 
                 try {
                     // Carga el FXML de la pantalla de menú del administrador
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/menuAbms.fxml"));
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/MenuAbms.fxml"));
                     Parent root = loader.load();
 
                     // Obtenemos el controlador del menú de admin
                     MenuController menuAdminController = loader.getController();
-
-                    // Y le pasamos la información completa del usuario logueado
-                    menuAdminController.setLoggedInUserPassword(usuarioLogueado.getContrasenia());
-                    menuAdminController.setLoggedInUsername(usuarioLogueado.getUsuario());
-                    menuAdminController.setLoggedInUserId(usuarioLogueado.getIdUsuario());
 
                     // Obtener el 'Stage' (ventana) actual desde un elemento de la escena
                     Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

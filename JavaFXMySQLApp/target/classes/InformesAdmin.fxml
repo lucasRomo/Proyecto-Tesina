@@ -4,14 +4,19 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="304.0" prefWidth="196.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="">
+<?import java.net.URL?>
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="401.0" prefWidth="284.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuController">
+    <stylesheets>
+        <URL value="@style.css" />
+    </stylesheets>
    <children>
-      <Label alignment="CENTER" contentDisplay="CENTER" layoutX="34.0" layoutY="56.0" prefHeight="35.0" prefWidth="125.0" text="Informes">
+      <Label styleClass="titulo-principal" alignment="CENTER" contentDisplay="CENTER" layoutX="34.0" layoutY="56.0" prefHeight="75.0" prefWidth="172.0" text="Informes">
          <font>
-            <Font name="System Bold" size="24.0" />
+            <Font name="System Bold" size="36.0" />
          </font>
       </Label>
-      <Button layoutX="32.0" layoutY="123.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="125.0" text="Facturas" />
-      <Button layoutX="32.0" layoutY="190.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="125.0" text="Comprobantes" />
+      <Button fx:id="Buton" layoutX="32.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleFacturas" prefHeight="58.0" prefWidth="154.0" text="Facturas" />
+      <Button fx:id="Button" layoutX="32.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleComprobantes" prefHeight="58.0" prefWidth="154.0" text="Comprobantes" />
+      <Button  fx:id="Buttton" mnemonicParsing="false" onAction="#handleVolverButtonInformes" prefHeight="27.0" prefWidth="102.0" text="Volver" styleClass="button-volver" />
    </children>
-</AnchorPane>
+</VBox>
