@@ -12,7 +12,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/menuAbms.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/menuCliente.fxml"));
         Parent root = fxmlLoader.load();
 
         Scene scene = new Scene(root);
@@ -21,8 +21,8 @@ public class MainApp extends Application {
         stage.setScene(scene);
 
 
-        stage.setWidth(1800);
-        stage.setHeight(1000);
+        stage.setWidth(1400);
+        stage.setHeight(800);
 
         // Centra la ventana en la pantalla (opcional)
         stage.centerOnScreen();
