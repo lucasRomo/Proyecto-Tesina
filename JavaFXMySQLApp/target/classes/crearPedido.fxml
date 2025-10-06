@@ -65,9 +65,7 @@
     </GridPane>
 
     <HBox alignment="CENTER" spacing="10.0">
-        <!-- onAction llama a handleGuardar, que ahora maneja el evento para la navegación -->
         <Button onAction="#handleGuardar" prefWidth="150" text="Guardar Pedido" />
-        <!-- onAction llama a handleCancelar, que ahora también navega -->
         <Button onAction="#handleCancelar" prefWidth="150" text="Cancelar" />
     </HBox>
 </VBox>

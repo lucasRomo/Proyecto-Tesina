@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List; // Importar List
 
 public class CrearPedidoController {
 
@@ -25,7 +26,7 @@ public class CrearPedidoController {
     @FXML private ComboBox<String> clienteComboBox;
     @FXML private ComboBox<String> empleadoComboBox;
     @FXML private ComboBox<String> estadoComboBox;
-    @FXML private ComboBox<String> metodoPagoComboBox; // ComboBox para el método de pago
+    @FXML private ComboBox<String> metodoPagoComboBox; // ComboBox para el tipo_pago en ComprobantePago
 
     // Otros campos
     @FXML private DatePicker fechaEntregaEstimadaPicker;
@@ -35,7 +36,6 @@ public class CrearPedidoController {
     @FXML private TextArea instruccionesArea;
 
     private PedidoDAO pedidoDAO = new PedidoDAO();
-    // Ya no es necesario dialogStage si no se usa como modal, pero lo mantenemos como buena práctica.
     private Stage dialogStage;
 
     /**
@@ -43,19 +43,33 @@ public class CrearPedidoController {
      */
     @FXML
     public void initialize() {
-        // Inicializar ComboBox de Estado (ejemplo)
+        // Inicializar ComboBox de Estado
         estadoComboBox.setItems(FXCollections.observableArrayList(
                 "Pendiente", "En Proceso", "Finalizado", "Entregado", "Cancelado"
         ));
 
-        // Inicializar ComboBox de Método de Pago con las opciones requeridas
+        // Inicializar ComboBox de Método de Pago con las opciones requeridas para ComprobantePago
         metodoPagoComboBox.setItems(FXCollections.observableArrayList(
-                "Transferencia", "Efectivo"
+                "Transferencia", "Efectivo", "Tarjeta"
         ));
 
-        // TODO: Cargar y rellenar clienteComboBox y empleadoComboBox desde el DAO
-        clienteComboBox.setItems(FXCollections.observableArrayList("Cliente A", "Cliente B"));
-        empleadoComboBox.setItems(FXCollections.observableArrayList("Empleado 1", "Empleado 2"));
+        // Cargar Clientes
+        try {
+            List<String> listaClientes = pedidoDAO.getAllClientesDisplay();
+            clienteComboBox.setItems(FXCollections.observableArrayList(listaClientes));
+        } catch (Exception e) {
+            System.err.println("Error al cargar clientes: " + e.getMessage());
+            mostrarAlerta("Error de BD", "No se pudieron cargar los clientes.", "Verifica la conexión a la base de datos.", Alert.AlertType.ERROR);
+        }
+
+        // Cargar Empleados
+        try {
+            List<String> listaEmpleados = pedidoDAO.getAllEmpleadosDisplay();
+            listaEmpleados.add(0, "0 - Sin Asignar");
+            empleadoComboBox.setItems(FXCollections.observableArrayList(listaEmpleados));
+        } catch (Exception e) {
+            System.err.println("Error al cargar empleados: " + e.getMessage());
+        }
     }
 
     /**
@@ -72,12 +86,14 @@ public class CrearPedidoController {
     @FXML
     private void handleGuardar(ActionEvent event) {
         if (isInputValid()) {
-            // NOTA: Reemplaza estos IDs estáticos con la lógica para obtener el ID real
-            int idCliente = 1;
-            int idEmpleado = 1;
+
+            int idCliente = extractIdFromComboBox(clienteComboBox.getSelectionModel().getSelectedItem());
+            String empleadoSeleccionado = empleadoComboBox.getSelectionModel().getSelectedItem();
+            int idEmpleado = (empleadoSeleccionado != null) ? extractIdFromComboBox(empleadoSeleccionado) : 0;
 
             String estado = estadoComboBox.getSelectionModel().getSelectedItem();
-            String metodoPago = metodoPagoComboBox.getSelectionModel().getSelectedItem();
+            // Obtener el tipo de pago para pasarlo al DAO para ComprobantePago
+            String tipoPago = metodoPagoComboBox.getSelectionModel().getSelectedItem();
             LocalDateTime fechaCreacion = LocalDateTime.now();
 
             LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaPicker.getValue() != null)
@@ -88,8 +104,12 @@ public class CrearPedidoController {
 
             String instrucciones = instruccionesArea.getText();
             double montoTotal = Double.parseDouble(montoTotalField.getText());
-            double montoEntregado = Double.parseDouble(montoEntregadoField.getText());
+            double montoEntregado = (montoEntregadoField.getText() != null && !montoEntregadoField.getText().isEmpty())
+                    ? Double.parseDouble(montoEntregadoField.getText())
+                    : 0.0;
 
+
+            // Constructor de Pedido MODIFICADO: ya no incluye metodoPago
             Pedido nuevoPedido = new Pedido(
                     idCliente,
                     idEmpleado,
@@ -97,28 +117,45 @@ public class CrearPedidoController {
                     fechaEntregaEstimada,
                     fechaFinalizacion,
                     estado,
-                    metodoPago,
                     instrucciones,
                     montoTotal,
                     montoEntregado
             );
 
-            if (pedidoDAO.savePedido(nuevoPedido)) {
+            // LLAMADA AL DAO MODIFICADA: Se pasa el tipoPago como segundo argumento
+            if (pedidoDAO.savePedido(nuevoPedido, tipoPago)) {
                 mostrarAlerta("Éxito", "Pedido guardado", "El nuevo pedido se ha guardado exitosamente.", Alert.AlertType.INFORMATION);
-                // Si se guarda exitosamente, volvemos al menú anterior.
                 volverAlMenuPedidos(event);
             } else {
-                mostrarAlerta("Error", "Error al guardar", "No se pudo guardar el pedido en la base de datos.", Alert.AlertType.ERROR);
+                mostrarAlerta("Error", "Error al guardar", "No se pudo guardar el pedido ni su comprobante de pago en la base de datos.", Alert.AlertType.ERROR);
             }
         }
     }
 
     /**
-     * Valida la entrada del usuario. (Sin cambios en la lógica de validación)
+     * Método auxiliar para extraer el ID de un String con formato "ID - Nombre".
+     */
+    private int extractIdFromComboBox(String selectedItem) {
+        if (selectedItem == null || selectedItem.isEmpty()) {
+            return 0;
+        }
+        try {
+            String idString = selectedItem.split(" - ")[0].trim();
+            return Integer.parseInt(idString);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            System.err.println("Error al parsear ID desde ComboBox: " + selectedItem);
+            mostrarAlerta("Error de Formato", "ID Inválido", "El formato de selección de Cliente/Empleado es incorrecto. Contacte a soporte.", Alert.AlertType.ERROR);
+            return 0;
+        }
+    }
+
+
+    /**
+     * Valida la entrada del usuario.
      */
     private boolean isInputValid() {
         String errorMessage = "";
-        // ... (Tu lógica de validación anterior)
+
         if (clienteComboBox.getSelectionModel().isEmpty()) {
             errorMessage += "Debes seleccionar un cliente.\n";
         }

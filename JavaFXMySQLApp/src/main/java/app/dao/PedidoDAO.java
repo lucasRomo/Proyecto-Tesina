@@ -25,17 +25,26 @@ public class PedidoDAO {
     private static final String PASSWORD = "";
 
     /**
-     * Guarda un nuevo pedido en la tabla Pedido y, si aplica, la asignación en AsignacionPedido.
+     * Guarda un nuevo pedido en la tabla Pedido, la asignación en AsignacionPedido y el tipo de pago en ComprobantePago.
      * @param pedido El objeto Pedido a guardar.
-     * @return true si el pedido y la asignación (si la hay) se guardaron exitosamente, false en caso contrario.
+     * @param tipoPago El tipo de pago seleccionado (por ejemplo, "Transferencia", "Efectivo").
+     * @return true si todas las inserciones fueron exitosas, false en caso contrario.
      */
-    public boolean savePedido(Pedido pedido) {
-        String sqlPedido = "INSERT INTO Pedido (id_cliente, estado, fecha_creacion, fecha_entrega_estimada, fecha_finalizacion, instrucciones, monto_total, monto_entregado, metodo_pago) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public boolean savePedido(Pedido pedido, String tipoPago) {
+        // SQL para Pedido (SIN la columna metodo_pago)
+        String sqlPedido = "INSERT INTO Pedido (id_cliente, estado, fecha_creacion, fecha_entrega_estimada, fecha_finalizacion, instrucciones, monto_total, monto_entregado) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        // SQL para ComprobantePago
+        // Se asume que el 'monto_entregado' es el primer 'monto_pago'
+        String sqlComprobante = "INSERT INTO ComprobantePago (id_pedido, id_cliente, tipo_pago, monto_pago, fecha_carga, estado_verificacion) " +
+                "VALUES (?, ?, ?, ?, ?, 'Pendiente')";
+
 
         Connection conn = null;
         PreparedStatement stmtPedido = null;
         PreparedStatement stmtAsignacion = null;
+        PreparedStatement stmtComprobante = null;
 
         try {
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -48,14 +57,13 @@ public class PedidoDAO {
             stmtPedido.setString(2, pedido.getEstado());
             stmtPedido.setTimestamp(3, Timestamp.valueOf(pedido.getFechaCreacion()));
 
-            // Manejo de fecha_entrega_estimada (puede ser null en la DB)
+            // Manejo de fechas (puede ser null en la DB)
             if (pedido.getFechaEntregaEstimada() != null) {
                 stmtPedido.setTimestamp(4, Timestamp.valueOf(pedido.getFechaEntregaEstimada()));
             } else {
                 stmtPedido.setNull(4, java.sql.Types.TIMESTAMP);
             }
 
-            // Manejo de fecha_finalizacion (puede ser null en la DB)
             if (pedido.getFechaFinalizacion() != null) {
                 stmtPedido.setTimestamp(5, Timestamp.valueOf(pedido.getFechaFinalizacion()));
             } else {
@@ -65,7 +73,7 @@ public class PedidoDAO {
             stmtPedido.setString(6, pedido.getInstrucciones());
             stmtPedido.setDouble(7, pedido.getMontoTotal());
             stmtPedido.setDouble(8, pedido.getMontoEntregado());
-            stmtPedido.setString(9, pedido.getMetodoPago());
+            // Se quitó la línea para metodo_pago
 
             int affectedRowsPedido = stmtPedido.executeUpdate();
 
@@ -86,7 +94,7 @@ public class PedidoDAO {
                 }
             }
 
-            // 2. Insertar en la tabla AsignacionPedido (SIEMPRE que haya un id_empleado válido)
+            // 2. Insertar en la tabla AsignacionPedido (solo si hay empleado asignado)
             if (pedido.getIdEmpleado() > 0) {
                 String sqlAsignacion = "INSERT INTO AsignacionPedido (id_pedido, id_empleado, fecha_asignacion) VALUES (?, ?, ?)";
                 stmtAsignacion = conn.prepareStatement(sqlAsignacion);
@@ -100,8 +108,27 @@ public class PedidoDAO {
                     return false;
                 }
             } else {
-                System.out.println("Advertencia: Pedido creado sin empleado asignado. idEmpleado: " + pedido.getIdEmpleado());
+                System.out.println("Advertencia: Pedido creado sin empleado asignado.");
             }
+
+            // 3. Insertar en la tabla ComprobantePago
+            if (pedido.getMontoEntregado() > 0 && tipoPago != null && !tipoPago.isEmpty()) {
+                stmtComprobante = conn.prepareStatement(sqlComprobante);
+                stmtComprobante.setInt(1, idPedidoGenerado);
+                stmtComprobante.setInt(2, pedido.getIdCliente());
+                stmtComprobante.setString(3, tipoPago);
+                stmtComprobante.setDouble(4, pedido.getMontoEntregado());
+                stmtComprobante.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+
+                int affectedRowsComprobante = stmtComprobante.executeUpdate();
+                if (affectedRowsComprobante == 0) {
+                    conn.rollback();
+                    return false;
+                }
+            } else {
+                System.out.println("Advertencia: No se creó ComprobantePago. Monto entregado es 0 o Tipo Pago vacío.");
+            }
+
 
             conn.commit(); // Confirmar la transacción
             return true;
@@ -121,6 +148,7 @@ public class PedidoDAO {
         } finally {
             // Cerrar recursos
             try {
+                if (stmtComprobante != null) stmtComprobante.close();
                 if (stmtAsignacion != null) stmtAsignacion.close();
                 if (stmtPedido != null) stmtPedido.close();
                 if (conn != null) conn.close();
@@ -131,15 +159,69 @@ public class PedidoDAO {
     }
 
     /**
-     * Recupera todos los pedidos de la base de datos, incluyendo datos del cliente y empleado asignado.
-     * @return Una lista de objetos Pedido.
+     * Obtiene una lista de String con el formato "ID - Nombre Apellido" de los Clientes.
+     */
+    public List<String> getAllClientesDisplay() {
+        List<String> clientes = new ArrayList<>();
+        // Seleccionamos el ID del cliente, nombre y apellido de la persona
+        String sql = "SELECT cl.id_cliente, p.nombre, p.apellido " +
+                "FROM Cliente cl " +
+                "JOIN Persona p ON cl.id_persona = p.id_persona " +
+                "WHERE cl.estado = 'Activo'"; // Opcional: solo clientes activos
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                int idCliente = rs.getInt("id_cliente");
+                String nombreCompleto = rs.getString("nombre") + " " + rs.getString("apellido");
+                clientes.add(idCliente + " - " + nombreCompleto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return clientes;
+    }
+
+    /**
+     * Obtiene una lista de String con el formato "ID - Nombre Apellido" de los Empleados.
+     */
+    public List<String> getAllEmpleadosDisplay() {
+        List<String> empleados = new ArrayList<>();
+        // Seleccionamos el ID del empleado, nombre y apellido de la persona
+        String sql = "SELECT e.id_empleado, p.nombre, p.apellido " +
+                "FROM Empleado e " +
+                "JOIN Persona p ON e.id_persona = p.id_persona " +
+                "WHERE e.estado = 'Activo'"; // Opcional: solo empleados activos
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                int idEmpleado = rs.getInt("id_empleado");
+                String nombreCompleto = rs.getString("nombre") + " " + rs.getString("apellido");
+                empleados.add(idEmpleado + " - " + nombreCompleto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return empleados;
+    }
+
+
+    /**
+     * Recupera todos los pedidos de la base de datos.
+     * NOTA: La columna 'metodo_pago' se ha eliminado del SQL.
      */
     public List<Pedido> getAllPedidos() {
         List<Pedido> pedidos = new ArrayList<>();
         String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
-                "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, p.metodo_pago, " +
+                "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
                 "c.nombre AS nombre_cliente, c.apellido AS apellido_cliente, " +
                 "e.id_empleado, pr.nombre AS nombre_empleado, pr.apellido AS apellido_empleado " +
+                // Se podría añadir un JOIN a ComprobantePago si se quiere mostrar el tipo de pago inicial
                 "FROM Pedido p " +
                 "LEFT JOIN Cliente cl ON p.id_cliente = cl.id_cliente " +
                 "LEFT JOIN Persona c ON cl.id_persona = c.id_persona " +
@@ -165,7 +247,7 @@ public class PedidoDAO {
                 }
 
                 String estado = rs.getString("estado");
-                String metodoPago = rs.getString("metodo_pago");
+                String metodoPagoPlaceholder = ""; // Valor de relleno para el constructor
 
                 LocalDateTime fechaCreacion = rs.getTimestamp("fecha_creacion").toLocalDateTime();
                 Timestamp fechaEntregaEstimadaTimestamp = rs.getTimestamp("fecha_entrega_estimada");
@@ -184,7 +266,7 @@ public class PedidoDAO {
                         idEmpleado,
                         nombreEmpleado,
                         estado,
-                        metodoPago,
+                        metodoPagoPlaceholder,
                         fechaCreacion,
                         fechaEntregaEstimada,
                         fechaFinalizacion,
@@ -200,13 +282,11 @@ public class PedidoDAO {
     }
 
     /**
-     * RENOMBRADO: Antes era updatePedido.
      * Actualiza los datos de un pedido en la base de datos (sobrescribe los anteriores).
-     * @param pedido El objeto Pedido con los datos actualizados.
-     * @return true si el pedido fue modificado exitosamente, false en caso contrario.
+     * NOTA: Se ha ELIMINADO la actualización del campo 'metodo_pago'.
      */
     public boolean modificarPedido(Pedido pedido) {
-        String sql = "UPDATE Pedido SET id_cliente = ?, estado = ?, fecha_entrega_estimada = ?, fecha_finalizacion = ?, instrucciones = ?, monto_total = ?, monto_entregado = ?, metodo_pago = ? WHERE id_pedido = ?";
+        String sql = "UPDATE Pedido SET id_cliente = ?, estado = ?, fecha_entrega_estimada = ?, fecha_finalizacion = ?, instrucciones = ?, monto_total = ?, monto_entregado = ? WHERE id_pedido = ?";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -231,10 +311,8 @@ public class PedidoDAO {
             stmt.setDouble(6, pedido.getMontoTotal());
             stmt.setDouble(7, pedido.getMontoEntregado());
 
-            // Método de pago
-            stmt.setString(8, pedido.getMetodoPago());
-
-            stmt.setInt(9, pedido.getIdPedido()); // Cláusula WHERE
+            // El índice 8 es ahora la cláusula WHERE
+            stmt.setInt(8, pedido.getIdPedido());
 
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
@@ -244,11 +322,7 @@ public class PedidoDAO {
         }
     }
 
-    // Nota: El método actualizarPedidos no es necesario si utilizas modificarPedido()
-    // en el evento onEditCommit de cada celda, que es el enfoque implementado en el Controller.
     public boolean actualizarPedidos(ObservableList<Pedido> pedidos) {
-        // Esta implementación solo devuelve false, es mejor usar modificarPedido()
-        // en el controlador para guardar fila por fila, como ya lo hicimos.
         return false;
     }
 }

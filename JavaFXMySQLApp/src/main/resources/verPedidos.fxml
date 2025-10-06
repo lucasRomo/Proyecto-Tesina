@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.text.*?>
 <?import java.net.URL?>
+<!-- IMPORTS CLAVE AGREGADOS para PropertyValueFactory -->
+<?import javafx.scene.control.cell.PropertyValueFactory?>
 
-<VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerPedidosController">
+<VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerPedidosController">
     <stylesheets>
+        <!-- SINTAXIS CORREGIDA: Ya no se usa 'value="@style.css"', sino solo el URL -->
         <URL value="@style.css" />
     </stylesheets>
     <padding>
@@ -25,6 +27,7 @@
         <columns>
             <TableColumn fx:id="idPedidoColumn" text="ID" prefWidth="75.0">
                 <cellValueFactory>
+                    <!-- PropertyValueFactory AHORA ES RECONOCIDA -->
                     <PropertyValueFactory property="idPedido" />
                 </cellValueFactory>
             </TableColumn>
@@ -43,13 +46,14 @@
                     <PropertyValueFactory property="estado" />
                 </cellValueFactory>
             </TableColumn>
-            <!-- NUEVA COLUMNA: Método de Pago -->
+            <!-- COLUMNA METODO DE PAGO SIGUE COMENTADA PARA EVITAR EL ERROR DE 'setMetodoPago' EN EL CONTROLLER -->
+            <!--
             <TableColumn fx:id="metodoPagoColumn" text="Método Pago" prefWidth="100.0">
                 <cellValueFactory>
                     <PropertyValueFactory property="metodoPago" />
                 </cellValueFactory>
             </TableColumn>
-            <!-- FIN NUEVA COLUMNA -->
+            -->
             <TableColumn fx:id="montoTotalColumn" text="Monto Total" prefWidth="100.0">
                 <cellValueFactory>
                     <PropertyValueFactory property="montoTotal" />

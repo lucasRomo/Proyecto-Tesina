@@ -16,7 +16,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.control.cell.ComboBoxTableCell; // Importación clave para desplegables
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
 
@@ -36,8 +36,7 @@ public class VerPedidosController implements Initializable {
     private TableColumn<Pedido, String> empleadoColumn;
     @FXML
     private TableColumn<Pedido, String> estadoColumn; // Será ComboBox
-    @FXML
-    private TableColumn<Pedido, String> metodoPagoColumn; // Será ComboBox
+    // El @FXML para metodoPagoColumn fue ELIMINADO para evitar errores
     @FXML
     private TableColumn<Pedido, Double> montoTotalColumn; // Editable numérico
     @FXML
@@ -61,7 +60,7 @@ public class VerPedidosController implements Initializable {
         clienteColumn.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         empleadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombreEmpleado"));
         estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
-        metodoPagoColumn.setCellValueFactory(new PropertyValueFactory<>("metodoPago"));
+        // Se ha ELIMINADO la línea de metodoPagoColumn para evitar errores
         montoTotalColumn.setCellValueFactory(new PropertyValueFactory<>("montoTotal"));
         montoEntregadoColumn.setCellValueFactory(new PropertyValueFactory<>("montoEntregado"));
         fechaEntregaEstimadaColumn.setCellValueFactory(new PropertyValueFactory<>("fechaEntregaEstimada"));
@@ -73,20 +72,17 @@ public class VerPedidosController implements Initializable {
         fechaEntregaEstimadaColumn.setEditable(false);
 
         // --- 1. Columna ESTADO (ComboBoxTableCell) ---
-        ObservableList<String> estados = FXCollections.observableArrayList("En Proceso", "Terminado", "Retirado");
+        ObservableList<String> estados = FXCollections.observableArrayList(
+                "Pendiente", "En Proceso", "Finalizado", "Entregado", "Cancelado"
+        );
         estadoColumn.setCellFactory(ComboBoxTableCell.forTableColumn(estados));
         estadoColumn.setOnEditCommit(event -> {
             event.getRowValue().setEstado(event.getNewValue());
             guardarCambiosEnBD(event.getRowValue(), "Estado");
         });
 
-        // --- 2. Columna MÉTODO DE PAGO (ComboBoxTableCell) ---
-        ObservableList<String> metodosPago = FXCollections.observableArrayList("Tarjeta", "Efectivo");
-        metodoPagoColumn.setCellFactory(ComboBoxTableCell.forTableColumn(metodosPago));
-        metodoPagoColumn.setOnEditCommit(event -> {
-            event.getRowValue().setMetodoPago(event.getNewValue());
-            guardarCambiosEnBD(event.getRowValue(), "Método de Pago");
-        });
+        // --- 2. Columna MÉTODO DE PAGO (Lógica Eliminada) ---
+        // La lógica de la columna metodoPagoColumn fue eliminada de aquí.
 
         // --- 3 & 4. Columnas NUMÉRICAS (Double) ---
         montoTotalColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
