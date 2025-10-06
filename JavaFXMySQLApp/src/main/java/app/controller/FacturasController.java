@@ -135,7 +135,7 @@ public class FacturasController {
 
             {
                 // Configuración de estilo básico para el botón
-                btn.setStyle("-fx-background-color: #5d5dff; -fx-text-fill: white; -fx-cursor: hand;");
+
 
                 btn.setMaxWidth(Double.MAX_VALUE);
                 btn.setMaxHeight(Double.MAX_VALUE);

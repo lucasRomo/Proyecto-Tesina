@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
 <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="646.0" prefWidth="1783.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.FacturasController">
+    <stylesheets>
+        <URL value="@style.css" />
+    </stylesheets>
     <children>
         <!-- Título de la vista -->
-        <Label layoutX="274.0" layoutY="30.0" prefHeight="48.0" prefWidth="113.0" text="Facturas">
+        <Label layoutX="274.0" layoutY="30.0" prefHeight="55.0" prefWidth="149.0" styleClass="titulo-principal" text="Facturas">
             <font>
                 <Font name="System Bold" size="28.0" />
             </font>

@@ -5,7 +5,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
+<?import java.net.URL?>
 <VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="646.0" prefWidth="1665.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ComprobantesController">
+    <stylesheets>
+        <URL value="@style.css" />
+    </stylesheets>
     <children>
         <!-- Título de la vista -->
         <Label layoutX="274.0" layoutY="30.0" prefHeight="48.0" prefWidth="196.0" text="Comprobantes">

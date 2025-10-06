@@ -125,12 +125,6 @@ public class ComprobantesController {
             private final Button btnVerArchivo = new Button("Ver Archivo");
 
             {
-                // Configuración de estilo INLINE: azul vibrante y texto blanco
-                btnVerArchivo.setStyle("-fx-background-color: #5d5dff; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 6px;");
-
-                // Propiedades para que el botón se expanda dentro de la celda
-                btnVerArchivo.setMaxWidth(Double.MAX_VALUE);
-                btnVerArchivo.setMaxHeight(Double.MAX_VALUE);
 
                 // Manejador de eventos al hacer clic en el botón (Solo log)
                 btnVerArchivo.setOnAction(event -> {
