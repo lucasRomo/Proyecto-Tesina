@@ -75,7 +75,7 @@ public class FacturaDAO {
                 String estadoPago = rs.getString("estado_pago");
 
                 // NUEVO: Obtener el nombre del cliente
-                String nombreCliente = rs.getString("nombre_cliente");
+                String nombreCliente = rs.getString("nombre_Cliente");
 
                 // Llama al constructor AHORA DE 8 PARÁMETROS del modelo de vista
                 FacturasAdminTableView factura = new FacturasAdminTableView(

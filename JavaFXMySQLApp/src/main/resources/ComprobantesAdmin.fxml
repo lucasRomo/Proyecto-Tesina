@@ -5,45 +5,53 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="646.0" prefWidth="1785.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuController">
+<VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="646.0" prefWidth="1665.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ComprobantesController">
     <children>
         <!-- Título de la vista -->
-        <Label layoutX="274.0" layoutY="30.0" prefHeight="48.0" prefWidth="113.0" text="Comprobantes">
+        <Label layoutX="274.0" layoutY="30.0" prefHeight="48.0" prefWidth="196.0" text="Comprobantes">
             <font>
                 <Font name="System Bold" size="28.0" />
             </font>
         </Label>
 
         <!-- Tabla de Facturas -->
-        <TableView fx:id="facturasAdminTableView" editable="true" VBox.vgrow="ALWAYS">
+        <!-- AJUSTE CLAVE 1: Eliminamos prefWidth="1712.0" en la TableView para que herede el ancho de su VBox. -->
+        <TableView fx:id="facturasAdminTableView" editable="true" prefHeight="449.0" VBox.vgrow="ALWAYS">
             <columns>
                 <!-- 1. idFacturaColumn -->
                 <TableColumn fx:id="idFacturaColumn" prefWidth="120.0" text="Id Comprobante" />
                 <!-- 2. idPedidoColumn -->
                 <TableColumn fx:id="idPedidoColumn" prefWidth="130.0" text="Id Pedido" />
-                <!-- 3. idClienteColumn -->
-                <TableColumn fx:id="idClienteColumn" prefWidth="135.0" text="Id Cliente" />
-                <!-- 4. numeroFacturaColumn -->
-                <TableColumn fx:id="numeroFacturaColumn" prefWidth="213.0" text="Tipo de Pago" />
-                <!-- 5. fechaEmisionColumn -->
-                <TableColumn fx:id="fechaEmisionColumn" prefWidth="267.0" text="Monto de Pago" />
-                <!-- 6. montoTotalColumn -->
-                <TableColumn fx:id="montoTotalColumn" prefWidth="278.0" text="Fecha de Carga" />
-                <!-- 7. estadoPagoColumn -->
-                <TableColumn fx:id="estadoPagoColumn" prefWidth="214.0" text="Fecha de Verificación" />
-                <!-- 8. accionArchivoColumn (Botón "Ver Archivo" en el Controller) -->
-                <TableColumn prefWidth="218.0" text="Estado Verificación" />
 
-                      <TableColumn fx:id="accionArchivoColumn" prefWidth="168.0" text="Archivo" />
+                <!-- 3. idClienteColumn - AJUSTE CLAVE 2: Columna flexible. Usamos minWidth y dejamos prefWidth más bajo. -->
+                <TableColumn fx:id="nombreClienteColumn" minWidth="285.0" prefWidth="350.0" text="Nombre del Cliente" />
+
+                <!-- 4. numeroFacturaColumn -->
+                <TableColumn fx:id="numeroFacturaColumn" prefWidth="219.0" text="Tipo de Pago" />
+                <!-- 5. fechaEmisionColumn -->
+                <TableColumn fx:id="fechaEmisionColumn" prefWidth="160.0" text="Monto de Pago" />
+                <!-- 6. montoTotalColumn -->
+                <TableColumn fx:id="montoTotalColumn" prefWidth="200.0" text="Fecha de Carga" />
+                <!-- 7. estadoPagoColumn -->
+                <TableColumn fx:id="fechaVerificacionColumn" prefWidth="200.0" text="Fecha de Verificación" />
+                <!-- 8. accionArchivoColumn (Botón "Ver Archivo" en el Controller) -->
+                <TableColumn fx:id="estadoPagoColumn" prefWidth="156.0" text="Estado del Pago" />
+
+                <TableColumn fx:id="accionArchivoColumn" prefWidth="150.0" text="Archivo" />
             </columns>
+            <!-- Propiedad para que la tabla no muestre el espacio si las columnas no lo llenan -->
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
         </TableView>
 
         <!-- Barra de búsqueda -->
-        <TextField fx:id="filterField" prefWidth="1787.0" promptText="Buscar por Nombre del Cliente o Razon Social..." />
-        <Button fx:id="VolverButton" mnemonicParsing="false" onAction="#handleVolverButtonComprobantes" prefHeight="25.0" prefWidth="188.0" text="Volver" />
+        <TextField fx:id="filterField" promptText="Buscar por Nombre del Cliente o Razon Social..." />
+        <Button fx:id="VolverButton" mnemonicParsing="false" onAction="#handleVolverMenuInformesButton" prefHeight="25.0" prefWidth="188.0" text="Volver" />
 
     </children>
-    <!-- Se agrega el padding para crear el espacio alrededor de todos los elementos -->
+
+    <!-- Mantenemos el padding si deseas que los elementos no se peguen a los bordes laterales. -->
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
