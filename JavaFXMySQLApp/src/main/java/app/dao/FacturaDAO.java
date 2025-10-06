@@ -65,7 +65,6 @@ public class FacturaDAO {
             while (rs.next()) {
                 int idFactura = rs.getInt("id_factura");
                 int idPedido = rs.getInt("id_pedido");
-                int idCliente = rs.getInt("id_cliente");
                 String numeroFactura = rs.getString("numero_factura");
 
                 // Conversión de Timestamp a LocalDateTime
@@ -82,12 +81,11 @@ public class FacturaDAO {
                 FacturasAdminTableView factura = new FacturasAdminTableView(
                         idFactura,
                         idPedido,
-                        idCliente,
+                        nombreCliente,
                         numeroFactura,
                         fechaEmision,
                         montoTotal,
-                        estadoPago,
-                        nombreCliente // Parámetro 8: nombreCliente (NUEVO)
+                        estadoPago
                 );
                 listaFacturas.add(factura);
             }

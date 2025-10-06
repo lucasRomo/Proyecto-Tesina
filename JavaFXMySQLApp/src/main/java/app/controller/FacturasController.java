@@ -33,7 +33,7 @@ public class FacturasController {
     @FXML
     private TableColumn<FacturasAdminTableView, Number> idPedidoColumn;
     @FXML
-    private TableColumn<FacturasAdminTableView, Number> idClienteColumn; // Mantenida: id_cliente
+    private TableColumn<FacturasAdminTableView, String> nombreClienteColumn; // Mantenida: id_cliente
     @FXML
     private TableColumn<FacturasAdminTableView, String> numeroFacturaColumn;
     @FXML
@@ -52,6 +52,7 @@ public class FacturasController {
     private ObservableList<FacturasAdminTableView> listaFacturas;
 
 
+
     /**
      * Método de inicialización llamado automáticamente después de que se cargan los elementos FXML.
      */
@@ -63,7 +64,7 @@ public class FacturasController {
         // El string entre comillas debe coincidir con el nombre del *Property() getter en el modelo.
         idFacturaColumn.setCellValueFactory(new PropertyValueFactory<>("idFactura"));
         idPedidoColumn.setCellValueFactory(new PropertyValueFactory<>("idPedido"));
-        idClienteColumn.setCellValueFactory(new PropertyValueFactory<>("idCliente"));
+        nombreClienteColumn.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         numeroFacturaColumn.setCellValueFactory(new PropertyValueFactory<>("numeroFactura"));
         fechaEmisionColumn.setCellValueFactory(new PropertyValueFactory<>("fechaEmision"));
         montoTotalColumn.setCellValueFactory(new PropertyValueFactory<>("montoTotal"));
