@@ -213,18 +213,11 @@ public class MenuController {
     @FXML
     public void handleGestionDeUsuariosButton(ActionEvent event) {
         try {
+            // Carga el FXML de la tabla de usuarios
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/GestionUsuarios.fxml"));
             Parent root = loader.load();
 
-            // Lógica de pasaje de datos del segundo fragmento (más completa)
-            // Se asume que UsuariosEmpleadoController existe y tiene los setters.
-            UsuariosEmpleadoController usuariosController = loader.getController();
-            if (usuariosController != null) {
-                usuariosController.setLoggedInUserPassword(this.loggedInUserPassword);
-                usuariosController.setLoggedInUsername(this.loggedInUsername);
-                usuariosController.setLoggedInUserId(this.loggedInUserId);
-            }
-
+            // Carga la nueva escena
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);
