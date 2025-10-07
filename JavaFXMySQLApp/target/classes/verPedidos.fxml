@@ -61,9 +61,10 @@
                     <PropertyValueFactory property="montoEntregado" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="fechaEntregaEstimadaColumn" prefWidth="150.0" text="Fecha de Entrega">
+            <!-- COLUMNA MODIFICADA: Muestra fecha de Creación -->
+            <TableColumn fx:id="fechaCreacionColumn" prefWidth="150.0" text="Fecha de Creación">
                 <cellValueFactory>
-                    <PropertyValueFactory property="fechaEntregaEstimada" />
+                    <PropertyValueFactory property="fechaCreacion" />
                 </cellValueFactory>
             </TableColumn>
             <TableColumn fx:id="instruccionesColumn" prefWidth="250.0" text="Instrucciones">
@@ -71,6 +72,8 @@
                     <PropertyValueFactory property="instrucciones" />
                 </cellValueFactory>
             </TableColumn>
+            <!-- NUEVA COLUMNA DE BOTÓN -->
+            <TableColumn fx:id="ticketColumn" prefWidth="120.0" text="Ticket/Factura" />
         </columns>
     </TableView>
 

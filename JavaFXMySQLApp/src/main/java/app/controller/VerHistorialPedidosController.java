@@ -1,15 +1,17 @@
 package app.controller;
 
-import app.dao.ClienteDAO; // Necesaria para clientes
-import app.dao.EmpleadoDAO; // Necesaria para empleados
+// Importaciones necesarias
 import app.dao.PedidoDAO;
-import app.model.Cliente; // Modelo Cliente
-import app.model.Empleado; // Modelo Empleado
 import app.model.Pedido;
+import app.model.Cliente;
+import app.model.Empleado;
+import app.dao.ClienteDAO;
+import app.dao.EmpleadoDAO;
+
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList; // Importación CLAVE para el filtrado dinámico
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -18,20 +20,28 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ComboBox; // Importación CLAVE para filtros
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class VerHistorialPedidosController implements Initializable {
 
-    // NUEVOS CAMPOS FXML: ComboBox para filtros
+    // --- Constantes y Formateadores ---
+    private static final String ESTADO_RETIRADO = "Retirado";
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+
+
+    // --- Campos FXML de Filtros ---
     @FXML
     private ComboBox<Cliente> clienteFilterComboBox;
     @FXML
@@ -39,7 +49,7 @@ public class VerHistorialPedidosController implements Initializable {
     @FXML
     private ComboBox<String> metodoPagoFilterComboBox;
 
-    // Campos FXML de la tabla (existentes)
+    // --- Campos FXML de la Tabla ---
     @FXML
     private TableView<Pedido> pedidosTable;
     @FXML
@@ -56,30 +66,49 @@ public class VerHistorialPedidosController implements Initializable {
     private TableColumn<Pedido, Double> montoTotalColumn;
     @FXML
     private TableColumn<Pedido, Double> montoEntregadoColumn;
+
+    // Mapea a fechaFinalizacion
     @FXML
-    private TableColumn<Pedido, String> fechaEntregaEstimadaColumn;
+    private TableColumn<Pedido, LocalDateTime> fechaEntregaEstimadaColumn;
+
     @FXML
     private TableColumn<Pedido, String> instruccionesColumn;
 
+    // --- DAOs y Listas ---
     private PedidoDAO pedidoDAO;
-    private ClienteDAO clienteDAO; // Asumimos existencia
-    private EmpleadoDAO empleadoDAO; // Asumimos existencia
-    private static final String ESTADO_RETIRADO = "Retirado";
+    // Inicialización con las clases DAO reales
+    private ClienteDAO clienteDAO;
+    private EmpleadoDAO empleadoDAO;
 
-    // Listas de datos
     private ObservableList<Pedido> pedidosRetiradosMaestra;
     private FilteredList<Pedido> pedidosFiltrados;
 
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Inicializar DAOs
+        // Inicializar DAOs (Usando tus constructores reales)
         pedidoDAO = new PedidoDAO();
-        // **ATENCIÓN:** Asegúrate de que ClienteDAO y EmpleadoDAO existan y estén en tu proyecto.
+        // ASUMIMOS que estas clases se inicializan correctamente en tu entorno
         clienteDAO = new ClienteDAO();
         empleadoDAO = new EmpleadoDAO();
 
-        // 1. Configurar las columnas de la tabla (lógica existente)
+        // 1. Configurar las columnas de la tabla
+        configurarColumnas();
+
+        // 2. Cargar los datos maestros (solo Retirados) y configurar la lista filtrada
+        cargarDatosMaestros();
+
+        // 3. Inicializar los ComboBox de filtros con datos
+        inicializarFiltros();
+
+        // 4. Conectar los ComboBox a la función de filtrado
+        conectarFiltros();
+
+        // 5. Aplicar la lista filtrada a la tabla
+        pedidosTable.setItems(pedidosFiltrados);
+    }
+
+    private void configurarColumnas() {
         idPedidoColumn.setCellValueFactory(new PropertyValueFactory<>("idPedido"));
         clienteColumn.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         empleadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombreEmpleado"));
@@ -87,42 +116,47 @@ public class VerHistorialPedidosController implements Initializable {
         metodoPagoColumn.setCellValueFactory(new PropertyValueFactory<>("metodoPago"));
         montoTotalColumn.setCellValueFactory(new PropertyValueFactory<>("montoTotal"));
         montoEntregadoColumn.setCellValueFactory(new PropertyValueFactory<>("montoEntregado"));
-        fechaEntregaEstimadaColumn.setCellValueFactory(new PropertyValueFactory<>("fechaEntregaEstimada"));
         instruccionesColumn.setCellValueFactory(new PropertyValueFactory<>("instrucciones"));
 
-        // 2. Cargar los datos maestros y configurar la lista filtrada
-        cargarDatosMaestros();
+        // Mapeamos a "fechaFinalizacion" para el historial
+        fechaEntregaEstimadaColumn.setCellValueFactory(new PropertyValueFactory<>("fechaFinalizacion"));
 
-        // 3. Inicializar los ComboBox de filtros
-        inicializarFiltros();
-
-        // 4. Conectar los ComboBox a la función de filtrado
-        // Cada vez que cambia la selección, se llama a actualizarFiltro()
-        if (clienteFilterComboBox != null) {
-            clienteFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> actualizarFiltro());
-        }
-        if (empleadoFilterComboBox != null) {
-            empleadoFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> actualizarFiltro());
-        }
-        if (metodoPagoFilterComboBox != null) {
-            metodoPagoFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> actualizarFiltro());
-        }
-
-        // 5. Aplicar la lista filtrada a la tabla
-        pedidosTable.setItems(pedidosFiltrados);
+        // Configuramos la celda para formatear la fecha/hora
+        fechaEntregaEstimadaColumn.setCellFactory(column -> new FormattedDateTableCell<>(DATE_FORMATTER));
     }
 
     /**
-     * Carga todos los pedidos y los filtra para obtener solo los 'Retirados'.
+     * Clase auxiliar para formatear columnas de tipo LocalDateTime a String.
+     * Esto maneja el formateo de fecha/hora en la columna de la tabla.
+     */
+    public static class FormattedDateTableCell<S, T extends LocalDateTime> extends javafx.scene.control.TableCell<S, T> {
+        private final DateTimeFormatter formatter;
+
+        public FormattedDateTableCell(DateTimeFormatter formatter) {
+            this.formatter = formatter;
+        }
+
+        @Override
+        protected void updateItem(T item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty || item == null) {
+                setText(null);
+            } else {
+                setText(formatter.format(item));
+            }
+        }
+    }
+
+
+    /**
+     * Carga solo los pedidos con estado 'Retirado' usando el método optimizado del DAO.
      */
     private void cargarDatosMaestros() {
         System.out.println("Cargando historial de pedidos con estado: " + ESTADO_RETIRADO);
 
-        // Carga todos los pedidos y filtra en memoria para obtener solo los 'Retirados'.
-        ObservableList<Pedido> todosPedidos = FXCollections.observableArrayList(pedidoDAO.getAllPedidos());
-        pedidosRetiradosMaestra = todosPedidos.filtered(
-                pedido -> ESTADO_RETIRADO.equalsIgnoreCase(pedido.getEstado())
-        );
+        // Uso del método getPedidosPorEstado()
+        List<Pedido> listaRetirados = pedidoDAO.getPedidosPorEstado(ESTADO_RETIRADO);
+        pedidosRetiradosMaestra = FXCollections.observableArrayList(listaRetirados);
 
         // Inicializar FilteredList con la lista maestra
         pedidosFiltrados = new FilteredList<>(pedidosRetiradosMaestra, p -> true); // Predicado inicial: mostrar todo
@@ -135,14 +169,12 @@ public class VerHistorialPedidosController implements Initializable {
         // --- 1. Clientes ---
         ObservableList<Cliente> clientes = FXCollections.observableArrayList();
         clientes.add(null); // Opción para limpiar filtro
-        // ATENCIÓN: Se asume que getAllClientes() existe y devuelve una List<Cliente>
         clientes.addAll(clienteDAO.getAllClientes());
 
         clienteFilterComboBox.setItems(clientes);
-        clienteFilterComboBox.setConverter(new javafx.util.StringConverter<Cliente>() {
+        clienteFilterComboBox.setConverter(new StringConverter<Cliente>() {
             @Override
             public String toString(Cliente cliente) {
-                // Muestra Nombre Apellido para el ComboBox
                 return (cliente != null) ? cliente.getNombre() + " " + cliente.getApellido() : "Mostrar Todos los Clientes";
             }
             @Override
@@ -153,11 +185,10 @@ public class VerHistorialPedidosController implements Initializable {
         // --- 2. Empleados ---
         ObservableList<Empleado> empleados = FXCollections.observableArrayList();
         empleados.add(null); // Opción para limpiar filtro
-        // ATENCIÓN: Se asume que getAllEmpleados() existe y devuelve una List<Empleado>
         empleados.addAll(empleadoDAO.getAllEmpleados());
 
         empleadoFilterComboBox.setItems(empleados);
-        empleadoFilterComboBox.setConverter(new javafx.util.StringConverter<Empleado>() {
+        empleadoFilterComboBox.setConverter(new StringConverter<Empleado>() {
             @Override
             public String toString(Empleado empleado) {
                 return (empleado != null) ? empleado.getNombre() + " " + empleado.getApellido() : "Mostrar Todos los Empleados";
@@ -170,20 +201,11 @@ public class VerHistorialPedidosController implements Initializable {
         ObservableList<String> metodosPago = FXCollections.observableArrayList();
         metodosPago.add(null); // Opción para limpiar filtro
 
-        // **CORRECCIÓN:** Manejamos la excepción si getTiposPago() no existe para evitar el error de compilación.
-        try {
-            List<String> tipos = pedidoDAO.getTiposPago();
-            if (tipos != null) {
-                metodosPago.addAll(tipos);
-            }
-        } catch (AbstractMethodError | NoSuchMethodError e) {
-            // Esto se ejecuta si el método no existe en el DAO (el error que ves).
-            System.err.println("Advertencia: El método getTiposPago() no se encontró en PedidoDAO. Usando datos de ejemplo.");
-            metodosPago.addAll(FXCollections.observableArrayList("Efectivo", "Tarjeta", "Transferencia"));
-        }
+        // **IMPORTANTE: Debes asegurarte de que este método exista en tu PedidoDAO real.**
+        metodosPago.addAll(pedidoDAO.getTiposPago());
 
         metodoPagoFilterComboBox.setItems(metodosPago);
-        metodoPagoFilterComboBox.setConverter(new javafx.util.StringConverter<String>() {
+        metodoPagoFilterComboBox.setConverter(new StringConverter<String>() {
             @Override
             public String toString(String pago) {
                 return (pago != null) ? pago : "Mostrar Todos los Tipos de Pago";
@@ -194,39 +216,48 @@ public class VerHistorialPedidosController implements Initializable {
     }
 
     /**
-     * Aplica los filtros seleccionados a la lista de pedidos.
+     * Conecta los listeners de los ComboBox para activar el filtro dinámico.
+     */
+    private void conectarFiltros() {
+        if (clienteFilterComboBox != null) {
+            clienteFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> actualizarFiltro());
+        }
+        if (empleadoFilterComboBox != null) {
+            empleadoFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> actualizarFiltro());
+        }
+        if (metodoPagoFilterComboBox != null) {
+            metodoPagoFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> actualizarFiltro());
+        }
+    }
+
+    /**
+     * Aplica los filtros seleccionados a la lista de pedidos (FilteredList).
      */
     private void actualizarFiltro() {
         pedidosFiltrados.setPredicate(pedido -> {
             // 1. Predicado Cliente
             Cliente clienteSeleccionado = clienteFilterComboBox.getSelectionModel().getSelectedItem();
-            // Si hay un cliente seleccionado (no nulo) y el idPedido NO coincide con el idCliente seleccionado, retorna false
             if (clienteSeleccionado != null && pedido.getIdCliente() != clienteSeleccionado.getIdCliente()) {
                 return false;
             }
 
             // 2. Predicado Empleado
             Empleado empleadoSeleccionado = empleadoFilterComboBox.getSelectionModel().getSelectedItem();
-            // Si hay un empleado seleccionado (no nulo) y el idEmpleado NO coincide con el idEmpleado seleccionado, retorna false
             if (empleadoSeleccionado != null && pedido.getIdEmpleado() != empleadoSeleccionado.getIdEmpleado()) {
                 return false;
             }
 
             // 3. Predicado Tipo de Pago
             String metodoPagoSeleccionado = metodoPagoFilterComboBox.getSelectionModel().getSelectedItem();
-            // Si hay un método de pago seleccionado (no nulo) y NO coincide con el metodoPago del pedido, retorna false
-            // **ATENCIÓN:** Esto requiere que el modelo Pedido tenga el método getMetodoPago().
+            // Si el método de pago del pedido es nulo o vacío, lo tratamos como "N/A"
+            String pedidoMetodoPago = (pedido.getMetodoPago() != null && !pedido.getMetodoPago().isEmpty()) ? pedido.getMetodoPago() : "N/A";
+
             if (metodoPagoSeleccionado != null) {
-                try {
-                    if (!metodoPagoSeleccionado.equalsIgnoreCase(pedido.getMetodoPago())) {
-                        return false;
-                    }
-                } catch (AbstractMethodError | NoSuchMethodError e) {
-                    // Si getMetodoPago() no existe en el modelo Pedido, ignoramos el filtro de pago
-                    System.err.println("Advertencia: El método getMetodoPago() no se encontró en el modelo Pedido. Ignorando filtro de pago.");
+                // Compara el método de pago seleccionado con el del pedido (ignorando mayúsculas/minúsculas)
+                if (!metodoPagoSeleccionado.equalsIgnoreCase(pedidoMetodoPago)) {
+                    return false;
                 }
             }
-
 
             // Si pasa todos los filtros, mostrar el pedido
             return true;
@@ -239,14 +270,13 @@ public class VerHistorialPedidosController implements Initializable {
 
     /**
      * Limpia la selección en todos los ComboBox de filtro.
-     * Este método resuelve el error "Cannot resolve symbol 'handleLimpiarFiltros'".
      */
     @FXML
     private void handleLimpiarFiltros(ActionEvent event) {
         if (clienteFilterComboBox != null) clienteFilterComboBox.getSelectionModel().clearSelection();
         if (empleadoFilterComboBox != null) empleadoFilterComboBox.getSelectionModel().clearSelection();
         if (metodoPagoFilterComboBox != null) metodoPagoFilterComboBox.getSelectionModel().clearSelection();
-        // Los listeners ya se encargan de llamar a actualizarFiltro() automáticamente.
+        // Los listeners se encargan de llamar a actualizarFiltro()
     }
 
 
@@ -256,23 +286,28 @@ public class VerHistorialPedidosController implements Initializable {
     @FXML
     private void handleVolver(ActionEvent event) {
         try {
+            // NOTA: Asegúrate de que "/PedidosPrimerMenu.fxml" sea la ruta correcta
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/PedidosPrimerMenu.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
             stage.setScene(new Scene(root, 1800, 1000));
-
             stage.setTitle("Menú de Pedidos");
-
             stage.centerOnScreen();
-
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
+            // Llamada que requiere 3 parámetros (String, String, Alert.AlertType)
             mostrarAlerta("Error", "No se pudo volver al menú de pedidos.", Alert.AlertType.ERROR);
         }
     }
 
+    /**
+     * Muestra una ventana de alerta.
+     * @param titulo Título de la alerta.
+     * @param mensaje Contenido del mensaje.
+     * @param tipo Tipo de alerta (INFORMATION, ERROR, WARNING, etc.).
+     */
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);
         alert.setTitle(titulo);

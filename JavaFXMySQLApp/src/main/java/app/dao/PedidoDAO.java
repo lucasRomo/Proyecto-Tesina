@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.sql.Types; // Importación necesaria para setNull
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
  */
 public class PedidoDAO {
 
+    // NOTA: Se mantienen las constantes de conexión a MySQL proporcionadas por el usuario.
     private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
     private static final String USER = "root";
     private static final String PASSWORD = "";
@@ -30,12 +32,11 @@ public class PedidoDAO {
     }
 
     // ----------------------------------------------------------------------------------
-    // MÉTODOS EXISTENTES (ACTUALIZACIÓN DE savePedido: Se quita fecha_finalizacion)
+    // MÉTODOS EXISTENTES (ACTUALIZACIÓN de savePedido: Se quita fecha_finalizacion)
     // ----------------------------------------------------------------------------------
 
     public boolean savePedido(Pedido pedido, String tipoPago) {
         // Se ha quitado 'fecha_finalizacion' de la sentencia SQL para la creación inicial.
-        // Se inserta como NULL por defecto en la base de datos.
         String sqlPedido = "INSERT INTO Pedido (id_cliente, estado, fecha_creacion, fecha_entrega_estimada, instrucciones, monto_total, monto_entregado) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         String sqlComprobante = "INSERT INTO ComprobantePago (id_pedido, id_cliente, tipo_pago, monto_pago, fecha_carga, estado_verificacion) " +
@@ -65,7 +66,6 @@ public class PedidoDAO {
                 stmtPedido.setNull(4, java.sql.Types.TIMESTAMP);
             }
 
-            // Los índices 5, 6 y 7 se han desplazado debido a la eliminación de fecha_finalizacion
             stmtPedido.setString(5, pedido.getInstrucciones());
             stmtPedido.setDouble(6, pedido.getMontoTotal());
             stmtPedido.setDouble(7, pedido.getMontoEntregado());
@@ -151,7 +151,7 @@ public class PedidoDAO {
     }
 
     public List<String> getAllClientesDisplay() {
-        // ... (Lógica de getAllClientesDisplay) ...
+        // Lógica para obtener clientes. Se mantiene sin cambios.
         List<String> clientes = new ArrayList<>();
         String sql = "SELECT cl.id_cliente, p.nombre, p.apellido " +
                 "FROM Cliente cl " +
@@ -174,7 +174,7 @@ public class PedidoDAO {
     }
 
     public List<String> getAllEmpleadosDisplay() {
-        // ... (Lógica de getAllEmpleadosDisplay) ...
+        // Lógica para obtener empleados. Se mantiene sin cambios.
         List<String> empleados = new ArrayList<>();
         String sql = "SELECT e.id_empleado, p.nombre, p.apellido " +
                 "FROM Empleado e " +
@@ -196,13 +196,8 @@ public class PedidoDAO {
         return empleados;
     }
 
-    // ----------------------------------------------------------------------------------
-    // MÉTODO NUEVO REQUERIDO POR EL CONTROLADOR (RESUELVE ERROR getTiposPago)
-    // ----------------------------------------------------------------------------------
-
     /**
      * Obtiene una lista de todos los tipos de pago únicos registrados en los comprobantes.
-     * @return Lista de Strings con los tipos de pago.
      */
     public List<String> getTiposPago() {
         List<String> tiposPago = new ArrayList<>();
@@ -217,7 +212,6 @@ public class PedidoDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            // En caso de error, devolvemos una lista vacía.
             return new ArrayList<>();
         }
         return tiposPago;
@@ -225,22 +219,21 @@ public class PedidoDAO {
 
 
     // ----------------------------------------------------------------------------------
-    // MÉTODOS DE FILTRADO (ACTUALIZADO)
+    // MÉTODO DE FILTRADO CLAVE: Actualizado para excluir pedidos 'Retirado'
     // ----------------------------------------------------------------------------------
 
     /**
-     * Obtiene una lista de todos los pedidos, con la opción de filtrar por Empleado,
-     * e incluye el método de pago del comprobante.
+     * Obtiene una lista de todos los pedidos ACTIVOS (estado <> 'Retirado'),
+     * con la opción de filtrar por Empleado. Este método se usa en VerPedidosController.
      * @param idEmpleado El ID del empleado asignado. Si es 0 o negativo, trae todos.
      * @return Lista de objetos Pedido.
      */
     public List<Pedido> getPedidosPorEmpleado(int idEmpleado) {
         List<Pedido> pedidos = new ArrayList<>();
 
-        // Consulta ACTUALIZADA: Incluye LEFT JOIN con ComprobantePago para traer el tipo_pago
         String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
                 "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
-                "cp.tipo_pago, " + // <-- Campo de método de pago AÑADIDO
+                "cp.tipo_pago, " +
                 "c.nombre AS nombre_cliente, c.apellido AS apellido_cliente, " +
                 "ap.id_empleado, pr.nombre AS nombre_empleado, pr.apellido AS apellido_empleado " +
                 "FROM Pedido p " +
@@ -249,10 +242,12 @@ public class PedidoDAO {
                 "LEFT JOIN AsignacionPedido ap ON p.id_pedido = ap.id_pedido " +
                 "LEFT JOIN Empleado e ON ap.id_empleado = e.id_empleado " +
                 "LEFT JOIN Persona pr ON e.id_persona = pr.id_persona " +
-                "LEFT JOIN ComprobantePago cp ON p.id_pedido = cp.id_pedido " + // <-- JOIN AÑADIDO
-                // Cláusula WHERE condicional
-                (idEmpleado > 0 ? "WHERE ap.id_empleado = ? " : "") +
-                "GROUP BY p.id_pedido " + // Necesario para evitar duplicados si hay múltiples asignaciones históricas
+                "LEFT JOIN ComprobantePago cp ON p.id_pedido = cp.id_pedido " +
+                // Cláusula WHERE OBLIGATORIA: Excluye pedidos Retirados
+                "WHERE p.estado <> 'Retirado' " +
+                // Cláusula AND CONDICIONAL: Filtra por empleado
+                (idEmpleado > 0 ? "AND ap.id_empleado = ? " : "") +
+                "GROUP BY p.id_pedido " +
                 "ORDER BY p.id_pedido DESC";
 
         try (Connection conn = obtenerConexion();
@@ -265,56 +260,7 @@ public class PedidoDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    int idPedido = rs.getInt("id_pedido");
-                    int idCliente = rs.getInt("id_cliente");
-                    String nombreCliente = rs.getString("nombre_cliente") + " " + rs.getString("apellido_cliente");
-
-                    // Lógica de mapeo de empleado (id_empleado ahora viene de ap.id_empleado)
-                    int idEmpleadoResultado = rs.getInt("id_empleado");
-                    String nombreEmpleado = "";
-                    if (rs.wasNull()) { // Si el pedido no está asignado
-                        idEmpleadoResultado = 0;
-                        nombreEmpleado = "Sin Asignar";
-                    } else {
-                        nombreEmpleado = rs.getString("nombre_empleado") + " " + rs.getString("apellido_empleado");
-                    }
-
-                    String estado = rs.getString("estado");
-                    // Obtenemos el tipo de pago (puede ser nulo si no hay comprobante)
-                    String metodoPago = rs.getString("tipo_pago");
-                    if (metodoPago == null) {
-                        metodoPago = "N/A";
-                    }
-
-
-                    LocalDateTime fechaCreacion = rs.getTimestamp("fecha_creacion").toLocalDateTime();
-
-                    Timestamp fechaEntregaEstimadaTimestamp = rs.getTimestamp("fecha_entrega_estimada");
-                    LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaTimestamp != null) ? fechaEntregaEstimadaTimestamp.toLocalDateTime() : null;
-
-                    Timestamp fechaFinalizacionTimestamp = rs.getTimestamp("fecha_finalizacion");
-                    // fecha_finalizacion debe poder ser nula si el pedido no ha sido retirado
-                    LocalDateTime fechaFinalizacion = (fechaFinalizacionTimestamp != null) ? fechaFinalizacionTimestamp.toLocalDateTime() : null;
-
-                    String instrucciones = rs.getString("instrucciones");
-                    double montoTotal = rs.getDouble("monto_total");
-                    double montoEntregado = rs.getDouble("monto_entregado");
-
-                    pedidos.add(new Pedido(
-                            idPedido,
-                            idCliente,
-                            nombreCliente,
-                            idEmpleadoResultado, // Usamos la variable local con el valor 0 si es nulo
-                            nombreEmpleado,
-                            estado,
-                            metodoPago, // <-- Se pasa el método de pago real
-                            fechaCreacion,
-                            fechaEntregaEstimada,
-                            fechaFinalizacion,
-                            instrucciones,
-                            montoTotal,
-                            montoEntregado
-                    ));
+                    pedidos.add(mapResultSetToPedido(rs));
                 }
             }
         } catch (SQLException e) {
@@ -324,15 +270,110 @@ public class PedidoDAO {
     }
 
     /**
+     * Obtiene una lista de pedidos filtrada por un estado específico.
+     * Este método se usará en VerHistorialPedidosController.
+     * @param estado El estado por el cual filtrar (ej. "Retirado").
+     * @return Lista de objetos Pedido.
+     */
+    public List<Pedido> getPedidosPorEstado(String estado) {
+        List<Pedido> pedidos = new ArrayList<>();
+
+        String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
+                "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
+                "cp.tipo_pago, " +
+                "c.nombre AS nombre_cliente, c.apellido AS apellido_cliente, " +
+                "ap.id_empleado, pr.nombre AS nombre_empleado, pr.apellido AS apellido_empleado " +
+                "FROM Pedido p " +
+                "LEFT JOIN Cliente cl ON p.id_cliente = cl.id_cliente " +
+                "LEFT JOIN Persona c ON cl.id_persona = c.id_persona " +
+                "LEFT JOIN AsignacionPedido ap ON p.id_pedido = ap.id_pedido " +
+                "LEFT JOIN Empleado e ON ap.id_empleado = e.id_empleado " +
+                "LEFT JOIN Persona pr ON e.id_persona = pr.id_persona " +
+                "LEFT JOIN ComprobantePago cp ON p.id_pedido = cp.id_pedido " +
+                "WHERE p.estado = ? " + // Condición CLAVE: filtrar por estado
+                "GROUP BY p.id_pedido " +
+                "ORDER BY p.fecha_finalizacion DESC"; // Ordenar por fecha de finalización descendente
+
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, estado);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    pedidos.add(mapResultSetToPedido(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return pedidos;
+    }
+
+    /**
+     * Helper para mapear un ResultSet a un objeto Pedido.
+     */
+    private Pedido mapResultSetToPedido(ResultSet rs) throws SQLException {
+        int idPedido = rs.getInt("id_pedido");
+        int idCliente = rs.getInt("id_cliente");
+        String nombreCliente = rs.getString("nombre_cliente") + " " + rs.getString("apellido_cliente");
+
+        int idEmpleadoResultado = rs.getInt("id_empleado");
+        String nombreEmpleado = "";
+        if (rs.wasNull()) {
+            idEmpleadoResultado = 0;
+            nombreEmpleado = "Sin Asignar";
+        } else {
+            nombreEmpleado = rs.getString("nombre_empleado") + " " + rs.getString("apellido_empleado");
+        }
+
+        String estado = rs.getString("estado");
+        String metodoPago = rs.getString("tipo_pago");
+        if (metodoPago == null) {
+            metodoPago = "N/A";
+        }
+
+        LocalDateTime fechaCreacion = rs.getTimestamp("fecha_creacion").toLocalDateTime();
+
+        Timestamp fechaEntregaEstimadaTimestamp = rs.getTimestamp("fecha_entrega_estimada");
+        LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaTimestamp != null) ? fechaEntregaEstimadaTimestamp.toLocalDateTime() : null;
+
+        Timestamp fechaFinalizacionTimestamp = rs.getTimestamp("fecha_finalizacion");
+        // fecha_finalizacion debe poder ser nula si el pedido no ha sido retirado
+        LocalDateTime fechaFinalizacion = (fechaFinalizacionTimestamp != null) ? fechaFinalizacionTimestamp.toLocalDateTime() : null;
+
+        String instrucciones = rs.getString("instrucciones");
+        double montoTotal = rs.getDouble("monto_total");
+        double montoEntregado = rs.getDouble("monto_entregado");
+
+        return new Pedido(
+                idPedido,
+                idCliente,
+                nombreCliente,
+                idEmpleadoResultado,
+                nombreEmpleado,
+                estado,
+                metodoPago,
+                fechaCreacion,
+                fechaEntregaEstimada,
+                fechaFinalizacion,
+                instrucciones,
+                montoTotal,
+                montoEntregado
+        );
+    }
+
+    /**
      * Mantiene el método para compatibilidad, pero llama al nuevo método con filtro 0.
      */
     public List<Pedido> getAllPedidos() {
+        // NOTA: Este método está obsoleto ya que getPedidosPorEmpleado(0) hace lo mismo
+        // pero se mantiene por si alguna otra parte del código lo usa.
         return getPedidosPorEmpleado(0);
     }
 
     // ----------------------------------------------------------------------------------
-    // MÉTODO DE MODIFICACIÓN EXISTENTE (ACTUALIZADO para mantener la capacidad de modificar
-    // la fecha de finalización, que se usaría al cambiar el estado a Retirado)
+    // MÉTODO DE MODIFICACIÓN EXISTENTE (Maneja la actualización de fecha_finalizacion)
     // ----------------------------------------------------------------------------------
 
     public boolean modificarPedido(Pedido pedido) {
@@ -350,8 +391,7 @@ public class PedidoDAO {
                 stmt.setNull(3, java.sql.Types.TIMESTAMP);
             }
 
-            // Manejo de fecha_finalizacion (puede ser null). Es necesario mantener esta
-            // capacidad para actualizarla cuando el pedido cambie a estado "Retirado".
+            // Manejo de fecha_finalizacion (puede ser null). Necesario para el estado "Retirado".
             if (pedido.getFechaFinalizacion() != null) {
                 stmt.setTimestamp(4, Timestamp.valueOf(pedido.getFechaFinalizacion()));
             } else {
@@ -372,6 +412,7 @@ public class PedidoDAO {
     }
 
     public boolean actualizarPedidos(ObservableList<Pedido> pedidos) {
+        // Este método aún no tiene implementación.
         return false;
     }
 }
