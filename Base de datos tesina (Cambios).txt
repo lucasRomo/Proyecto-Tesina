@@ -221,7 +221,8 @@ CREATE TABLE IF NOT EXISTS RegistroActividad (
   id_registro_modificado INT NULL,
   dato_previo_modificacion TEXT NULL,
   dato_modificado TEXT NULL,
-  PRIMARY KEY (id_RegAct))
+  PRIMARY KEY (id_RegAct)
+);
 
 -- -----------------------------------------------------
 -- Claves Foráneas (FK)
@@ -287,7 +288,6 @@ ALTER TABLE ComprobantePago ADD CONSTRAINT fk_ComprobantePago_Cliente
 ALTER TABLE ComprobantePago ADD CONSTRAINT fk_ComprobantePago_Pedido
   FOREIGN KEY (id_pedido) REFERENCES Pedido (id_pedido);
 
-// Registro de Actividad //
 ALTER TABLE RegistroActividad ADD CONSTRAINT fk_RegistroActividad_Usuario
   FOREIGN KEY (id_usuario_responsable) REFERENCES Usuario (id_usuario);
   
