@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane prefHeight="400.0" prefWidth="1832.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.HistorialActividadController">
+   <stylesheets>
+      <URL value="@style.css" />
+   </stylesheets>
+   <ImageView fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="20.0">
+      <image>
+         <Image url="@imagenes/Logo_no_bg.png" />
+      </image>
+   </ImageView>
+   <top>
+      <Label styleClass="titulo-principal" text="Historial de Actividad" BorderPane.alignment="CENTER">
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font>
+         <BorderPane.margin>
+            <Insets bottom="10.0" top="10.0" />
+         </BorderPane.margin>
+      </Label>
+   </top>
+   <center>
+      <VBox alignment="CENTER" prefHeight="353.0" prefWidth="1140.0" spacing="10.0" BorderPane.alignment="CENTER">
+         <children>
+            <TableView fx:id="usuariosEditableView" editable="true" VBox.vgrow="ALWAYS">
+               <columnResizePolicy>
+                  <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
+               <columns>
+                  <TableColumn fx:id="" prefWidth="196.0" text="Nombre Empleado" />
+                  <TableColumn fx:id="" prefWidth="193.0" text="Modificación Proveniente De" />
+                  <TableColumn fx:id="" prefWidth="110.0" text="Id Modificado" />
+                  <TableColumn fx:id="" prefWidth="228.0" text="Proveniente De" />
+                  <TableColumn fx:id="" prefWidth="557.0" text="Dato Previo Modificación" />
+                  <TableColumn fx:id="" prefWidth="557.0" text="Dato Modificado" />
+               </columns>
+            </TableView>
+            <HBox alignment="CENTER" spacing="10.0">
+               <children>
+                  <TextField fx:id="filterField" prefHeight="25.0" prefWidth="273.0" promptText="Buscar por Usuario, Nombre o Apellido..." HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" spacing="10.0">
+               <children>
+                  <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverMenuAdminButton" prefHeight="25.0" prefWidth="116.0" styleClass="button-volver" text="Volver" />
+               </children>
+            </HBox>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+         </padding>
+      </VBox>
+   </center>
+</BorderPane>

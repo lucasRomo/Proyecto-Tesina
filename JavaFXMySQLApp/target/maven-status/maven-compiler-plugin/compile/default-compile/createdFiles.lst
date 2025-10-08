@@ -13,6 +13,7 @@ app\controller\VerPedidosController.class
 app\controller\CrearPedidoController$4.class
 app\controller\MenuController.class
 app\controller\ComprobantesController$1.class
+app\controller\HistorialActividadController.class
 app\controller\FacturasAdminTableView.class
 app\model\Direccion.class
 app\controller\SessionManager.class

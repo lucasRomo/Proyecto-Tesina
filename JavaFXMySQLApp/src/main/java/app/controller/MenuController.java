@@ -276,6 +276,25 @@ public class MenuController {
         }
     }
 
+    @FXML
+    public void handleHistorialActividadButton(ActionEvent event) {
+        try {
+            // Carga el FXML de la tabla de usuarios
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/historialActividad.fxml"));
+            Parent root = loader.load();
+
+            // Carga la nueva escena
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Historial de Actividad");
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     // ===================================
     // MÉTODOS VOLVER
@@ -337,17 +356,4 @@ public class MenuController {
         }
     }
 
-    @FXML
-    private void handleVolverButtonComprobantes(ActionEvent event) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/InformesAdmin.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal");
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
