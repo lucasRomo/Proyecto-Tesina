@@ -8,7 +8,10 @@ import javafx.stage.Stage;
 
 public class MainApp extends Application {
 
-
+    // Define el tamaño fijo deseado para toda la aplicación
+    // Tamaño inicial deseado (prudencial)
+    private static final double DEFAULT_WIDTH = 1200;
+    private static final double DEFAULT_HEIGHT = 700;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -20,13 +23,14 @@ public class MainApp extends Application {
         stage.setTitle("Imprenta");
         stage.setScene(scene);
 
+        // 1. Inicia en el tamaño prudencial
+        stage.setWidth(DEFAULT_WIDTH);
+        stage.setHeight(DEFAULT_HEIGHT);
 
-        stage.setWidth(1800);
-        stage.setHeight(1000);
+        // 2. CLAVE: La ventana NO es redimensionable por el usuario
+        stage.setResizable(false);
 
-        // Centra la ventana en la pantalla (opcional)
         stage.centerOnScreen();
-
         stage.show();
     }
 

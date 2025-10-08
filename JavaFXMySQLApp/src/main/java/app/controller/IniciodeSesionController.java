@@ -28,11 +28,8 @@ public class IniciodeSesionController {
         UsuarioDAO usuarioDAO = new UsuarioDAO();
         if (!usuario.isEmpty() && !contrasena.isEmpty()) {
 
-            // Llamamos a un nuevo método que devuelve el objeto Usuario
             Usuario usuarioLogueado = usuarioDAO.obtenerUsuarioPorCredenciales(usuario, contrasena);
 
-
-            // Verificamos si se devolvió un objeto Usuario (si no es null)
             if (usuarioLogueado != null) {
 
                 SessionManager session = SessionManager.getInstance();
@@ -49,26 +46,12 @@ public class IniciodeSesionController {
                 alert.showAndWait();
 
                 try {
-                    // Carga el FXML de la pantalla de menú del administrador
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/MenuAbms.fxml"));
-                    Parent root = loader.load();
-
-                    // Obtenemos el controlador del menú de admin
-                    MenuController menuAdminController = loader.getController();
-
-                    // Obtener el 'Stage' (ventana) actual desde un elemento de la escena
-                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-                    // Crear y establecer la nueva escena
-                    Scene scene = new Scene(root);
-                    stage.setScene(scene);
-                    stage.setWidth(1800);
-                    stage.setHeight(1000);
-
-                    // Centra la ventana en la pantalla (opcional)
-                    stage.centerOnScreen();
-                    stage.setTitle("Menú Principal");
-                    stage.show();
+                    // LLAMADA CLAVE: Usa el método que maneja el tamaño fijo (1200x700)
+                    MenuController.loadFixedSizeScene(
+                            (Node) event.getSource(),
+                            "/MenuAbms.fxml",
+                            "Menú Principal"
+                    );
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -98,24 +81,14 @@ public class IniciodeSesionController {
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            // Carga el FXML de la pantalla a la que quieres regresar.
-            // Asegúrate de que la ruta sea correcta.
-            Parent root = FXMLLoader.load(getClass().getResource("/menuInicial.fxml"));
-
-            // Obtiene la Stage (ventana) actual del botón
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            // Crea una nueva Scene con la pantalla anterior
-            Scene scene = new Scene(root);
-
-            // Reemplaza la Scene actual con la nueva
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal"); // O el título de la pantalla anterior
-            stage.show();
+            MenuController.loadFixedSizeScene(
+                    (Node) event.getSource(),
+                    "/menuInicial.fxml",
+                    "Menú Principal"
+            );
 
         } catch (IOException e) {
             e.printStackTrace();
-            // Maneja el error si no se puede cargar el archivo FXML
         }
     }
 }

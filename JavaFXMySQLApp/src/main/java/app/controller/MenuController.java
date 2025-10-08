@@ -12,10 +12,60 @@ import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
 import app.controller.SessionManager;
-// Importamos SessionManager (del primer fragmento)
-// Asumo que MainApp (del segundo fragmento) no es estrictamente necesario ya que las dimensiones están hardcodeadas.
 
 public class MenuController {
+
+    // ===================================
+    // TAMAÑOS FIJOS DEFINIDOS
+    // ===================================
+    private static final double DEFAULT_WIDTH = 1200;
+    private static final double DEFAULT_HEIGHT = 700;
+    private static final double MAXIMIZED_WIDTH = 1800; // El nuevo "maximizado" fijo
+    private static final double MAXIMIZED_HEIGHT = 1000;
+
+    // Bandera para rastrear si estamos en el modo "Grande"
+    private static final String IS_LARGE_MODE_KEY = "isLargeMode";
+
+
+    // ===================================
+    // FUNCIÓN DE NAVEGACIÓN ESTATICA (Asegura el tamaño FIJO y la NO redimensión)
+    // ===================================
+
+    /**
+     * Navega a un nuevo FXML, aplicando el tamaño prudencial o el grande (si estaba activo),
+     * y mantiene la ventana NO redimensionable por el usuario.
+     */
+    public static void loadFixedSizeScene(Node sourceNode, String fxmlPath, String newTitle) throws IOException {
+        Stage currentStage = (Stage) sourceNode.getScene().getWindow();
+
+        // 1. Obtener el estado actual del modo "Grande"
+        boolean wasLargeMode = (boolean) currentStage.getProperties().getOrDefault(IS_LARGE_MODE_KEY, false);
+
+        FXMLLoader loader = new FXMLLoader(MenuController.class.getResource(fxmlPath));
+        Parent root = loader.load();
+
+        Scene scene = new Scene(root);
+        currentStage.setScene(scene);
+        currentStage.setTitle(newTitle);
+
+        // 2. Aplicar el tamaño persistente
+        if (wasLargeMode) {
+            currentStage.setWidth(MAXIMIZED_WIDTH);
+            currentStage.setHeight(MAXIMIZED_HEIGHT);
+        } else {
+            currentStage.setWidth(DEFAULT_WIDTH);
+            currentStage.setHeight(DEFAULT_HEIGHT);
+        }
+
+        // CLAVE: Mantener la ventana NO redimensionable en todas las escenas
+        currentStage.setResizable(false);
+        currentStage.setMaximized(false); // Siempre desactivar el maximizado nativo
+
+        currentStage.getProperties().put(IS_LARGE_MODE_KEY, wasLargeMode);
+        currentStage.centerOnScreen();
+        currentStage.show();
+    }
+
 
     // ===================================
     // CAMPOS DE PROPIEDADES DE SESIÓN
@@ -35,9 +85,11 @@ public class MenuController {
     private Button stockButton;
     @FXML
     private Button adminButton;
+    @FXML
+    private Button maximizarButton; // Este botón ahora controla el cambio entre 1200x700 y 1800x1000
 
     // ===================================
-    // MÉTODOS SETTER
+    // MÉTODOS SETTER (Sin cambios)
     // ===================================
     public void setLoggedInUserPassword(String password) {
         this.loggedInUserPassword = password;
@@ -52,21 +104,13 @@ public class MenuController {
     }
 
     // =========================================================================================
-    // MÉTODOS HANDLER DE NAVEGACIÓN
+    // MÉTODOS HANDLER DE NAVEGACIÓN (USANDO loadFixedSizeScene)
     // =========================================================================================
 
     @FXML
     public void handleStock(ActionEvent event) {
         try {
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Parent root = FXMLLoader.load(getClass().getResource("/menuStock.fxml"));
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
-            stage.centerOnScreen();
-            stage.setTitle("Menú de Stock");
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/menuStock.fxml", "Menú de Stock");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -75,16 +119,7 @@ public class MenuController {
     @FXML
     public void handleStockabm(ActionEvent event) {
         try {
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Parent root = FXMLLoader.load(getClass().getResource("/menuAbmStock.fxml"));
-            // Mantengo el título original de uno de los fragmentos, aunque parezca incorrecto para "AbmStock"
-            stage.setTitle("Menu de Proveedor");
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
-            stage.centerOnScreen();
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/menuAbmStock.fxml", "Menú de Proveedor");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -93,54 +128,25 @@ public class MenuController {
     @FXML
     public void handleProveedor(ActionEvent event) {
         try {
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Parent root = FXMLLoader.load(getClass().getResource("/menuProveedor.fxml"));
-            stage.setTitle("Menu de Proveedor");
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
-            stage.centerOnScreen();
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/menuProveedor.fxml", "Menú de Proveedor");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // Fusión de handleRegistroButton (Lucas) y handleClientesButton (Balles)
     @FXML
     public void handleClientesButton(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/menuCliente.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            // Usando las dimensiones grandes
-            Scene scene = new Scene(root, 1800, 1000);
-
-            stage.setScene(scene);
-            stage.setTitle("Registro de Cliente");
-            stage.centerOnScreen();
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/menuCliente.fxml", "Registro de Cliente");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // Método de Pedidos del segundo fragmento
     @FXML
     public void handlePedidosButton(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PedidosPrimerMenu.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-
-            Scene scene = new Scene(root, 1800, 1000);
-
-            stage.setScene(scene);
-            stage.setTitle("Menú de Pedidos");
-            stage.centerOnScreen();
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/PedidosPrimerMenu.fxml", "Menú de Pedidos");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -150,15 +156,7 @@ public class MenuController {
     @FXML
     public void handleIniciodeSesionButton(ActionEvent event) {
         try {
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Parent root = FXMLLoader.load(getClass().getResource("/inicioSesion.fxml"));
-            stage.setTitle("Inicio de sesion");
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
-            stage.centerOnScreen();
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/inicioSesion.fxml", "Inicio de Sesión");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -167,15 +165,7 @@ public class MenuController {
     @FXML
     public void handleRegistrodeNuevoEmpleadoButton(ActionEvent event) {
         try {
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Parent root = FXMLLoader.load(getClass().getResource("/registroEmpleado.fxml"));
-            stage.setTitle("Registro de Empleado");
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setWidth(1800);
-            stage.setHeight(1000);
-            stage.centerOnScreen();
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/registroEmpleado.fxml", "Registro de Empleado");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -183,21 +173,11 @@ public class MenuController {
 
     @FXML
     public void handleOpcionesDeAdminButton(ActionEvent event) {
-        // Lógica de validación de Administrador del primer fragmento
         int userIdType = SessionManager.getInstance().getLoggedInUserIdType();
 
         if (userIdType == 4) {
             try {
-                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                Parent root = FXMLLoader.load(getClass().getResource("/MenuAdmin.fxml"));
-                stage.setTitle("Menú de Admin");
-                Scene scene = new Scene(root);
-                stage.setScene(scene);
-                stage.setWidth(1800);
-                stage.setHeight(1000);
-                stage.centerOnScreen();
-                stage.show();
-
+                loadFixedSizeScene((Node) event.getSource(), "/MenuAdmin.fxml", "Menú de Admin");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -213,34 +193,16 @@ public class MenuController {
     @FXML
     public void handleGestionDeUsuariosButton(ActionEvent event) {
         try {
-            // Carga el FXML de la tabla de usuarios
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/GestionUsuarios.fxml"));
-            Parent root = loader.load();
-
-            // Carga la nueva escena
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Gestión de Usuarios Empleados");
-            stage.show();
-
+            loadFixedSizeScene((Node) event.getSource(), "/GestionUsuarios.fxml", "Gestión de Usuarios Empleados");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // Métodos de Informes, Facturas y Comprobantes (Solo en el primer fragmento)
-
     @FXML
     public void handleInformesMenu(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/InformesAdmin.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menu de Informes");
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/InformesAdmin.fxml", "Menu de Informes");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -249,13 +211,7 @@ public class MenuController {
     @FXML
     public void handleFacturas(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/FacturasAdmin.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menu de Informes"); // Título debería ser más específico, pero se mantiene el original
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/FacturasAdmin.fxml", "Menu de Facturas");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -264,13 +220,7 @@ public class MenuController {
     @FXML
     public void handleComprobantes(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ComprobantesAdmin.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menu de Informes"); // Título debería ser más específico, pero se mantiene el original
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/ComprobantesAdmin.fxml", "Menu de Comprobantes");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -278,18 +228,13 @@ public class MenuController {
 
 
     // ===================================
-    // MÉTODOS VOLVER
+    // MÉTODOS VOLVER (USANDO loadFixedSizeScene)
     // ===================================
 
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/menuAbms.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal"); // O "Menú ABMs"
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/menuAbms.fxml", "Menú Principal");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -298,12 +243,7 @@ public class MenuController {
     @FXML
     private void handleVolverButtonAbms(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/menuInicial.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal");
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/menuInicial.fxml", "Menú Principal");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -312,12 +252,7 @@ public class MenuController {
     @FXML
     private void handleVolverButtonStock(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/menuAbms.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal"); // O "Menú ABMs"
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/menuAbms.fxml", "Menú ABMs");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -326,12 +261,7 @@ public class MenuController {
     @FXML
     private void handleVolverButtonInformes(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/menuAdmin.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal");
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/menuAdmin.fxml", "Menú Principal");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -340,14 +270,45 @@ public class MenuController {
     @FXML
     private void handleVolverButtonComprobantes(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/InformesAdmin.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal");
-            stage.show();
+            loadFixedSizeScene((Node) event.getSource(), "/InformesAdmin.fxml", "Menú de Informes");
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+
+    // ===================================
+    // MÉTODO MAXIMIZAR/RESTAURAR (Cambia entre los dos tamaños fijos)
+    // ===================================
+
+    @FXML
+    private void handleMaximizarButton(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+        // Obtener el estado actual
+        boolean isLargeMode = (boolean) stage.getProperties().getOrDefault(IS_LARGE_MODE_KEY, false);
+
+        if (!isLargeMode) {
+            // Activar Modo Grande (1800x1000)
+            stage.setWidth(MAXIMIZED_WIDTH);
+            stage.setHeight(MAXIMIZED_HEIGHT);
+            stage.getProperties().put(IS_LARGE_MODE_KEY, true);
+            stage.centerOnScreen();
+            if (maximizarButton != null) {
+                maximizarButton.setText("Restaurar");
+            }
+        } else {
+            // Restaurar a Modo Prudencial (1200x700)
+            stage.setWidth(DEFAULT_WIDTH);
+            stage.setHeight(DEFAULT_HEIGHT);
+            stage.getProperties().put(IS_LARGE_MODE_KEY, false);
+            stage.centerOnScreen();
+            if (maximizarButton != null) {
+                maximizarButton.setText("Maximizar");
+            }
+        }
+        // CLAVE: Asegurar que NO sea redimensionable, independientemente del tamaño
+        stage.setResizable(false);
+        stage.setMaximized(false);
     }
 }

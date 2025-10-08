@@ -144,17 +144,58 @@ public class UsuariosEmpleadoController {
             }
         });
 
-        // Se configura la columna de estado para ser un ChoiceBox y aplicar estilos
+        // =========================================================================
+        // INICIO: BLOQUE CORREGIDO PARA LA COLUMNA ESTADO
+        // =========================================================================
         EstadoColumn.setCellFactory(column -> new TableCell<UsuarioEmpleadoTableView, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
+            private String estadoOriginal; // CLAVE: Variable para guardar el estado antes de la edición
 
             {
                 choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
                 choiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
                     if (getTableRow() != null && getTableRow().getItem() != null && newVal != null && !newVal.equals(oldVal)) {
+
                         UsuarioEmpleadoTableView usuario = getTableRow().getItem();
-                        // Llama al método para manejar el cambio de estado con la validación de contraseña
-                        updateUsuarioEstado(usuario, oldVal, newVal);
+
+                        // 1. PRIMER PASO: Validar la contraseña
+                        TextInputDialog dialog = new TextInputDialog();
+                        dialog.setTitle("Confirmar cambio de estado");
+                        dialog.setHeaderText("Verificación de seguridad");
+                        dialog.setContentText("Por favor, ingresa tu contraseña para confirmar el cambio de estado:");
+
+                        Optional<String> result = dialog.showAndWait();
+                        String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword();
+
+
+                        if (result.isPresent() && loggedInUserPassword != null && result.get().trim().equals(loggedInUserPassword.trim())) {
+                            // 2. Contraseña correcta: Intentar guardar en BD
+                            usuario.setEstado(newVal); // Actualiza el modelo local
+                            boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
+
+                            if (exito) {
+                                mostrarAlerta("Éxito", "Estado del usuario actualizado correctamente.", Alert.AlertType.INFORMATION);
+                                // 3. Forzar el commit para finalizar la edición con el nuevo valor
+                                commitEdit(newVal);
+                            } else {
+                                mostrarAlerta("Error", "No se pudo actualizar el estado en la base de datos.", Alert.AlertType.ERROR);
+                                // Falló el guardado, revertir y cancelar la edición
+                                usuario.setEstado(estadoOriginal);
+                                cancelEdit(); // Llama al método cancelEdit() que restaura el valor
+                                usuariosEditableView.refresh();
+                            }
+                        } else {
+                            // 4. Contraseña incorrecta o Cancelar: Revertir y cerrar edición.
+                            if (!result.isPresent()) {
+                                mostrarAlerta("Cancelado", "La modificación de estado ha sido cancelada.", Alert.AlertType.INFORMATION);
+                            } else {
+                                mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
+                            }
+
+                            // CLAVE: Cancelamos la edición, lo que llama al método cancelEdit() de este TableCell
+                            cancelEdit();
+                            usuariosEditableView.refresh(); // Forzar el refresco para asegurar la vista correcta
+                        }
                     }
                 });
             }
@@ -165,17 +206,19 @@ public class UsuariosEmpleadoController {
                     return;
                 }
                 super.startEdit();
-                choiceBox.getSelectionModel().select(getItem());
+                estadoOriginal = getItem(); // CLAVE: Guarda el estado original antes de la edición
+                choiceBox.getSelectionModel().select(estadoOriginal);
                 setGraphic(choiceBox);
                 setText(null);
             }
 
+            // MÉTODO CORREGIDO: Usa el estadoOriginal para restaurar la vista al cancelar
             @Override
             public void cancelEdit() {
                 super.cancelEdit();
                 setGraphic(null);
-                setText(getItem());
-                applyCellStyle(getItem());
+                setText(estadoOriginal); // Restaura el texto original
+                applyCellStyle(estadoOriginal); // Restaura el estilo original
             }
 
             @Override
@@ -211,6 +254,15 @@ public class UsuariosEmpleadoController {
                 }
             }
         });
+
+        // setOnEditCommit es simplificado ya que la validación y guardado
+        // se manejan completamente en el listener del ChoiceBox.
+        EstadoColumn.setOnEditCommit(event -> {
+            // No se requiere lógica adicional aquí.
+        });
+        // =========================================================================
+        // FIN: BLOQUE CORREGIDO PARA LA COLUMNA ESTADO
+        // =========================================================================
 
 
         accionUsuarioColumn.setCellFactory(param -> new TableCell<UsuarioEmpleadoTableView, Void>() {
@@ -332,7 +384,6 @@ public class UsuariosEmpleadoController {
                 if (loggedInUserPassword != null && password.trim().equals(loggedInUserPassword.trim())) {
                     try {
                         // 1. Obtener la información ORIGINAL del usuario ANTES de la modificación
-                        // Esto se hace por ID, ya que el selectedUsuario puede tener datos editados
                         Usuario originalUser = usuarioDAO.obtenerUsuarioPorId(selectedUsuario.getIdUsuario());
 
                         String originalContrasena = originalUser.getContrasenia(); // Contraseña original
@@ -401,43 +452,8 @@ public class UsuariosEmpleadoController {
         }
     }
 
-    private void updateUsuarioEstado(UsuarioEmpleadoTableView usuario, String oldVal, String newVal) {
-        // Diálogo de confirmación con contraseña
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Confirmar cambio de estado");
-        dialog.setHeaderText("Verificación de seguridad");
-        dialog.setContentText("Por favor, ingresa tu contraseña para confirmar el cambio de estado:");
-
-        Optional<String> result = dialog.showAndWait();
-
-        result.ifPresent(password -> {
-            String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword();
-            if (password.trim().equals(loggedInUserPassword.trim())) {
-                usuario.setEstado(newVal);
-                boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
-                if (exito) {
-                    mostrarAlerta("Éxito", "Contraseña Correcta, Tiene Permitido Editar El Estado.", Alert.AlertType.INFORMATION);
-                    usuariosEditableView.refresh();
-                } else {
-                    mostrarAlerta("Error", "No se pudo actualizar el estado en la base de datos.", Alert.AlertType.ERROR);
-                    usuario.setEstado(oldVal); // Revierte el valor en caso de error
-                    usuariosEditableView.refresh();
-                }
-            } else {
-                mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
-                usuario.setEstado(oldVal); // Revierte el valor
-                usuariosEditableView.refresh();
-            }
-        });
-        // Si el usuario cancela, también se revierte
-        if (!result.isPresent()) {
-            usuario.setEstado(oldVal);
-            usuariosEditableView.refresh();
-        }
-    }
-
-
-
+    // Se eliminó el método updateUsuarioEstado, ya que su lógica se consolidó
+    // dentro del setCellFactory de la columna Estado.
 
     @FXML
     private void handleVolverButton(ActionEvent event) {

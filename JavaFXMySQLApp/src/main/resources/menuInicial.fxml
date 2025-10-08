@@ -1,32 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.net.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="1000.0" prefWidth="1800.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuController">
+<AnchorPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuController">
     <stylesheets>
         <URL value="@styles.css" />
     </stylesheets>
 
-    <ImageView fitHeight="310.0" fitWidth="371.0" layoutX="715.0" layoutY="14.0" nodeOrientation="INHERIT" pickOnBounds="true" AnchorPane.leftAnchor="715.0" AnchorPane.rightAnchor="714.0" AnchorPane.topAnchor="14.0">
-        <image>
-            <Image url="@imagenes/Logo_no_bg.png" />
-        </image>
-    </ImageView>
-
-    <Label alignment="CENTER" layoutX="222.0" layoutY="361.0" prefHeight="110.0" prefWidth="1400.0" styleClass="titulo-principal-grande" text="El Sur Centro De Copiado" textAlignment="CENTER" textFill="WHITE" AnchorPane.leftAnchor="222.0" AnchorPane.rightAnchor="178.0" AnchorPane.topAnchor="361.0">
-        <font>
-            <Font name="System Bold" size="49.0" />
-        </font>
-    </Label>
-
-    <VBox alignment="CENTER" layoutX="222.0" layoutY="500.0" prefHeight="80.0" prefWidth="303.0" spacing="10" AnchorPane.leftAnchor="222.0" AnchorPane.rightAnchor="222.0" AnchorPane.topAnchor="500.0">
+    <VBox alignment="CENTER" spacing="20.0"
+          AnchorPane.topAnchor="0.0"
+          AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0">
         <children>
-            <Button onAction="#handleIniciodeSesionButton" prefWidth="200.0" text="Iniciar Sesion" />
-            <Button onAction="#handleRegistrodeNuevoEmpleadoButton" prefHeight="36.0" prefWidth="257.0" text="Registrar Nuevo Empleado" />
+            <ImageView fitHeight="250.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true">
+                <image>
+                    <Image url="@imagenes/Logo_no_bg.png" />
+                </image>
+            </ImageView>
+
+            <Label alignment="CENTER" maxWidth="Infinity" styleClass="titulo-principal-grande" text="El Sur Centro De Copiado" textAlignment="CENTER" textFill="WHITE">
+                <font>
+                    <Font name="System Bold" size="49.0" />
+                </font>
+            </Label>
+
+            <VBox alignment="CENTER" prefWidth="300.0" spacing="15.0">
+                <children>
+                    <Button onAction="#handleIniciodeSesionButton" prefWidth="250.0" prefHeight="40.0" text="Iniciar Sesión" />
+                    <Button onAction="#handleRegistrodeNuevoEmpleadoButton" prefWidth="250.0" prefHeight="40.0" text="Registrar Nuevo Empleado" />
+                </children>
+            </VBox>
         </children>
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        </padding>
     </VBox>
+
+    <Button fx:id="maximizarButton" onAction="#handleMaximizarButton" text="Maximizar"
+            AnchorPane.topAnchor="10.0"
+            AnchorPane.rightAnchor="10.0" />
 </AnchorPane>
