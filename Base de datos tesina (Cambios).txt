@@ -288,7 +288,7 @@ ALTER TABLE ComprobantePago ADD CONSTRAINT fk_ComprobantePago_Pedido
   FOREIGN KEY (id_pedido) REFERENCES Pedido (id_pedido);
 
 // Registro de Actividad //
-ALTER TABLE LogActividad ADD CONSTRAINT fk_RegistroActividad_Usuario
+ALTER TABLE RegistroActividad ADD CONSTRAINT fk_RegistroActividad_Usuario
   FOREIGN KEY (id_usuario_responsable) REFERENCES Usuario (id_usuario);
   
 -- -----------------------------------------------------
