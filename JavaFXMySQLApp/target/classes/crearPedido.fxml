@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
+<?import java.net.URL?>
 <VBox alignment="TOP_CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.CrearPedidoController">
     <stylesheets>
         <URL value="@styleRegistro.css" />
@@ -33,9 +33,8 @@
         <Label text="Método de Pago:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
         <ComboBox fx:id="metodoPagoComboBox" promptText="Seleccione Método" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-        <!-- FECHA DE CREACIÓN - Se etiqueta correctamente -->
-        <Label text="Fecha de Creación (Estimada):" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-        <DatePicker fx:id="fechaEntregaEstimadaPicker" promptText="Seleccione Fecha" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+        <Label text="Fecha de Entrega Estimada:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <DatePicker fx:id="fechaEntregaEstimadaPicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
         <!-- FECHA FINALIZACION ELIMINADA (Estaba en rowIndex 5) -->
 
