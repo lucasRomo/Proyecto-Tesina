@@ -30,7 +30,7 @@ public class CrearPedidoController {
 
     // Otros campos
     @FXML private DatePicker fechaEntregaEstimadaPicker;
-    @FXML private DatePicker fechaFinalizacionPicker;
+    // @FXML private DatePicker fechaFinalizacionPicker; // ELIMINADO
     @FXML private TextField montoTotalField;
     @FXML private TextField montoEntregadoField;
     @FXML private TextArea instruccionesArea;
@@ -99,8 +99,8 @@ public class CrearPedidoController {
             LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaPicker.getValue() != null)
                     ? fechaEntregaEstimadaPicker.getValue().atStartOfDay() : null;
 
-            LocalDateTime fechaFinalizacion = (fechaFinalizacionPicker.getValue() != null)
-                    ? fechaFinalizacionPicker.getValue().atStartOfDay() : null;
+            // ELIMINACIÓN DE fechaFinalizacionPicker
+            LocalDateTime fechaFinalizacion = null; // Se inicializa a null, ya que se llenará al finalizar el pedido.
 
             String instrucciones = instruccionesArea.getText();
             double montoTotal = Double.parseDouble(montoTotalField.getText());
@@ -109,13 +109,13 @@ public class CrearPedidoController {
                     : 0.0;
 
 
-            // Constructor de Pedido MODIFICADO: ya no incluye metodoPago
+            // Constructor de Pedido: se pasa null para fechaFinalizacion
             Pedido nuevoPedido = new Pedido(
                     idCliente,
                     idEmpleado,
                     fechaCreacion,
                     fechaEntregaEstimada,
-                    fechaFinalizacion,
+                    fechaFinalizacion, // Ahora es null
                     estado,
                     instrucciones,
                     montoTotal,

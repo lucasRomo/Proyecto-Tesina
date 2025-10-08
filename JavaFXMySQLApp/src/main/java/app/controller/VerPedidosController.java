@@ -1,7 +1,9 @@
 package app.controller;
 
 import app.dao.PedidoDAO;
+import app.model.DetallePedido;
 import app.model.Pedido;
+import app.util.TicketPDFUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -22,9 +24,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -48,8 +52,9 @@ public class VerPedidosController implements Initializable {
     private TableColumn<Pedido, String> empleadoColumn;
     @FXML
     private TableColumn<Pedido, String> estadoColumn;
+    // Se asume que esta columna es parte del FXML original y se mantiene
     @FXML
-    private TableColumn<Pedido, String> metodoPagoColumn; // AGREGADO para evitar error en FXML si se usa
+    private TableColumn<Pedido, String> metodoPagoColumn;
     @FXML
     private TableColumn<Pedido, Double> montoTotalColumn;
     @FXML
@@ -84,8 +89,6 @@ public class VerPedidosController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         pedidoDAO = new PedidoDAO();
-
-        // Habilitar edición en la tabla completa
         pedidosTable.setEditable(true);
 
         // --- Configuración de Propiedades ---
@@ -93,8 +96,8 @@ public class VerPedidosController implements Initializable {
         clienteColumn.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         empleadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombreEmpleado"));
         estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
-        // Nueva columna para método de pago, si se incluyó en FXML
-        // Se asume que en el FXML existe una columna con fx:id="metodoPagoColumn"
+
+        // Configuración de metodoPagoColumn
         if (metodoPagoColumn != null) {
             metodoPagoColumn.setCellValueFactory(new PropertyValueFactory<>("metodoPago"));
             metodoPagoColumn.setEditable(false);
@@ -127,7 +130,7 @@ public class VerPedidosController implements Initializable {
             if (nuevoEstado.equalsIgnoreCase("Retirado")) {
                 // Si se marca como Retirado, se le pone la fecha actual
                 pedido.setFechaFinalizacion(LocalDateTime.now());
-                mostrarAlerta("Éxito", "El pedido ha sido marcado como Retirado.", Alert.AlertType.INFORMATION); // CORRECCIÓN de firma
+                mostrarAlerta("Éxito", "El pedido ha sido marcado como Retirado.", Alert.AlertType.INFORMATION);
             } else if (pedido.getEstado() != null && pedido.getEstado().equalsIgnoreCase("Retirado") && !nuevoEstado.equalsIgnoreCase("Retirado")) {
                 // Si se cambia de 'Retirado' a otro estado, limpiamos la fecha de finalización
                 pedido.setFechaFinalizacion(null);
@@ -147,7 +150,7 @@ public class VerPedidosController implements Initializable {
                 event.getRowValue().setMontoTotal(event.getNewValue());
                 guardarCambiosEnBD(event.getRowValue(), "Monto Total");
             } else {
-                mostrarAlerta("Advertencia", "El monto total debe ser un valor numérico positivo.", Alert.AlertType.WARNING); // CORRECCIÓN de firma
+                mostrarAlerta("Advertencia", "El monto total debe ser un valor numérico positivo.", Alert.AlertType.WARNING);
                 pedidosTable.refresh();
             }
         });
@@ -158,7 +161,7 @@ public class VerPedidosController implements Initializable {
                 event.getRowValue().setMontoEntregado(event.getNewValue());
                 guardarCambiosEnBD(event.getRowValue(), "Monto Entregado");
             } else {
-                mostrarAlerta("Advertencia", "El monto entregado debe ser un valor numérico positivo.", Alert.AlertType.WARNING); // CORRECCIÓN de firma
+                mostrarAlerta("Advertencia", "El monto entregado debe ser un valor numérico positivo.", Alert.AlertType.WARNING);
                 pedidosTable.refresh();
             }
         });
@@ -186,6 +189,7 @@ public class VerPedidosController implements Initializable {
         }
 
         if (metodoPagoFilterComboBox != null) {
+            // Asumiendo que PedidoDAO.getTiposPago() existe
             List<String> tiposPago = pedidoDAO.getTiposPago();
             tiposPago.add(0, "Todos los Métodos");
             metodoPagoFilterComboBox.setItems(FXCollections.observableArrayList(tiposPago));
@@ -196,13 +200,15 @@ public class VerPedidosController implements Initializable {
 
         // Carga inicial de pedidos (que ya filtra los 'Retirado' por defecto)
         cargarPedidos();
-    }
+    } // CIERRE DEL MÉTODO initialize
 
     /**
      * Carga la lista de empleados para el ComboBox de filtro, corrigiendo el problema de visualización.
      */
     private void cargarEmpleadosEnFiltro() {
+
         try {
+            // Asumiendo que PedidoDAO.getAllEmpleadosDisplay() existe
             List<String> listaEmpleados = pedidoDAO.getAllEmpleadosDisplay();
             // Añadir la opción para ver todos
             listaEmpleados.add(0, "0 - Todos los Empleados");
@@ -210,7 +216,7 @@ public class VerPedidosController implements Initializable {
             empleadoFilterComboBox.getSelectionModel().selectFirst();
         } catch (Exception e) {
             System.err.println("Error al cargar empleados para el filtro: " + e.getMessage());
-            mostrarAlerta("Error de Carga", "No se pudieron cargar los empleados para el filtro.", Alert.AlertType.ERROR); // CORRECCIÓN de firma
+            mostrarAlerta("Error de Carga", "No se pudieron cargar los empleados para el filtro.", Alert.AlertType.ERROR);
         }
     }
 
@@ -233,18 +239,19 @@ public class VerPedidosController implements Initializable {
 
 
     /**
-     * Configura la columna para incluir un botón "Ticket/Factura".
+     * Configura la columna para incluir un botón "Detallar/Ticket".
      */
     private void configurarColumnaTicket() {
         ticketColumn.setCellFactory(param -> new TableCell<Pedido, Void>() {
-            private final Button btn = new Button("Ticket/Factura");
+            private final Button btn = new Button("Detallar/Ticket");
             private final HBox pane = new HBox(btn);
 
             {
                 btn.setOnAction((ActionEvent event) -> {
                     // Obtiene el objeto Pedido de la fila actual
                     Pedido pedido = getTableView().getItems().get(getIndex());
-                    handleGenerarTicket(pedido);
+                    // Pasa el Stage de la ventana principal para que la nueva sea modal a ella
+                    handleGenerarTicket(pedido, (Stage) ((Node) event.getSource()).getScene().getWindow());
                 });
                 pane.setAlignment(Pos.CENTER);
                 btn.getStyleClass().add("ticket-button"); // Estilo CSS opcional
@@ -263,14 +270,39 @@ public class VerPedidosController implements Initializable {
     }
 
     /**
-     * Manejador del evento de clic en el botón Ticket/Factura.
-     * Aquí iría la lógica para generar o cargar el PDF.
-     * @param pedido El pedido para el cual generar el ticket.
+     * Manejador del evento de clic en el botón Detallar/Ticket.
+     * Abre una nueva ventana modal para detallar la compra y generar el ticket.
+     * @param pedido El pedido para el cual generar el detalle.
+     * @param ownerStage La ventana principal (dueña) del pedido.
      */
-    private void handleGenerarTicket(Pedido pedido) {
-        // CORRECCIÓN de firma en la llamada a mostrarAlerta
-        mostrarAlerta("Ticket/Factura", "Generar Ticket para Pedido ID: " + pedido.getIdPedido(), Alert.AlertType.INFORMATION);
+    private void handleGenerarTicket(Pedido pedido, Stage ownerStage) {
+        try {
+            // Cargar el FXML de la ventana de detalle (detallePedidoView.fxml)
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/detallePedidoView.fxml"));
+            Parent root = loader.load();
+
+            // Obtener el controlador de la ventana de detalle
+            DetallePedidoController controller = loader.getController();
+            controller.initData(pedido); // Inicializa el controlador con el pedido seleccionado
+
+            // Crear y configurar la nueva Stage (ventana modal)
+            Stage stage = new Stage();
+            stage.setTitle("Detalle de Compra y Generación de Ticket - Pedido ID: " + pedido.getIdPedido());
+            stage.setScene(new Scene(root, 1000, 700)); // Tamaño ajustado para la tabla de detalles
+            stage.initModality(Modality.WINDOW_MODAL); // Lo hace modal
+            stage.initOwner(ownerStage); // Lo hace dependiente de la ventana principal
+            stage.centerOnScreen();
+            stage.showAndWait();
+
+            // Después de cerrar la ventana de detalle, se refresca la tabla por si el monto total cambió
+            cargarPedidos();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo cargar la ventana de Detalle de Pedido.\n" + e.getMessage(), Alert.AlertType.ERROR);
+        }
     }
+
 
     /**
      * Llama al DAO para sobrescribir los datos del pedido en la base de datos.
@@ -290,7 +322,6 @@ public class VerPedidosController implements Initializable {
                 pedidosTable.refresh();
             }
         } else {
-            // CORRECCIÓN de firma en la llamada a mostrarAlerta
             mostrarAlerta("Error de Guardado", "No se pudo actualizar el " + campoEditado + " del pedido ID " + pedido.getIdPedido() + " en la base de datos.", Alert.AlertType.ERROR);
             pedidosTable.refresh(); // Refresca para restaurar el valor antiguo en caso de error
         }
@@ -339,7 +370,6 @@ public class VerPedidosController implements Initializable {
             boolean exito = pedidoDAO.modificarPedido(pedidoSeleccionado);
 
             if (exito) {
-                // CORRECCIÓN de firma en la llamada a mostrarAlerta
                 mostrarAlerta("Éxito", "El Pedido ID " + pedidoSeleccionado.getIdPedido() + " ha sido modificado y guardado correctamente.", Alert.AlertType.INFORMATION);
                 if ("Retirado".equalsIgnoreCase(pedidoSeleccionado.getEstado())) {
                     cargarPedidos(); // Recarga si se marcó como Retirado para que desaparezca
@@ -347,11 +377,9 @@ public class VerPedidosController implements Initializable {
                     pedidosTable.refresh();
                 }
             } else {
-                // CORRECCIÓN de firma en la llamada a mostrarAlerta
                 mostrarAlerta("Error", "No se pudo modificar el pedido ID " + pedidoSeleccionado.getIdPedido() + " en la base de datos.", Alert.AlertType.ERROR);
             }
         } else {
-            // CORRECCIÓN de firma en la llamada a mostrarAlerta
             mostrarAlerta("Advertencia", "Por favor, seleccione una fila antes de usar el botón 'Guardar Cambios'.", Alert.AlertType.WARNING);
         }
     }
@@ -369,7 +397,6 @@ public class VerPedidosController implements Initializable {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
-            // CORRECCIÓN de firma en la llamada a mostrarAlerta
             mostrarAlerta("Error", "No se pudo volver al menú de pedidos.", Alert.AlertType.ERROR);
         }
     }
@@ -390,7 +417,7 @@ public class VerPedidosController implements Initializable {
     }
 
     /**
-     * Muestra una alerta simple (CORREGIDA LA FIRMA para usar solo 3 parámetros).
+     * Muestra una alerta simple.
      * @param titulo El título de la ventana.
      * @param mensaje El contenido del mensaje.
      * @param tipo El tipo de alerta (ERROR, INFORMATION, WARNING, etc.).

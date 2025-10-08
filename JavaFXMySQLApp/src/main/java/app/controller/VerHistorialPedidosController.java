@@ -5,9 +5,11 @@ import app.dao.PedidoDAO;
 import app.model.Pedido;
 import app.model.Cliente;
 import app.model.Empleado;
+import app.model.DetallePedido; // NUEVA IMPORTACIÓN
 import app.dao.ClienteDAO;
 import app.dao.EmpleadoDAO;
-
+import app.dao.ComprobantePagoDAO; // NUEVA IMPORTACIÓN
+import app.util.TicketPDFUtil; // NUEVA IMPORTACIÓN
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -76,9 +78,9 @@ public class VerHistorialPedidosController implements Initializable {
 
     // --- DAOs y Listas ---
     private PedidoDAO pedidoDAO;
-    // Inicialización con las clases DAO reales
     private ClienteDAO clienteDAO;
     private EmpleadoDAO empleadoDAO;
+    private ComprobantePagoDAO comprobantePagoDAO; // NUEVO DAO
 
     private ObservableList<Pedido> pedidosRetiradosMaestra;
     private FilteredList<Pedido> pedidosFiltrados;
@@ -86,11 +88,11 @@ public class VerHistorialPedidosController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Inicializar DAOs (Usando tus constructores reales)
+        // Inicializar DAOs
         pedidoDAO = new PedidoDAO();
-        // ASUMIMOS que estas clases se inicializan correctamente en tu entorno
         clienteDAO = new ClienteDAO();
         empleadoDAO = new EmpleadoDAO();
+        comprobantePagoDAO = new ComprobantePagoDAO(); // INICIALIZACIÓN NUEVA
 
         // 1. Configurar las columnas de la tabla
         configurarColumnas();
@@ -277,6 +279,62 @@ public class VerHistorialPedidosController implements Initializable {
         if (empleadoFilterComboBox != null) empleadoFilterComboBox.getSelectionModel().clearSelection();
         if (metodoPagoFilterComboBox != null) metodoPagoFilterComboBox.getSelectionModel().clearSelection();
         // Los listeners se encargan de llamar a actualizarFiltro()
+    }
+
+    // ----------------------------------------------------------------------------------
+    // NUEVO MÉTODO: Generar Ticket PDF
+    // ----------------------------------------------------------------------------------
+
+    /**
+     * Maneja la generación del ticket PDF para el pedido seleccionado.
+     * Este método debería estar conectado a un botón "Generar Ticket" en el FXML.
+     */
+    @FXML
+    private void handleGenerarTicketPDF(ActionEvent event) {
+        Pedido pedidoSeleccionado = pedidosTable.getSelectionModel().getSelectedItem();
+
+        if (pedidoSeleccionado == null) {
+            mostrarAlerta("Advertencia", "Por favor, seleccione un pedido de la tabla para generar el ticket.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        // 1. Obtener los detalles del pedido usando el DAO
+        // ASUMIMOS que PedidoDAO tiene este método:
+        List<DetallePedido> detalles = pedidoDAO.getDetallesPorPedido(pedidoSeleccionado.getIdPedido());
+
+        if (detalles.isEmpty()) {
+            mostrarAlerta("Error", "No se encontraron detalles de productos para este pedido.", Alert.AlertType.ERROR);
+            return;
+        }
+
+        // 2. Generar el PDF
+        String nombreArchivo = "Ticket_Pedido_" + pedidoSeleccionado.getIdPedido() + ".pdf";
+        // Guarda el archivo en el Escritorio del usuario (cambiar según la necesidad)
+        String rutaGuardado = System.getProperty("user.home") + "/Desktop/" + nombreArchivo;
+
+        try {
+            // Llamar a la utilidad estática para generar el PDF
+            TicketPDFUtil.generarPDF(pedidoSeleccionado, detalles, rutaGuardado);
+
+            // 3. Actualizar la base de datos con la ruta del archivo
+            // ASUMIMOS que ComprobantePagoDAO tiene este método:
+            boolean rutaActualizada = comprobantePagoDAO.actualizarRutaTicket(
+                    pedidoSeleccionado.getIdPedido(), rutaGuardado
+            );
+
+            if (rutaActualizada) {
+                mostrarAlerta("Éxito", "Ticket generado y guardado en:\n" + rutaGuardado + "\n\nLa ruta ha sido registrada en la base de datos.", Alert.AlertType.INFORMATION);
+            } else {
+                mostrarAlerta("Advertencia", "Ticket generado y guardado en:\n" + rutaGuardado + "\n\nAVISO: No se pudo actualizar la ruta del archivo en la base de datos (ComprobantePago).", Alert.AlertType.WARNING);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "Ocurrió un error al generar o guardar el ticket: " + e.getMessage(), Alert.AlertType.ERROR);
+        } catch (Exception e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "Ocurrió un error inesperado: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
     }
 
 
