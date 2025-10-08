@@ -221,7 +221,7 @@ CREATE TABLE IF NOT EXISTS RegistroActividad (
   id_registro_modificado INT NULL,
   dato_previo_modificacion TEXT NULL,
   dato_modificado TEXT NULL,
-  PRIMARY KEY (id_RegAct)
+  PRIMARY KEY (id_RegAct))
 
 -- -----------------------------------------------------
 -- Claves Foráneas (FK)
