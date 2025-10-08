@@ -1,150 +1,111 @@
 package app.controller;
 
-import app.dao.HistorialActividadDAO; // Asegúrate de que esta ruta sea correcta
-import app.model.RegistroActividad; // Asegúrate de que esta ruta sea correcta
+import app.dao.HistorialActividadDAO; // Nuevo DAO
+import app.model.HistorialActividadTableView; // Nuevo modelo
+
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.net.URL;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.ResourceBundle;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.FilteredList;
-import javafx.collections.SortedList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.event.ActionEvent;
 import javafx.stage.Stage;
-import java.sql.Timestamp;
 
-public class HistorialActividadController {
+/**
+ * Controlador para la vista del historial de actividad (HistorialActividad.fxml).
+ * Se encarga de cargar y mostrar todos los registros de actividad en una TableView.
+ */
+public class HistorialActividadController implements Initializable { // Nuevo nombre del controlador
 
-    // --- Componentes FXML ---
+    // Componentes FXML inyectados desde la vista (FXML)
     @FXML
-    private TableView<RegistroActividad> actividadTableView;
+    private TableView<HistorialActividadTableView> historialActividadTable;
 
+    // Columnas de la tabla
     @FXML
-    private TableColumn<RegistroActividad, String> colNombreEmpleado;
-
+    private TableColumn<HistorialActividadTableView, Integer> idColumna;
     @FXML
-    private TableColumn<RegistroActividad, Timestamp> colFechaModificacion;
-
+    private TableColumn<HistorialActividadTableView, Timestamp> fechaColumna;
     @FXML
-    private TableColumn<RegistroActividad, String> colTablaAfectada;
-
+    private TableColumn<HistorialActividadTableView, String> usuarioColumna;
     @FXML
-    private TableColumn<RegistroActividad, String> colColumnaAfectada;
-
+    private TableColumn<HistorialActividadTableView, String> tablaColumna;
     @FXML
-    private TableColumn<RegistroActividad, Integer> colIdModificado;
-
+    private TableColumn<HistorialActividadTableView, String> columnaAfectadaColumna;
     @FXML
-    private TableColumn<RegistroActividad, String> colDatoPrevio;
-
+    private TableColumn<HistorialActividadTableView, Integer> idRegistroColumna;
     @FXML
-    private TableColumn<RegistroActividad, String> colDatoModificado;
-
+    private TableColumn<HistorialActividadTableView, String> datoPrevioColumna;
     @FXML
-    private TextField filterField;
+    private TableColumn<HistorialActividadTableView, String> datoModificadoColumna;
 
-    @FXML
-    private Button volverButton;
-
-    // --- Atributos de Control ---
-    private final RegistroActividadDAO registroActividadDAO = new RegistroActividadDAO();
-    private ObservableList<RegistroActividad> masterData = FXCollections.observableArrayList();
+    // DAO para acceder a los datos
+    private HistorialActividadDAO historialActividadDAO;
 
     /**
-     * Inicializa el controlador. Se llama automáticamente después de que el FXML
-     * ha sido cargado.
+     * Método de inicialización llamado automáticamente al cargar el FXML.
+     * @param location URL de la ubicación.
+     * @param resources ResourceBundle asociado.
      */
-    @FXML
-    public void initialize() {
-        // 1. Configurar las columnas para el mapeo de datos
-        configurarColumnas();
-
-        // 2. Cargar los datos desde la base de datos
-        cargarDatos();
-
-        // 3. Configurar el filtrado dinámico (Búsqueda)
-        configurarFiltro();
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        historialActividadDAO = new HistorialActividadDAO();
+        configurarTabla();
+        cargarDatosHistorial();
     }
 
     /**
-     * Mapea cada columna de la TableView a la propiedad (getter) del modelo RegistroActividad.
+     * Configura el enlace de las columnas de la TableView con las propiedades del modelo.
      */
-    private void configurarColumnas() {
-        // Enlaza la columna con el método getNombreCompletoUsuario() del modelo
-        colNombreEmpleado.setCellValueFactory(new PropertyValueFactory<>("nombreCompletoUsuario"));
-
-        // Enlaza la columna con el método getFechaModificacion() del modelo
-        colFechaModificacion.setCellValueFactory(new PropertyValueFactory<>("fechaModificacion"));
-
-        // Enlaza la columna con el método getTablaAfectada() del modelo
-        colTablaAfectada.setCellValueFactory(new PropertyValueFactory<>("tablaAfectada"));
-
-        // Enlaza la columna con el método getColumnaAfectada() del modelo
-        colColumnaAfectada.setCellValueFactory(new PropertyValueFactory<>("columnaAfectada"));
-
-        // Enlaza la columna con el método getIdRegistroModificado() del modelo
-        colIdModificado.setCellValueFactory(new PropertyValueFactory<>("idRegistroModificado"));
-
-        // Enlaza la columna con el método getDatoPrevioModificacion() del modelo
-        colDatoPrevio.setCellValueFactory(new PropertyValueFactory<>("datoPrevioModificacion"));
-
-        // Enlaza la columna con el método getDatoModificado() del modelo
-        colDatoModificado.setCellValueFactory(new PropertyValueFactory<>("datoModificado"));
+    private void configurarTabla() {
+        // Enlaza cada columna con la propiedad correspondiente del modelo HistorialActividadTableView
+        idColumna.setCellValueFactory(cellData -> cellData.getValue().idRegActProperty().asObject());
+        fechaColumna.setCellValueFactory(cellData -> cellData.getValue().fechaModificacionProperty());
+        // 'nombreUsuario' viene del JOIN en el DAO
+        usuarioColumna.setCellValueFactory(cellData -> cellData.getValue().nombreUsuarioProperty());
+        tablaColumna.setCellValueFactory(cellData -> cellData.getValue().tablaAfectadaProperty());
+        columnaAfectadaColumna.setCellValueFactory(cellData -> cellData.getValue().columnaAfectadaProperty());
+        idRegistroColumna.setCellValueFactory(cellData -> cellData.getValue().idRegistroModificadoProperty().asObject());
+        datoPrevioColumna.setCellValueFactory(cellData -> cellData.getValue().datoPrevioModificacionProperty());
+        datoModificadoColumna.setCellValueFactory(cellData -> cellData.getValue().datoModificadoProperty());
     }
 
     /**
-     * Carga los datos de la base de datos en la ObservableList.
+     * Carga los datos del historial de actividad desde la base de datos
+     * y los muestra en la TableView.
      */
-    private void cargarDatos() {
-        // Limpiar la lista maestra para evitar duplicados
-        masterData.clear();
+    private void cargarDatosHistorial() {
+        try {
+            // 1. Obtener la lista de registros usando el nuevo DAO
+            List<HistorialActividadTableView> registros = historialActividadDAO.obtenerTodosLosRegistros();
 
-        // Obtener la lista del DAO
-        List<RegistroActividad> registros = registroActividadDAO.obtenerTodosLosRegistros();
+            // 2. Convertir a ObservableList para la TableView
+            ObservableList<HistorialActividadTableView> datos = FXCollections.observableArrayList(registros);
 
-        // Agregar los registros a la lista observable
-        masterData.addAll(registros);
-    }
+            // 3. Establecer los datos en la tabla
+            historialActividadTable.setItems(datos);
 
-    /**
-     * Configura la funcionalidad de filtrado dinámico usando FilteredList y SortedList.
-     */
-    private void configurarFiltro() {
-        // 1. Envolver la ObservableList en un FilteredList (filtro)
-        FilteredList<RegistroActividad> filteredData = new FilteredList<>(masterData, p -> true);
+            // Mensaje si no hay datos
+            if (datos.isEmpty()) {
+                historialActividadTable.setPlaceholder(new javafx.scene.control.Label("No hay registros de actividad para mostrar."));
+            }
 
-        // 2. Establecer el predicado de filtro cuando el texto de búsqueda cambia
-        filterField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(registro -> {
-                // Si el campo de filtro está vacío, mostrar todos los registros
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-
-                // Convertir el texto a minúsculas para una búsqueda sin distinción de mayúsculas
-                String lowerCaseFilter = newValue.toLowerCase();
-
-                // Criterios de búsqueda: por nombre de usuario o por tabla afectada
-                if (registro.getNombreCompletoUsuario().toLowerCase().contains(lowerCaseFilter)) {
-                    return true; // Coincidencia con el nombre del empleado
-                } else if (registro.getTablaAfectada().toLowerCase().contains(lowerCaseFilter)) {
-                    return true; // Coincidencia con la tabla afectada
-                }
-                return false; // No hay coincidencias
-            });
-        });
-
-        // 3. Envolver la FilteredList en un SortedList (ordenamiento)
-        SortedList<RegistroActividad> sortedData = new SortedList<>(filteredData);
-
-        // 4. Enlazar la SortedList con la TableView para que el ordenamiento funcione
-        sortedData.comparatorProperty().bind(actividadTableView.comparatorProperty());
-
-        // 5. Aplicar la SortedList a la TableView
-        actividadTableView.setItems(sortedData);
+        } catch (Exception e) {
+            System.err.println("Error al cargar los datos del historial: " + e.getMessage());
+            // Se puede mostrar una alerta al usuario en caso de error grave
+            historialActividadTable.setPlaceholder(new javafx.scene.control.Label("Error al cargar los datos. Consulte la consola."));
+        }
     }
 
     @FXML
@@ -161,5 +122,4 @@ public class HistorialActividadController {
             e.printStackTrace();
         }
     }
-
 }

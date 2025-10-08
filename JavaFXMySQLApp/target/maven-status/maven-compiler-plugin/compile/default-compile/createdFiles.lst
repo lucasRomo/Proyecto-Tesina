@@ -1,5 +1,6 @@
 app\controller\ClienteController.class
 app\controller\RegistroController.class
+app\dao\HistorialActividadDAO.class
 app\controller\IniciodeSesionController.class
 app\controller\CrearPedidoController.class
 app\model\Pedido.class
@@ -9,6 +10,7 @@ app\controller\CrearPedidoController$1.class
 app\model\TipoDocumento.class
 app\model\Usuario.class
 app\model\Empleado.class
+app\model\HistorialActividadTableView.class
 app\controller\VerPedidosController.class
 app\controller\CrearPedidoController$4.class
 app\controller\MenuController.class

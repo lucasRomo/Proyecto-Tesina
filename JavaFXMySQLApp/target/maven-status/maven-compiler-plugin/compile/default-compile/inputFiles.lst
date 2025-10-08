@@ -7,6 +7,7 @@ D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\P
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\FacturasAdminTableView.java
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\FacturasController.java
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\HistorialActividadController.java
+D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\HistorialActividadTableView.java
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\controller\PedidosPrimerMenuController.java
@@ -29,6 +30,7 @@ D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\P
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\DireccionDAO.java
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\EmpleadoDAO.java
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\FacturaDAO.java
+D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\HistorialActividadDAO.java
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\InsumoDAO.java
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\PedidoDAO.java
 D:\Cosas del colegio 2025\Isaui 2025\Programación\Tesina Avances 3.0 (Github)\Proyecto-Tesina\JavaFXMySQLApp\src\main\java\app\dao\PersonaDAO.java
