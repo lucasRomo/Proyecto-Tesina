@@ -45,15 +45,23 @@ public class VerProveedoresController {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
+
+                // 1. Limpiar clases de estilo y el estilo en línea
                 getStyleClass().removeAll("activo-cell", "desactivado-cell");
+                setStyle(null); // Limpiar estilos en línea anteriores
+
                 if (empty || item == null) {
                     setText(null);
                 } else {
                     setText(item);
                     if ("Activo".equalsIgnoreCase(item)) {
                         getStyleClass().add("activo-cell");
+                        // **SOLUCIÓN FINAL:** Forzar el color de texto a negro con estilo en línea.
+                        setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
                     } else if ("Desactivado".equalsIgnoreCase(item)) {
                         getStyleClass().add("desactivado-cell");
+                        // **SOLUCIÓN FINAL:** Forzar el color de texto a negro con estilo en línea.
+                        setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
                     }
                 }
             }

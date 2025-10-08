@@ -80,7 +80,7 @@ Button.button:pressed {
     -fx-background-color: #7f5af0;
 }
 
-/* Estilo específico para el botón de Volver */
+/* Estilo específico para el botón de Volver (Rojo) */
 .button-volver {
     -fx-border-color: #db6151;
     -fx-text-fill: #db6151;
@@ -107,7 +107,7 @@ Button.button:pressed {
 }
 
 /* --- ESTILOS PARA LAS GRILLAS Y TABLAS --- */
-/* Estilo de la tabla completa */
+/* (Estilos de tabla sin cambios) */
 .table-view {
     -fx-background-color: transparent;
     -fx-border-color: #444;
@@ -115,7 +115,6 @@ Button.button:pressed {
     -fx-table-cell-border-color: #555;
 }
 
-/* Estilo del encabezado de la tabla (columnas) */
 .table-view .column-header-background {
     -fx-background-color: #C0C0C0;
     -fx-border-color: #555;
@@ -126,7 +125,6 @@ Button.button:pressed {
     -fx-font-weight: bold;
 }
 
-/* Estilo de las filas */
 .table-row-cell {
     -fx-background-color: #1e1e1e;
     -fx-text-fill: #ccc;
@@ -139,7 +137,6 @@ Button.button:pressed {
     -fx-text-fill: #fff;
 }
 
-/* Estilo para las celdas de la tabla */
 .table-cell {
     -fx-text-fill: #ccc;
     -fx-border-color: #555;
@@ -151,30 +148,35 @@ Button.button:pressed {
 }
 
 /* =======================================================================
-   ESTILOS PARA EL BOTÓN DE DIRECCIÓN (Celestito)
-   Usamos la clase de la columna para aplicar el estilo al botón que se renderiza.
+   ESTILOS PARA EL BOTÓN DE DIRECCIÓN (Celestito) - CON FUENTE AUMENTADA
    ======================================================================= */
 
 .table-cell.columna-boton-direccion .button {
-    -fx-padding: 0.1em 0.2em;
-    -fx-font-size: 0.8em; /* Aumentado un poco para que se vea mejor */
-    -fx-border-color: #5bc0de; /* Nuevo color celestito */
-    -fx-border-width: 0.1em;
-    -fx-border-radius: 0.2em;
-    -fx-text-fill: #5bc0de;     /* Color del texto celestito */
+    /* Padding y borde ajustados para la forma. */
+    -fx-padding: 0.4em 0.4em;
+
+    /* CAMBIO APLICADO: Fuente aumentada de 0.8em a 0.9em */
+    -fx-font-size: 0.9em;
+
+    -fx-border-color: #5bc0de;
+    -fx-border-width: 0.15em;
+    -fx-border-radius: 0.25em;
+    -fx-text-fill: #5bc0de;
     -fx-background-color: transparent;
     -fx-cursor: hand;
     -fx-max-width: infinity;
+    -fx-font-weight: 600;
+    -fx-background-insets: 0;
+    -fx-transition-duration: 300ms;
+    -fx-transition-timing-function: ease-in;
 }
 
 .table-cell.columna-boton-direccion .button:hover {
-    -fx-text-fill: #111111;      /* Color de texto al pasar el mouse */
-    -fx-background-color: #5bc0de; /* Fondo celestito al pasar el mouse */
+    -fx-text-fill: #fffffe;
+    -fx-background-color: #5bc0de;
 }
 
 .table-cell.columna-boton-direccion .button:pressed {
     -fx-border-color: #31b0d5;
-    -fx-background-color: #31b0d5; /* Un celeste un poco más oscuro al presionar */
+    -fx-background-color: #31b0d5;
 }
-
-/* Eliminamos la antigua clase .table-cell .button-in-table ya que no se usa */

@@ -8,6 +8,7 @@ import app.model.TipoDocumento;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -119,6 +120,9 @@ public class RegistroController {
                     // Pasa la referencia del controlador principal al siguiente controlador
                     clienteDatosController.setClienteController(this.clienteController);
 
+                    // ¡CLAVE! Pasa la referencia de ESTE controlador para que la siguiente ventana pueda cerrarla
+                    clienteDatosController.setRegistroController(this);
+
                     // Pasar los datos a la nueva vista
                     clienteDatosController.setDatosPersona(
                             nombreField.getText(), apellidoField.getText(), idTipoDocumento,
@@ -132,9 +136,12 @@ public class RegistroController {
                     stage.initModality(Modality.APPLICATION_MODAL);
                     stage.showAndWait();
 
-                    // Cerrar la ventana de registro actual
-                    Stage currentStage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+                    // Cerrar la ventana de registro actual SOLO si la siguiente ventana no la cerró.
+                    // Ya que la ventana de Datos Específicos se encarga de cerrar ambas al guardar,
+                    // aquí ya no es necesario cerrarla, pero la dejo comentada como referencia de tu código original.
+                    /* Stage currentStage = (Stage) ((Button) event.getSource()).getScene().getWindow();
                     currentStage.close();
+                    */
 
                 } else {
                     mostrarAlerta("Error", "No se pudo registrar la dirección. Intente de nuevo.");
@@ -205,5 +212,23 @@ public class RegistroController {
 
     private void mostrarAlerta(String titulo, String mensaje) {
         mostrarAlerta(titulo, mensaje, Alert.AlertType.WARNING);
+    }
+
+    @FXML
+    private void handleVolverButton(ActionEvent event) {
+        // Obtiene la Stage (ventana) actual desde el evento
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        // Cierra la ventana
+        stage.close();
+    }
+
+    /**
+     * Método público para cerrar esta ventana, llamado desde RegistroClienteDatosEspecificosController
+     * en caso de cancelación o guardado exitoso.
+     */
+    public void cerrarVentana() {
+        // Obtiene el Stage usando uno de los elementos de la escena (por ejemplo, nombreField)
+        Stage stage = (Stage) nombreField.getScene().getWindow();
+        stage.close();
     }
 }

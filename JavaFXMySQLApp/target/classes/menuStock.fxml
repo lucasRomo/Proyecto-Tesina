@@ -47,7 +47,7 @@
                     <TableColumn fx:id="stockActualColumn" prefWidth="180.0" text="Stock Actual" />
                     <TableColumn fx:id="estadoColumn" prefWidth="200.0" text="Estado" />
                     <TableColumn fx:id="idTipoProveedorColumn" prefWidth="130.6" text="Tipo Proveedor" />
-                    <TableColumn fx:id="accionColumn" prefWidth="200.0" text="Proveedores" />
+                    <TableColumn fx:id="accionColumn" prefWidth="150.0" text="Proveedores" styleClass="columna-boton-direccion" />
                 </columns>
             </TableView>
 
@@ -65,7 +65,8 @@
 
             <HBox alignment="CENTER" prefHeight="25.0" spacing="10.0">
                 <children>
-                    <Button fx:id="alertasStockButton" mnemonicParsing="false" onAction="#handleAlertasStockButton" text="Ver Alertas de Stock" /> <Button fx:id="registrarInsumoButton" mnemonicParsing="false" onAction="#handleRegistrarInsumoButton" text="Registrar Insumo" />
+                    <Button fx:id="alertasStockButton" mnemonicParsing="false" onAction="#handleAlertasStockButton" text="Ver Alertas de Stock" />
+                    <Button fx:id="registrarInsumoButton" mnemonicParsing="false" onAction="#handleRegistrarInsumoButton" text="Registrar Insumo" />
                     <Button fx:id="modificarInsumoButton" mnemonicParsing="false" onAction="#handleModificarInsumoButton" text="Modificar Insumo" />
                     <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
                     <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverButton" styleClass="button-volver" text="Volver" />

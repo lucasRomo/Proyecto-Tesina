@@ -59,7 +59,7 @@
                     <Font size="14.0" />
                 </font>
             </Button>
-            <Button fx:id="volverButton" onAction="#handleVolverButton" text="Volver">
+            <Button fx:id="volverButton" onAction="#handleVolverButton" text="Volver" styleClass="button-volver">
                 <font>
                     <Font size="14.0" />
                 </font>

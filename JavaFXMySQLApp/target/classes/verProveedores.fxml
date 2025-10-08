@@ -6,25 +6,25 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="488.0" prefWidth="807.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerProveedoresController">
+<AnchorPane prefHeight="488.0" prefWidth="807.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerProveedoresController" styleClass="root">
     <stylesheets>
         <URL value="@styles.css" />
     </stylesheets>
     <VBox alignment="TOP_CENTER" layoutX="14.0" layoutY="14.0" prefHeight="376.0" prefWidth="778.0" spacing="15.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="8.0" AnchorPane.topAnchor="14.0">
         <children>
-            <Label text="Proveedores Asociados" styleClass="titulo-principal">
+            <Label text="Proveedores Asociados" styleClass="titulo-principal, label-blanco">
                 <font>
                     <Font name="System Bold" size="24.0" />
                 </font>
             </Label>
             <HBox alignment="CENTER_LEFT" spacing="10.0">
                 <children>
-                    <Label text="Estado:">
+                    <Label text="Estado:" styleClass="label-blanco">
                         <font>
                             <Font size="14.0" />
                         </font>
                     </Label>
-                    <ChoiceBox fx:id="estadoChoiceBox" prefWidth="150.0" />
+                    <ChoiceBox fx:id="estadoChoiceBox" prefWidth="150.0" styleClass="dark-choice-box" />
                 </children>
             </HBox>
             <TableView fx:id="proveedoresTableView" prefHeight="362.0" prefWidth="770.0">
@@ -35,7 +35,7 @@
                     <TableColumn fx:id="estadoColumn" prefWidth="181.0" text="Estado" />
                 </columns>
             </TableView>
-            <Button mnemonicParsing="false" onAction="#handleCerrarButton" styleClass="cancel-button" text="Cerrar">
+            <Button mnemonicParsing="false" onAction="#handleCerrarButton" styleClass="button-volver" text="Cerrar">
                 <VBox.margin>
                     <Insets top="10.0" />
                 </VBox.margin>

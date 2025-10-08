@@ -6,6 +6,7 @@ import app.dao.ClienteDAO;
 import app.dao.PersonaDAO;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -30,17 +31,28 @@ public class RegistroClienteDatosEspecificosController {
     private ClienteDAO clienteDAO;
     private Persona personaData;
 
-    // Referencia al controlador de la ventana principal
+    // Referencia al controlador de la ventana principal (Menú Cliente)
     private ClienteController clienteController;
+
+    // Referencia al controlador de la ventana anterior (Registro Común)
+    private RegistroController registroController;
 
     public RegistroClienteDatosEspecificosController() {
         this.personaDAO = new PersonaDAO();
         this.clienteDAO = new ClienteDAO();
     }
 
-    // Método setter para recibir la referencia
+    // Método setter para recibir la referencia del controlador del Menú Cliente
     public void setClienteController(ClienteController controller) {
         this.clienteController = controller;
+    }
+
+    /**
+     * Método setter para recibir la referencia del controlador de la
+     * ventana de Registro Común.
+     */
+    public void setRegistroController(RegistroController controller) {
+        this.registroController = controller;
     }
 
     public void setDatosPersona(String nombre, String apellido, int idTipoDocumento, String numeroDocumento, int idDireccion, String telefono, String email) {
@@ -76,13 +88,20 @@ public class RegistroClienteDatosEspecificosController {
                     conn.commit();
                     mostrarAlerta("Éxito", "Cliente registrado exitosamente.", Alert.AlertType.INFORMATION);
 
-                    // Llama al método del controlador principal para refrescar la tabla
+                    // 1. Llama al método del controlador principal para refrescar la tabla
                     if (clienteController != null) {
                         clienteController.refreshClientesTable();
                     }
 
-                    Stage stage = (Stage)((Button)event.getSource()).getScene().getWindow();
-                    stage.close();
+                    // 2. Cierra la ventana actual (Datos Específicos)
+                    Stage stageActual = (Stage)((Button)event.getSource()).getScene().getWindow();
+                    stageActual.close();
+
+                    // 3. Cierra la ventana anterior (Registro Común)
+                    if (registroController != null) {
+                        registroController.cerrarVentana();
+                    }
+
                 } else {
                     conn.rollback();
                     mostrarAlerta("Error", "Error al registrar el cliente. Fallo en la tabla Cliente.", Alert.AlertType.ERROR);
@@ -102,6 +121,24 @@ public class RegistroClienteDatosEspecificosController {
                 if (conn != null) conn.close();
             } catch (SQLException e) { e.printStackTrace(); }
         }
+    }
+
+    /**
+     * Cierra la ventana actual (Datos Específicos) y la ventana de Registro Común
+     * sin mostrar ninguna alerta.
+     */
+    @FXML
+    public void handleCancelarRegistro(ActionEvent event) {
+        // 1. Cerrar la ventana actual (Datos Específicos)
+        Stage stageActual = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stageActual.close();
+
+        // 2. Cerrar la ventana anterior (Registro Común)
+        if (registroController != null) {
+            registroController.cerrarVentana();
+        }
+
+        // ¡Se elimina la línea de la alerta para evitar el cuadrado blanco!
     }
 
     private boolean validarCamposCliente() {

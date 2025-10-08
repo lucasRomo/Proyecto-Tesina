@@ -14,11 +14,12 @@
 /* Estilo para todas las etiquetas Label */
 .label {
     -fx-text-fill: #FFFFFF; /* Texto blanco para todos los labels */
-    -fx-font-size: 14px;
+    -fx-size: 14px;
 }
 
-/* Estilo para los campos de texto TextField */
-.text-field {
+/* Estilo para los campos de texto TextField y el nuevo campo TextArea */
+.text-field,
+.text-area {
     -fx-background-color: #555555; /* Fondo gris un poco más claro */
     -fx-text-fill: #FFFFFF; /* Texto blanco */
     -fx-prompt-text-fill: #AAAAAA; /* Texto de ayuda gris claro */
@@ -28,13 +29,24 @@
     -fx-padding: 5px;
 }
 
-/* Estilo para el ComboBox */
-.combo-box {
+/* Aseguramos que el viewport interno del TextArea también sea oscuro */
+.text-area .content {
+    -fx-background-color: #555555;
+}
+
+/* Estilo para el ComboBox y ChoiceBox */
+.combo-box,
+.choice-box {
     -fx-background-color: #555555;
     -fx-text-fill: #FFFFFF;
     -fx-border-color: #777777;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
+}
+
+/* Estilo para el texto dentro del ChoiceBox cuando está cerrado */
+.choice-box .label {
+    -fx-text-fill: #FFFFFF; /* Letras Blancas para que se vean sobre el #555555 */
 }
 
 /* Estilo para el texto dentro del ComboBox */
@@ -43,64 +55,7 @@
     -fx-text-fill: #FFFFFF;
 }
 
-/* Estilo para el botón "Siguiente" (o cualquier botón que no tenga un ID específico) */
-.button {
-    -fx-background-color: #0078D7; /* Un azul vibrante */
-    -fx-text-fill: #FFFFFF; /* Texto blanco */
-    -fx-font-weight: bold;
-    -fx-font-size: 16px;
-    -fx-padding: 10px 20px;
-    -fx-background-radius: 5px;
-    -fx-cursor: hand; /* Cambia el cursor para indicar que es clickeable */
-}
-
-/* Efecto al pasar el cursor sobre el botón */
-.button:hover {
-    -fx-background-color: #005A9E; /* Un azul un poco más oscuro */
-}
-
-/* Estilo para el botón "Volver" con fondo rojo y texto blanco */
-#volverButton {
-    -fx-background-color: red;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-font-size: 16px;
-    -fx-padding: 10px 20px;
-    -fx-background-radius: 5px;
-    -fx-cursor: hand;
-}
-
-/* No hay efecto de hover para el botón "Volver" según lo solicitado */
-#volverButton:hover {
-    -fx-background-color: red;
-}
-
-/* Estilo para los GridPane para que tengan un aspecto más limpio */
-.grid-pane {
-    -fx-background-color: transparent;
-    -fx-padding: 10px;
-}
-
-/* Se elimina el estilo del botón "siguiente" que estaba incorrecto y se usa la clase general del botón */
-.titulo-principal {
-    -fx-font-size: 38px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #fffffe;
-}
-
-.choice-box {
-    -fx-background-color: #555555; /* Fondo gris oscuro */
-    -fx-border-color: #777777;
-    -fx-border-radius: 5px;
-    -fx-background-radius: 5px;
-}
-
-/* 2. Estilo del texto dentro de la caja principal (cuando está cerrado) */
-.choice-box .label {
-    -fx-text-fill: #FFFFFF; /* Letras Blancas para que se vean sobre el #555555 */
-}
-
-/* 3. Estilo del Menú Desplegable (Context Menu) */
+/* 3. Estilo del Menú Desplegable (Context Menu) de ChoiceBox */
 .choice-box .context-menu {
     -fx-background-color: #333333; /* Fondo negro/gris muy oscuro para el menú */
     -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.8) , 5, 0.0 , 0 , 5 );
@@ -124,4 +79,84 @@
 .choice-box .menu-item:focused .label,
 .choice-box .menu-item:hover .label {
     -fx-text-fill: #FFFFFF;
+}
+
+/* -------------------------------------------------------------------------- */
+/* ESTILOS DE BOTONES: SOLUCIÓN DE ESPECIFICIDAD */
+/* -------------------------------------------------------------------------- */
+
+/* 1. Estilo VERDE (Guardar) */
+.save-button {
+    -fx-background-color: #4CAF50; /* Verde */
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.save-button:hover {
+    -fx-background-color: #388E3C; /* Verde oscuro */
+}
+
+/* 2. Estilo ROJO (CANCELAR/VOLVER) - Se aplica por styleClass="cancel-button" */
+/* Incluimos .button.cancel-button para asegurar que gane la especificidad contra el estilo base */
+.cancel-button,
+.button.cancel-button {
+    -fx-background-color: #f44336; /* Rojo */
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.cancel-button:hover,
+.button.cancel-button:hover {
+    -fx-background-color: #D32F2F; /* Rojo oscuro */
+}
+
+/* 3. Estilo AZUL (SIGUIENTE) - Aplicado por ID (#siguienteButton) para forzar la prioridad AZUL */
+#siguienteButton {
+    -fx-background-color: #0078D7; /* Un azul vibrante */
+    -fx-text-fill: #FFFFFF; /* Texto blanco */
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+#siguienteButton:hover {
+    -fx-background-color: #005A9E; /* Un azul un poco más oscuro */
+}
+
+
+/* 4. Estilo para el botón general .button (Se usa como respaldo si no hay ID o clase específica) */
+.button {
+    -fx-background-color: #0078D7; /* Un azul vibrante */
+    -fx-text-fill: #FFFFFF; /* Texto blanco */
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #005A9E; /* Un azul un poco más oscuro */
+}
+
+/* Estilo para los GridPane para que tengan un aspecto más limpio */
+.grid-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 10px;
+}
+
+.titulo-principal {
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #fffffe;
 }
