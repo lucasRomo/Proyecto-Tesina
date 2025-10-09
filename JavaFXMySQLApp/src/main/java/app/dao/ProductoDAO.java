@@ -77,6 +77,33 @@ public class ProductoDAO {
     }
 
     /**
+     * Obtiene un producto de la base de datos por su ID.
+     * @param id ID del producto a buscar.
+     * @return Objeto Producto si se encuentra, o null en caso contrario.
+     */
+    public Producto getProductoById(int id) {
+        Producto producto = null;
+        String sql = "SELECT * FROM " + TABLE_NAME + " WHERE " + COL_ID + " = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, id);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    producto = mapResultSetToProducto(rs);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al obtener producto por ID: " + e.getMessage());
+        }
+        return producto;
+    }
+
+
+    /**
      * Inserta un nuevo producto en la base de datos.
      * **IMPORTANTE:** Si idCategoria es 0 en el modelo, se insertará NULL en la columna de la DB.
      * @param producto Objeto Producto a guardar.

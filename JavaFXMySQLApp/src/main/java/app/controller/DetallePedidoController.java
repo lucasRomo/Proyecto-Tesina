@@ -2,8 +2,10 @@ package app.controller;
 
 import app.dao.DetallePedidoDAO;
 import app.dao.PedidoDAO;
+import app.dao.ProductoDAO;
 import app.model.DetallePedido;
 import app.model.Pedido;
+import app.model.Producto;
 import app.util.TicketPDFUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -23,7 +25,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-// Implementar la interfaz Initializable
 public class DetallePedidoController implements Initializable {
 
     // --- Componentes FXML de Información y Totales ---
@@ -37,9 +38,11 @@ public class DetallePedidoController implements Initializable {
     @FXML private TextField txtMontoEntregado;
     @FXML private Label lblVuelto;
 
-    // --- Componentes FXML de Adición Manual de Producto ---
-    @FXML private TextField txtDescripcion;
+    // --- Componentes FXML de Adición de Producto (MODIFICADOS) ---
+    // ESTO REEMPLAZA A txtDescripcion en la nueva lógica del FXML
+    @FXML private ComboBox<Producto> cmbProducto;
     @FXML private TextField txtCantidad;
+    // Se mantiene, pero se ignora en la lógica de agregar detalle, ya que el precio viene del Producto
     @FXML private TextField txtPrecioUnitario;
 
     // --- Tabla de Detalles ---
@@ -54,13 +57,12 @@ public class DetallePedidoController implements Initializable {
     private Pedido pedidoActual;
     private PedidoDAO pedidoDAO = new PedidoDAO();
     private DetallePedidoDAO detalleDAO = new DetallePedidoDAO();
+    private ProductoDAO productoDAO = new ProductoDAO();
     private ObservableList<DetallePedido> detallesDelPedido = FXCollections.observableArrayList();
+    private ObservableList<Producto> productosDisponibles = FXCollections.observableArrayList();
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    /**
-     * Inicializa el controlador. Configura la tabla, listeners y validaciones.
-     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // 1. Configuración de columnas de la tabla
@@ -69,11 +71,11 @@ public class DetallePedidoController implements Initializable {
         precioUnitarioColumn.setCellValueFactory(new PropertyValueFactory<>("precioUnitario"));
         subtotalColumn.setCellValueFactory(new PropertyValueFactory<>("subtotal"));
 
-        // 2. Formato de Moneda para Subtotal y Precio Unitario, usando el CurrencyTableCell
+        // 2. Formato de Moneda
         precioUnitarioColumn.setCellFactory(tc -> new CurrencyTableCell<>());
         subtotalColumn.setCellFactory(tc -> new CurrencyTableCell<>());
 
-        // 3. Configurar la columna de Acción (Botón Eliminar)
+        // 3. Configurar la columna de Acción
         configurarColumnaAccion();
 
         // 4. Inicializar el ComboBox de Métodos de Pago
@@ -82,11 +84,57 @@ public class DetallePedidoController implements Initializable {
         // 5. Agregar listeners para cálculos en tiempo real
         txtMontoEntregado.textProperty().addListener((obs, oldVal, newVal) -> calcularVuelto());
 
-        // Asegurar que solo se ingresen números en Cantidad y Precio Unitario
+        // Asegurar que solo se ingresen números
         setupNumericValidation(txtCantidad);
         setupNumericValidation(txtPrecioUnitario);
         setupNumericValidation(txtMontoEntregado);
+
+        // 6. Cargar y Configurar el ComboBox de Productos
+        cargarProductosDisponibles();
+        configurarComboBoxProducto();
     }
+
+    /**
+     * Carga todos los productos desde la base de datos y los asigna al ComboBox.
+     */
+    private void cargarProductosDisponibles() {
+        // Asumiendo que productoDAO.getAllProductos() devuelve List<Producto>
+        productosDisponibles.setAll(productoDAO.getAllProductos());
+        cmbProducto.setItems(productosDisponibles);
+    }
+
+    /**
+     * Configura el CellFactory para mostrar el nombre del producto y su precio en el ComboBox.
+     */
+    private void configurarComboBoxProducto() {
+        // Cómo se muestra el ítem en la lista desplegable
+        cmbProducto.setCellFactory(lv -> new ListCell<Producto>() {
+            @Override
+            protected void updateItem(Producto item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    // Mostrar Nombre y Precio del producto
+                    setText(item.getNombreProducto() + " ($ " + String.format("%.2f", item.getPrecio()) + ")");
+                }
+            }
+        });
+
+        // Cómo se muestra el ítem seleccionado en el control (usa el mismo formato)
+        cmbProducto.setButtonCell(cmbProducto.getCellFactory().call(null));
+
+        // Listener para actualizar el campo de precio unitario (oculto)
+        cmbProducto.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && txtPrecioUnitario != null) {
+                // Esto es solo para mantener la coherencia si el campo fuera visible.
+                txtPrecioUnitario.setText(String.format("%.2f", newVal.getPrecio()));
+            } else if (txtPrecioUnitario != null) {
+                txtPrecioUnitario.clear();
+            }
+        });
+    }
+
 
     /**
      * Valida que el texto de un TextField sea solo numérico (con punto decimal opcional).
@@ -134,13 +182,18 @@ public class DetallePedidoController implements Initializable {
 
     /**
      * Maneja la eliminación de un detalle de la lista local.
-     * @param detalle El detalle a eliminar.
      */
     private void handleEliminarDetalle(DetallePedido detalle) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmar Eliminación");
         alert.setHeaderText("Eliminar Producto del Pedido");
-        alert.setContentText("¿Está seguro de que desea eliminar el producto: " + detalle.getDescripcion() + "?\n\n(Esto no se guardará en la base de datos hasta que finalice el pedido)");
+        String mensaje = "¿Está seguro de que desea eliminar el producto: " + detalle.getDescripcion() + "?";
+        if (detalle.getIdProducto() != 0) {
+            mensaje += "\nID Producto: " + detalle.getIdProducto();
+        }
+        mensaje += "\n\n(Esto no se guardará en la base de datos hasta que finalice el pedido)";
+
+        alert.setContentText(mensaje);
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -152,126 +205,128 @@ public class DetallePedidoController implements Initializable {
 
     /**
      * Carga los datos de un pedido específico en la interfaz.
-     * Este método es llamado desde VerPedidosController.
-     * @param pedido El objeto Pedido seleccionado.
      */
     public void setPedido(Pedido pedido) {
         this.pedidoActual = pedido;
 
-        // Cargar detalles del pedido desde el DAO (detalles preexistentes)
         List<DetallePedido> detallesExistentes = detalleDAO.getDetallesPorPedido(pedido.getIdPedido());
         detallesDelPedido.setAll(detallesExistentes);
         detallesTable.setItems(detallesDelPedido);
 
-        // Rellenar etiquetas
         lblIdPedido.setText(String.valueOf(pedido.getIdPedido()));
         lblCliente.setText(pedido.getNombreCliente());
         lblEstado.setText(pedido.getEstado());
         lblEmpleado.setText(pedido.getNombreEmpleado());
         lblInstrucciones.setText(pedido.getInstrucciones());
 
-        // Inicializar campos de pago/vuelto
         if (pedido.getMetodoPago() != null && !pedido.getMetodoPago().isEmpty()) {
             cmbMetodoPago.getSelectionModel().select(pedido.getMetodoPago());
         }
 
-        // Si el monto entregado es 0.0, se establece el texto vacío para que no aparezca "0.00"
         if (pedido.getMontoEntregado() > 0.0) {
             txtMontoEntregado.setText(String.format("%.2f", pedido.getMontoEntregado()));
         } else {
             txtMontoEntregado.setText("");
         }
 
-        // Recalcular el total basado en los detalles cargados y el monto total original de la BD
         recalcularTotalPedido();
         calcularVuelto();
     }
 
     /**
-     * Agrega un nuevo detalle de producto a la lista local (anotación manual).
+     * Agrega un Producto real a la lista local de detalles, usando su ID y precio.
+     */
+    public void agregarProducto(Producto producto, int cantidad) {
+        if (producto == null || cantidad <= 0) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Datos Inválidos", "Seleccione un producto y una cantidad válida.");
+            return;
+        }
+
+        DetallePedido nuevoDetalle = new DetallePedido();
+        nuevoDetalle.setIdPedido(pedidoActual.getIdPedido());
+        nuevoDetalle.setIdProducto(producto.getIdProducto());
+        nuevoDetalle.setDescripcion(producto.getNombreProducto());
+        nuevoDetalle.setCantidad(cantidad);
+        nuevoDetalle.setPrecioUnitario(producto.getPrecio());
+        nuevoDetalle.calcularSubtotal();
+
+        detallesDelPedido.add(nuevoDetalle);
+        recalcularTotalPedido();
+    }
+
+
+    /**
+     * **MÉTODO MODIFICADO (Ahora usa el ComboBox de Productos)**
+     * Agrega un nuevo detalle de producto a la lista local usando el producto seleccionado.
      */
     @FXML
     private void handleAgregarDetalle() {
+        Producto productoSeleccionado = cmbProducto.getSelectionModel().getSelectedItem();
+
         try {
-            String descripcion = txtDescripcion.getText().trim();
+            // Reemplaza comas por puntos y maneja el caso de cadena vacía (lo convierte a "0")
             String cantidadText = txtCantidad.getText().replaceAll(",", ".").trim();
-            String precioText = txtPrecioUnitario.getText().replaceAll(",", ".").trim();
+            int cantidad = Integer.parseInt(cantidadText.isEmpty() ? "0" : cantidadText);
 
-            int cantidad = Integer.parseInt(cantidadText);
-            double precioUnitario = Double.parseDouble(precioText);
-
-            // 1. Validación
-            if (descripcion.isEmpty() || cantidad <= 0 || precioUnitario < 0) {
-                mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Datos Inválidos", "Asegúrese de ingresar una descripción, una cantidad válida (>0) y un precio unitario válido (>=0).");
+            // 1. Validación de ComboBox y Cantidad
+            if (productoSeleccionado == null) {
+                mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Selección Inválida", "Por favor, seleccione un producto de la lista.");
                 return;
             }
 
-            // 2. Crear DetallePedido temporal
-            DetallePedido nuevoDetalle = new DetallePedido();
-            nuevoDetalle.setIdPedido(pedidoActual.getIdPedido());
-            nuevoDetalle.setDescripcion(descripcion);
-            nuevoDetalle.setCantidad(cantidad);
-            nuevoDetalle.setPrecioUnitario(precioUnitario);
-            nuevoDetalle.calcularSubtotal();
+            if (cantidad <= 0) {
+                mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Cantidad Inválida", "La cantidad debe ser mayor a 0.");
+                return;
+            }
 
-            // 3. Agregar a la lista local
-            detallesDelPedido.add(nuevoDetalle);
+            // 2. Crear DetallePedido
+            agregarProducto(productoSeleccionado, cantidad);
 
-            // 4. Limpiar campos y recalcular total
-            txtDescripcion.clear();
+            // 3. Limpiar campos
+            cmbProducto.getSelectionModel().clearSelection();
             txtCantidad.clear();
-            txtPrecioUnitario.clear();
-            recalcularTotalPedido();
 
         } catch (NumberFormatException e) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error de Entrada", "Formato Inválido", "Por favor, ingrese valores numéricos válidos en Cantidad y Precio Unitario.");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error de Entrada", "Formato Inválido", "Por favor, ingrese un valor numérico válido en Cantidad.");
         }
     }
 
     /**
      * Recalcula el Monto Total del Pedido sumando todos los subtotales de la lista local.
-     * Actualiza el modelo Pedido y la etiqueta de la UI.
      */
     private void recalcularTotalPedido() {
         double nuevoTotal = detallesDelPedido.stream()
                 .mapToDouble(DetallePedido::getSubtotal)
                 .sum();
 
-        // Actualizar el modelo del pedido con el nuevo monto total
         pedidoActual.setMontoTotal(nuevoTotal);
 
-        // --- CORRECCIÓN CLAVE AQUÍ ---
-        // Actualizar la UI del total: si es 0, mostrar solo '$ ', si no, formatear.
         if (nuevoTotal == 0.0) {
             lblTotalPagar.setText("$ ");
         } else {
             lblTotalPagar.setText(String.format("$ %.2f", nuevoTotal));
         }
-        // --- FIN CORRECCIÓN ---
 
         calcularVuelto();
     }
 
     /**
-     * Calcula el vuelto al cambiar el monto entregado y valida que sea numérico.
+     * Calcula el vuelto al cambiar el monto entregado.
      */
     private void calcularVuelto() {
         double montoTotal = pedidoActual.getMontoTotal();
         double montoEntregado = 0.0;
         try {
-            // Manejar comas y vacíos
             String cleanText = txtMontoEntregado.getText().replaceAll(",", ".").trim();
             if (!cleanText.isEmpty()) {
                 montoEntregado = Double.parseDouble(cleanText);
             }
         } catch (NumberFormatException e) {
-            // Se asume que el setupNumericValidation() maneja la mayoría de los errores.
+            // El validador ya debería haber capturado esto
         }
 
         double vuelto = montoEntregado - montoTotal;
 
-        // Si el monto total es 0 y el monto entregado es 0 (o la caja de texto está vacía),
-        // mostrar solo el signo de dinero.
         if (montoTotal == 0.0 && montoEntregado == 0.0) {
             lblVuelto.setText("$ ");
         } else {
@@ -337,9 +392,7 @@ public class DetallePedidoController implements Initializable {
         // El monto total ya fue actualizado por recalcularTotalPedido()
 
         // 3. Guardar en Base de Datos
-        // Esta es la parte crítica: reemplazar todos los detalles
         if (detalleDAO.reemplazarDetalles(pedidoActual.getIdPedido(), detallesDelPedido)) {
-            // b) Modificar el Pedido (estado, montos, pago)
             if (pedidoDAO.modificarPedido(pedidoActual)) {
                 mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Pedido Finalizado", "El pedido N° " + pedidoActual.getIdPedido() + " ha sido marcado como 'Retirado' y los detalles actualizados.");
                 volverAlMenuPedidos();
@@ -352,7 +405,7 @@ public class DetallePedidoController implements Initializable {
     }
 
     /**
-     * Genera el ticket (comprobante) del pedido actual en formato PDF, usando la lista local de detalles.
+     * Genera el ticket (comprobante) del pedido actual en formato PDF.
      */
     @FXML
     private void generarTicketPDF() {
@@ -361,7 +414,6 @@ public class DetallePedidoController implements Initializable {
             return;
         }
 
-        // Abrir diálogo de guardado
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Guardar Comprobante de Pedido");
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Archivos PDF (*.pdf)", "*.pdf");
@@ -375,7 +427,6 @@ public class DetallePedidoController implements Initializable {
         if (file != null) {
             String filePath = file.getAbsolutePath();
             try {
-                // Se usa la lista local de detalles, que incluye las anotaciones manuales
                 TicketPDFUtil.generarTicket(
                         pedidoActual,
                         detallesDelPedido,
@@ -401,7 +452,6 @@ public class DetallePedidoController implements Initializable {
      */
     @FXML
     private void volverAlMenuPedidos() {
-        // Cierra la ventana modal actual
         Stage stage = (Stage) lblIdPedido.getScene().getWindow();
         stage.close();
     }
@@ -418,7 +468,7 @@ public class DetallePedidoController implements Initializable {
     }
 
     /**
-     * Clase auxiliar para formatear la columna de precios como moneda, ocultando el '0.00' si el valor es 0.
+     * Clase auxiliar para formatear la columna de precios como moneda.
      */
     private static class CurrencyTableCell<S> extends TableCell<S, Double> {
         @Override
@@ -427,7 +477,6 @@ public class DetallePedidoController implements Initializable {
             if (empty || price == null) {
                 setText(null);
             } else {
-                // Si el precio es 0.0, lo muestra como "$ ", sino lo formatea con dos decimales.
                 if (price == 0.0) {
                     setText("$ ");
                 } else {
