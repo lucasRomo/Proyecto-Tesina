@@ -10,6 +10,7 @@ public class Usuario {
     private int idDireccion;
     private int idUsuario;
     private int idTipoUsuario;
+    private String estado;
 
     // Constructor para inicio de sesion (sin idPersona)
     public Usuario(String usuario, String contrasenia) {
@@ -48,8 +49,17 @@ public class Usuario {
         this.idTipoUsuario = idTipoUsuario;
     }
 
-    public Usuario() {
+    public Usuario(int idPersona, String usuario, String contrasenia) {
+        this.idPersona = idPersona;
+        this.usuario = usuario;
+        this.contrasena = contrasenia;
+        // El estado se puede inicializar a null o se establecerá con el setter
+        this.estado = null;
+    }
 
+
+
+    public Usuario() {
     }
 
     public int getIdUsuario() {
@@ -94,4 +104,13 @@ public class Usuario {
     public void setIdTipoUsuario(int idTipoUsuario) {
         this.idTipoUsuario = idTipoUsuario;
     }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
 }

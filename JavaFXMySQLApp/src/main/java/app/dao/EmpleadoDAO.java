@@ -7,9 +7,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.sql.DriverManager.getConnection;
 
 public class EmpleadoDAO {
     private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
@@ -100,4 +101,38 @@ public class EmpleadoDAO {
         }
         return empleado;
     }
+
+    private Connection getConnection() throws SQLException {
+        // Implementación para obtener tu conexión a la DB (ej: return Conexion.obtenerConexion();)
+        throw new UnsupportedOperationException("Método de conexión no implementado.");
+        // Reemplaza esta línea con tu lógica real de conexión
+    }
+
+
+    private static final String UPDATE_EMPLEADO_ESTADO =
+            "UPDATE usuario SET estado = ? WHERE id_usuario = ?";
+
+
+    public boolean modificar(Empleado usuario) {
+        boolean rowUpdated = false;
+        // Intenta obtener la conexión y preparar la sentencia
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(UPDATE_EMPLEADO_ESTADO)) {
+
+            // 1. Establece el nuevo estado
+            ps.setString(1, usuario.getEstado());
+            // 2. Establece el ID del usuario a modificar
+            ps.setInt(2, usuario.getIdEmpleado());
+
+            // 3. Ejecuta la actualización y verifica si se afectó alguna fila
+            rowUpdated = ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error al modificar el estado del empleado en la DB.");
+            e.printStackTrace();
+            rowUpdated = false; // Asegura que retorna false ante cualquier error
+        }
+        return rowUpdated;
+    }
+
 }

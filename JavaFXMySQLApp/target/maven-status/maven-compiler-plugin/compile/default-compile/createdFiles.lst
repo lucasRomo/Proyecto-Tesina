@@ -10,10 +10,10 @@ app\controller\CrearPedidoController$1.class
 app\model\TipoDocumento.class
 app\model\Usuario.class
 app\model\Empleado.class
-app\model\HistorialActividadTableView.class
 app\controller\VerPedidosController.class
 app\controller\CrearPedidoController$4.class
 app\controller\MenuController.class
+app\controller\HistorialActividadController$1.class
 app\controller\ComprobantesController$1.class
 app\controller\HistorialActividadController.class
 app\controller\FacturasAdminTableView.class
@@ -26,6 +26,7 @@ app\controller\FacturasController.class
 app\controller\UsuariosEmpleadoController$2.class
 app\controller\UsuariosEmpleadoController.class
 app\controller\CrearPedidoController$2.class
+app\controller\HistorialActividadTableView.class
 app\controller\AsignarPedidoController.class
 app\MainApp.class
 app\controller\ComprobantesController.class

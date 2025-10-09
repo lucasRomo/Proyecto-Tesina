@@ -52,6 +52,14 @@ public class Persona {
         this.idTipoPersona.set(0); // Inicializar idTipoPersona por defecto
     }
 
+    public Persona() {}
+
+    public Persona(int idPersona, String nombre, String apellido) {
+        this.idPersona.set(idPersona);
+        this.nombre.set(nombre);
+        this.apellido.set(apellido);
+    }
+
     // Getters y Setters con sus respectivos métodos Property() (EXISTENTES)
     public int getIdPersona() { return idPersona.get(); }
     public void setIdPersona(int idPersona) { this.idPersona.set(idPersona); }

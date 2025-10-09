@@ -1,6 +1,6 @@
 package app.dao;
 
-import app.model.HistorialActividadTableView;
+import app.controller.HistorialActividadTableView;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -27,12 +27,7 @@ public class HistorialActividadDAO {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
-    // -------------------------------------------------------------------------
-    // --- CONSULTAS SQL
-    // -------------------------------------------------------------------------
-
     // Consulta para obtener el historial completo.
-    // Realiza un JOIN con Usuario y Persona para mostrar el nombre completo.
     private static final String SELECT_ALL_REGISTROS =
             "SELECT ra.id_RegAct, ra.fecha_modificacion, ra.tabla_afectada, " +
                     "ra.columna_afectada, ra.id_registro_modificado, ra.dato_previo_modificacion, ra.dato_modificado, " +
@@ -43,7 +38,6 @@ public class HistorialActividadDAO {
                     "ORDER BY ra.fecha_modificacion DESC";
 
     // Consulta para insertar un nuevo registro de actividad.
-    // CORREGIDO: Se elimina 'id_RegAct' (es autoincremental) y se añade 'fecha_modificacion'.
     private static final String INSERT_REGISTRO =
             "INSERT INTO RegistroActividad (id_usuario_responsable, fecha_modificacion, tabla_afectada, " +
                     "id_registro_modificado, columna_afectada, dato_previo_modificacion, dato_modificado) " +
@@ -55,47 +49,44 @@ public class HistorialActividadDAO {
 
     /**
      * Inserta un nuevo registro de actividad en la tabla RegistroActividad.
-     * Se debe llamar a este método inmediatamente después de un INSERT/UPDATE exitoso.
-     * * @param idUsuario ID del usuario que realizó la acción.
-     * @param tablaAfectada Nombre de la tabla modificada (ej: "Usuario").
-     * @param columnaAfectada Nombre de la columna modificada (ej: "nombre").
-     * @param idRegistroModificado ID del registro dentro de la tabla afectada.
-     * @param datoPrevio Valor anterior del campo.
-     * @param datoNuevo Valor nuevo del campo.
-     * @return true si la inserción fue exitosa.
      */
-    public boolean insertarRegistro(int idUsuario, String tablaAfectada, String columnaAfectada,
-                                    int idRegistroModificado, String datoPrevio, String datoNuevo) {
+    public void insertarRegistro(
+            int idUsuarioResponsable,
+            String tablaAfectada,
+            String columnaAfectada,
+            int idRegistroModificado,
+            String datoPrevio,
+            String datoModificado) {
 
+        // El try-with-resources asegura que el PreparedStatement se cierre automáticamente
         try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(INSERT_REGISTRO)) {
+             PreparedStatement pstmt = con.prepareStatement(INSERT_REGISTRO)) {
 
-            // Obtener la fecha y hora actual para el registro
-            Timestamp now = new Timestamp(System.currentTimeMillis());
+            pstmt.setInt(1, idUsuarioResponsable);
+            pstmt.setString(2, tablaAfectada);
+            pstmt.setString(3, columnaAfectada);
+            pstmt.setInt(4, idRegistroModificado);
+            pstmt.setString(5, datoPrevio);
+            pstmt.setString(6, datoModificado);
 
-            // Mapeo de parámetros CORREGIDO (ahora incluye la fecha)
-            ps.setInt(1, idUsuario);
-            ps.setTimestamp(2, now); // Fecha de la modificación
-            ps.setString(3, tablaAfectada);
-            ps.setInt(4, idRegistroModificado);
-            ps.setString(5, columnaAfectada);
-            ps.setString(6, datoPrevio);
-            ps.setString(7, datoNuevo);
+            int filasAfectadas = pstmt.executeUpdate();
 
-            int filasAfectadas = ps.executeUpdate();
-            return filasAfectadas > 0;
+            if (filasAfectadas > 0) {
+                System.out.println("✅ Éxito: Registro de actividad insertado correctamente.");
+            } else {
+                System.err.println("❌ Advertencia: La inserción del registro de actividad no afectó ninguna fila.");
+            }
 
         } catch (SQLException e) {
-            System.err.println("Error al insertar registro de actividad: " + e.getMessage());
+            // MUY IMPORTANTE: Imprimir la excepción completa si la inserción falla
+            System.err.println("❌ ERROR FATAL al insertar registro de actividad en la BD: " + e.getMessage());
             e.printStackTrace();
-            return false;
+            // Aquí puedes ver si hay un problema de clave foránea, tipo de dato, etc.
         }
     }
 
     /**
      * Obtiene todos los registros de actividad para la tabla de visualización.
-     * Incluye el nombre completo del usuario mediante un JOIN.
-     * @return Una lista de objetos HistorialActividadTableView.
      */
     public List<HistorialActividadTableView> obtenerTodosLosRegistros() {
         List<HistorialActividadTableView> registros = new ArrayList<>();
@@ -105,14 +96,12 @@ public class HistorialActividadDAO {
              ResultSet rs = stmt.executeQuery(SELECT_ALL_REGISTROS)) {
 
             while (rs.next()) {
-                // Combina el nombre y el apellido para el campo del modelo
                 String nombreCompleto = rs.getString("nombre") + " " + rs.getString("apellido");
 
-                // Mapeo de los resultados al modelo HistorialActividadTableView
-                HistorialActividadTableView registro = new HistorialActividadTableView( // Instancia el nuevo modelo
+                HistorialActividadTableView registro = new HistorialActividadTableView(
                         rs.getInt("id_RegAct"),
                         rs.getTimestamp("fecha_modificacion"),
-                        nombreCompleto, // Nombre completo del empleado
+                        nombreCompleto,
                         rs.getString("tabla_afectada"),
                         rs.getString("columna_afectada"),
                         rs.getInt("id_registro_modificado"),

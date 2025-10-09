@@ -4,7 +4,6 @@ import app.controller.UsuarioEmpleadoTableView;
 import app.model.Usuario;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import app.dao.UsuarioDAO;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -39,7 +38,8 @@ public class UsuarioDAO {
 
     public ObservableList<UsuarioEmpleadoTableView> obtenerUsuariosEmpleados() throws SQLException {
         ObservableList<UsuarioEmpleadoTableView> listaUsuarios = FXCollections.observableArrayList();
-        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.nombre, p.apellido, e.salario, e.estado, p.id_persona, p.id_Direccion " +
+        // Se añade p.numero_documento a la consulta SELECT (ya corregido en el paso anterior)
+        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.nombre, p.apellido, p.numero_documento, e.salario, e.estado, p.id_persona, p.id_Direccion " +
                 "FROM Usuario u " +
                 "JOIN Empleado e ON u.id_persona = e.id_persona " +
                 "JOIN Persona p ON e.id_persona = p.id_persona";
@@ -54,12 +54,14 @@ public class UsuarioDAO {
                 String contrasena = rs.getString("contrasena");
                 String nombre = rs.getString("nombre");
                 String apellido = rs.getString("apellido");
+                String numeroDocumento = rs.getString("numero_documento");
                 double salario = rs.getDouble("salario");
                 String estado = rs.getString("estado");
                 int idPersona = rs.getInt("id_persona");
                 int idDireccion = rs.getInt("id_Direccion");
 
-                UsuarioEmpleadoTableView usuarioEmpleado = new UsuarioEmpleadoTableView(idUsuario, usuario, contrasena, nombre, apellido, salario, estado, idPersona, idDireccion);
+                // NOTA: Asegúrate de que UsuarioEmpleadoTableView tenga el constructor actualizado.
+                UsuarioEmpleadoTableView usuarioEmpleado = new UsuarioEmpleadoTableView(idUsuario, usuario, contrasena, nombre, apellido, numeroDocumento, salario, estado, idPersona, idDireccion);
                 listaUsuarios.add(usuarioEmpleado);
             }
         }
@@ -108,6 +110,12 @@ public class UsuarioDAO {
         return false;
     }
 
+    /**
+     * Modifica los datos principales del Usuario, Persona y Empleado asociado
+     * dentro de una sola transacción. (Mantiene la funcionalidad transaccional completa)
+     * * @param usuario El objeto UsuarioEmpleadoTableView que contiene los datos a modificar.
+     * @return true si todas las modificaciones fueron exitosas.
+     */
     public boolean modificarUsuariosEmpleados(UsuarioEmpleadoTableView usuario) {
         // La lógica para la actualización de múltiples tablas debe ser una transacción
         String sqlUpdateUsuario = "UPDATE Usuario SET nombre_usuario = ?, contrasena = ? WHERE id_usuario = ?";
@@ -144,11 +152,39 @@ public class UsuarioDAO {
             conn.commit(); // Confirma la transacción
             return true;
         } catch (SQLException e) {
-            System.err.println("Error al modificar el usuario en la base de datos.");
+            System.err.println("Error al modificar el usuario en la base de datos (Transacción completa).");
             e.printStackTrace();
             return false;
         }
     }
+
+    // --- CORRECCIÓN CLAVE: Método reintroducido para resolver el error 'cannot find symbol' ---
+    // Este método solo actualiza la tabla Usuario (username y contraseña).
+    private static final String UPDATE_USUARIO_SOLO =
+            "UPDATE Usuario SET nombre_usuario = ?, contrasena = ? WHERE id_usuario = ?";
+
+    public boolean modificarUsuariosEmpleados(Usuario usuarioView) {
+        boolean exito = false;
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(UPDATE_USUARIO_SOLO)) {
+
+            ps.setString(1, usuarioView.getUsuario());
+            ps.setString(2, usuarioView.getContrasenia());
+            // No se incluye el campo 'estado' aquí.
+            ps.setInt(3, usuarioView.getIdUsuario());
+
+            if (ps.executeUpdate() > 0) {
+                exito = true;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al modificar datos del Usuario (simple): " + e.getMessage());
+            e.printStackTrace();
+        }
+        return exito;
+    }
+    // --------------------------------------------------------------------------------------------
+
 
     public String obtenerContrasenaPorUsuario(String nombreUsuario) {
         String contrasena = null;

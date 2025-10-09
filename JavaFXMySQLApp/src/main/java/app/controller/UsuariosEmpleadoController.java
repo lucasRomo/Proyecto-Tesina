@@ -1,10 +1,15 @@
 package app.controller;
 
+
+import app.dao.EmpleadoDAO;
+import app.model.Empleado;
 import app.dao.DireccionDAO;
 import app.model.Direccion;
 import app.dao.UsuarioDAO;
 import app.dao.PersonaDAO;
+import app.dao.HistorialActividadDAO;
 import app.model.Usuario;
+import app.model.Persona;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -46,7 +51,9 @@ public class UsuariosEmpleadoController {
 
     private UsuarioDAO usuarioDAO;
     private PersonaDAO personaDAO;
+    private EmpleadoDAO empleadoDAO;
     private DireccionDAO direccionDAO;
+    private HistorialActividadDAO historialDAO;
     private ObservableList<UsuarioEmpleadoTableView> listaUsuariosEmpleados;
     private FilteredList<UsuarioEmpleadoTableView> filteredData;
 
@@ -54,7 +61,9 @@ public class UsuariosEmpleadoController {
     private void initialize() {
         this.usuarioDAO = new UsuarioDAO();
         this.personaDAO = new PersonaDAO();
+        this.empleadoDAO = new EmpleadoDAO();
         this.direccionDAO = new DireccionDAO();
+        this.historialDAO = new HistorialActividadDAO();
 
         // Carga el archivo CSS
         usuariosEditableView.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
@@ -331,28 +340,150 @@ public class UsuariosEmpleadoController {
 
                 if (loggedInUserPassword != null && password.trim().equals(loggedInUserPassword.trim())) {
                     try {
-                        // 1. Obtener la información ORIGINAL del usuario ANTES de la modificación
-                        // Esto se hace por ID, ya que el selectedUsuario puede tener datos editados
+                        // 1. OBTENER DATOS ORIGINALES DE USUARIO Y PERSONA ANTES DEL CAMBIO
                         Usuario originalUser = usuarioDAO.obtenerUsuarioPorId(selectedUsuario.getIdUsuario());
+                        Persona originalPersona = personaDAO.getPersonaById(selectedUsuario.getIdPersona());
 
-                        String originalContrasena = originalUser.getContrasenia(); // Contraseña original
-                        String originalUsuarioNombre = originalUser.getUsuario(); // Nombre de usuario original
+                        // OBTENER EMPLEADO ORIGINAL (PUEDE SER NULL)
+                        Empleado originalEmpleado = empleadoDAO.getEmpleadoById(selectedUsuario.getIdPersona());
 
-                        // 2. Realiza la modificación en la base de datos
-                        boolean exito = usuarioDAO.modificarUsuariosEmpleados(selectedUsuario);
+                        if (originalUser == null || originalPersona == null) {
+                            mostrarAlerta("Error", "No se encontraron los datos originales para el usuario (Usuario o Persona).", Alert.AlertType.ERROR);
+                            return;
+                        }
 
-                        if (exito) {
-                            mostrarAlerta("Éxito", "Usuario modificado exitosamente.", Alert.AlertType.INFORMATION);
+                        // Variables de control y IDs
+                        String originalContrasena = originalUser.getContrasenia();
+                        String originalUsuarioNombre = originalUser.getUsuario();
+                        int idUsuarioResponsable = SessionManager.getInstance().getLoggedInUserId();
+                        int idRegistroAfectadoPersona = selectedUsuario.getIdPersona();
 
-                            // 3. Comprobar si el usuario modificado es el que está logueado Y si cambió usuario O contraseña
+                        // 2. Realizar las modificaciones en la base de datos
+
+                        // Crear objetos DTO con los datos modificados del TableView
+                        // CORRECCIÓN: Se quita el estado del constructor y se usa el setter.
+                        Usuario userToModify = new Usuario(selectedUsuario.getIdUsuario(), selectedUsuario.getUsuario(), selectedUsuario.getContrasena());
+                        userToModify.setEstado(selectedUsuario.getEstado());
+                        Persona personaToModify = new Persona(selectedUsuario.getIdPersona(), selectedUsuario.getNombre(), selectedUsuario.getApellido());
+
+                        personaToModify.setNumeroDocumento(originalPersona.getNumeroDocumento());
+                        personaToModify.setIdTipoDocumento(originalPersona.getIdTipoDocumento());
+                        personaToModify.setIdDireccion(originalPersona.getIdDireccion());
+
+                        // 2.1. Actualizar Usuario y Persona (siempre existen)
+                        boolean exitoUsuario = usuarioDAO.modificarUsuariosEmpleados(userToModify);
+                        boolean exitoPersona = personaDAO.modificarPersona(personaToModify);
+
+                        // 2.2. Actualizar Empleado (solo si existe el registro original)
+                        boolean exitoEmpleado = true; // Se asume éxito si no hay registro de empleado
+
+                        // Solo si es un empleado, intentamos modificar su salario
+                        if (originalEmpleado != null) {
+                            Empleado empleadoToModify = new Empleado(selectedUsuario.getIdPersona(), selectedUsuario.getSalario());
+                            exitoEmpleado = empleadoDAO.modificar(empleadoToModify);
+                        }
+
+                        boolean exitoGeneral = exitoUsuario && exitoPersona && exitoEmpleado;
+
+                        if (exitoGeneral) {
+                            // 3. REGISTRAR CAMBIOS EN EL HISTORIAL (Lógica CLAVE)
+
+                            // 3.1. Comparación de datos de USUARIO (nombre de usuario)
+                            if (!selectedUsuario.getUsuario().equals(originalUsuarioNombre)) {
+                                historialDAO.insertarRegistro(
+                                        idUsuarioResponsable,
+                                        "Usuario",
+                                        "usuario",
+                                        selectedUsuario.getIdUsuario(),
+                                        originalUsuarioNombre,
+                                        selectedUsuario.getUsuario()
+                                );
+                            }
+
+                            // 3.2. Comparación de datos de USUARIO (estado)
+                            if (!selectedUsuario.getEstado().equals(originalUser.getEstado())) {
+                                historialDAO.insertarRegistro(
+                                        idUsuarioResponsable,
+                                        "Usuario",
+                                        "estado",
+                                        selectedUsuario.getIdUsuario(),
+                                        originalUser.getEstado(),
+                                        selectedUsuario.getEstado()
+                                );
+                            }
+
+                            // 3.3. Comparación de datos de USUARIO (contraseña)
+                            if (!selectedUsuario.getContrasena().equals(originalContrasena)) {
+                                historialDAO.insertarRegistro(
+                                        idUsuarioResponsable,
+                                        "Usuario",
+                                        "contrasena",
+                                        selectedUsuario.getIdUsuario(),
+                                        "***(Oculto)***",
+                                        "***(Oculto)***"
+                                );
+                            }
+
+                            // 3.4. Comparación de datos de PERSONA (nombre, apellido)
+
+                            // Nombre
+                            if (!String.valueOf(selectedUsuario.getNombre()).equals(String.valueOf(originalPersona.getNombre()))) {
+                                historialDAO.insertarRegistro(
+                                        idUsuarioResponsable,
+                                        "Persona",
+                                        "nombre",
+                                        idRegistroAfectadoPersona,
+                                        originalPersona.getNombre(),
+                                        selectedUsuario.getNombre()
+                                );
+                            }
+
+                            // Apellido
+                            if (!String.valueOf(selectedUsuario.getApellido()).equals(String.valueOf(originalPersona.getApellido()))) {
+                                historialDAO.insertarRegistro(
+                                        idUsuarioResponsable,
+                                        "Persona",
+                                        "apellido",
+                                        idRegistroAfectadoPersona,
+                                        originalPersona.getApellido(),
+                                        selectedUsuario.getApellido()
+                                );
+                            }
+
+                            // 3.5. Comparación de datos de EMPLEADO (salario) - Solo si originalEmpleado NO es null
+                            if (originalEmpleado != null) {
+                                double originalSalario = originalEmpleado.getSalario();
+                                int idRegistroAfectadoEmpleado = originalEmpleado.getIdEmpleado(); // Se usa el ID de Empleado
+
+                                if (Double.compare(selectedUsuario.getSalario(), originalSalario) != 0) {
+                                    historialDAO.insertarRegistro(
+                                            idUsuarioResponsable,
+                                            "Empleado",
+                                            "salario",
+                                            idRegistroAfectadoEmpleado,
+                                            String.valueOf(originalSalario),
+                                            String.valueOf(selectedUsuario.getSalario())
+                                    );
+                                }
+                            }
+
+                            // 4. Muestra de éxito y redirección
+                            mostrarAlerta("Éxito", "Usuario modificado exitosamente. Los cambios han sido registrados.", Alert.AlertType.INFORMATION);
+
+                            // Recargar datos para reflejar los cambios en la tabla y en el historial (si se actualiza)
+                            try {
+                                cargarDatosyConfigurarFiltros();
+                            } catch (SQLException e) {
+                                System.err.println("Error al recargar datos después de la modificación: " + e.getMessage());
+                                e.printStackTrace();
+                            }
+
+                            // Comprobar si el usuario modificado es el que está logueado Y si cambió usuario O contraseña
                             boolean esUsuarioLogueado = selectedUsuario.getIdUsuario() == loggedInUserId;
-
-                            // Compara el nuevo valor de la tabla con el valor original de la base de datos
                             boolean cambioContrasena = !selectedUsuario.getContrasena().equals(originalContrasena);
                             boolean cambioNombreUsuario = !selectedUsuario.getUsuario().equals(originalUsuarioNombre);
 
                             if (esUsuarioLogueado && (cambioContrasena || cambioNombreUsuario)) {
-
                                 // Cerrar la sesión del usuario actual
                                 SessionManager.getInstance().clearSession();
 
@@ -364,12 +495,13 @@ public class UsuariosEmpleadoController {
                                 redireccionarAInicioSesion(event);
                             }
                         } else {
-                            mostrarAlerta("Error", "No se pudo modificar el usuario en la base de datos.", Alert.AlertType.ERROR);
+                            String mensajeErrorDetallado = "No se pudo modificar el usuario en la base de datos. Estado de las actualizaciones: \nUsuario: " + exitoUsuario + "\nPersona: " + exitoPersona + (originalEmpleado != null ? "\nEmpleado: " + exitoEmpleado : "\nEmpleado: No aplicable");
+                            mostrarAlerta("Error", mensajeErrorDetallado, Alert.AlertType.ERROR);
                         }
 
                     } catch (Exception e) {
                         e.printStackTrace();
-                        mostrarAlerta("Error", "Ocurrió un error al intentar modificar el usuario. " + e.getMessage(), Alert.AlertType.ERROR);
+                        mostrarAlerta("Error", "Ocurrió un error al intentar modificar el usuario. Verifique la consola para detalles. Mensaje: " + e.getMessage(), Alert.AlertType.ERROR);
                     }
                 } else {
                     mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
@@ -413,6 +545,23 @@ public class UsuariosEmpleadoController {
         result.ifPresent(password -> {
             String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword();
             if (password.trim().equals(loggedInUserPassword.trim())) {
+
+                // --- Lógica de Historial para Cambio de Estado ---
+                int idUsuarioResponsable = SessionManager.getInstance().getLoggedInUserId();
+
+                if (!newVal.equals(oldVal)) {
+                    // El estado es un campo de la tabla Usuario
+                    historialDAO.insertarRegistro(
+                            idUsuarioResponsable,
+                            "Usuario",
+                            "estado",
+                            usuario.getIdUsuario(),
+                            oldVal,
+                            newVal
+                    );
+                }
+                // --- Fin Lógica de Historial ---
+
                 usuario.setEstado(newVal);
                 boolean exito = usuarioDAO.modificarUsuariosEmpleados(usuario);
                 if (exito) {
@@ -435,7 +584,6 @@ public class UsuariosEmpleadoController {
             usuariosEditableView.refresh();
         }
     }
-
 
 
 

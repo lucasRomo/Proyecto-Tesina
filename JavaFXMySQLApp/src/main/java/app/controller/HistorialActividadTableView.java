@@ -1,111 +1,93 @@
-package app.model;
+package app.controller;
 
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.IntegerProperty;
 
 import java.sql.Timestamp;
 
 /**
- * Clase modelo para representar una fila en la TableView del historial de actividad.
- * Contiene los datos del registro de la base de datos y el nombre del usuario que lo modificó.
+ * Modelo de datos para la visualización del Historial de Actividad en un JavaFX TableView.
+ * Utiliza propiedades de JavaFX para permitir la vinculación (binding) reactiva a la tabla.
  */
 public class HistorialActividadTableView {
 
-    // Propiedades de JavaFX para enlace de datos (binding)
-    private final IntegerProperty idRegAct;
-    private final ObjectProperty<Timestamp> fechaModificacion;
-    private final StringProperty nombreUsuario;
-    private final StringProperty tablaAfectada;
-    private final StringProperty columnaAfectada;
-    private final IntegerProperty idRegistroModificado;
-    private final StringProperty datoPrevioModificacion;
-    private final StringProperty datoModificado;
+    // 1. ID del Registro de Actividad
+    private final IntegerProperty idRegAct = new SimpleIntegerProperty();
+    // 2. Fecha y hora de la modificación
+    private final ObjectProperty<Timestamp> fechaModificacion = new SimpleObjectProperty<>();
+    // 3. Nombre completo del usuario responsable (resultado del JOIN)
+    private final StringProperty nombreUsuario = new SimpleStringProperty();
+    // 4. Tabla que fue afectada
+    private final StringProperty tablaAfectada = new SimpleStringProperty();
+    // 5. Columna dentro de la tabla que fue modificada
+    private final StringProperty columnaAfectada = new SimpleStringProperty();
+    // 6. ID del registro modificado dentro de la tabla afectada
+    private final IntegerProperty idRegistroModificado = new SimpleIntegerProperty();
+    // 7. Dato previo a la modificación
+    private final StringProperty datoPrevio = new SimpleStringProperty();
+    // 8. Nuevo dato (después de la modificación)
+    private final StringProperty datoModificado = new SimpleStringProperty();
 
-
+    /**
+     * Constructor utilizado por HistorialActividadDAO.obtenerTodosLosRegistros().
+     */
     public HistorialActividadTableView(int idRegAct, Timestamp fechaModificacion, String nombreUsuario,
                                        String tablaAfectada, String columnaAfectada, int idRegistroModificado,
-                                       String datoPrevioModificacion, String datoModificado) {
-
-        this.idRegAct = new SimpleIntegerProperty(idRegAct);
-        this.fechaModificacion = new SimpleObjectProperty<>(fechaModificacion);
-        this.nombreUsuario = new SimpleStringProperty(nombreUsuario);
-        this.tablaAfectada = new SimpleStringProperty(tablaAfectada);
-        this.columnaAfectada = new SimpleStringProperty(columnaAfectada);
-        this.idRegistroModificado = new SimpleIntegerProperty(idRegistroModificado);
-        this.datoPrevioModificacion = new SimpleStringProperty(datoPrevioModificacion);
-        this.datoModificado = new SimpleStringProperty(datoModificado);
+                                       String datoPrevio, String datoModificado) {
+        this.idRegAct.set(idRegAct);
+        this.fechaModificacion.set(fechaModificacion);
+        this.nombreUsuario.set(nombreUsuario);
+        this.tablaAfectada.set(tablaAfectada);
+        this.columnaAfectada.set(columnaAfectada);
+        this.idRegistroModificado.set(idRegistroModificado);
+        this.datoPrevio.set(datoPrevio);
+        this.datoModificado.set(datoModificado);
     }
 
-    // --- Getters para obtener valores directos ---
+    // --- Getters de Propiedades (Usados por PropertyValueFactory) ---
 
-    public int getIdRegAct() {
-        return idRegAct.get();
-    }
-
-    public Timestamp getFechaModificacion() {
-        return fechaModificacion.get();
-    }
-
-    public String getNombreUsuario() {
-        return nombreUsuario.get();
-    }
-
-    public String getTablaAfectada() {
-        return tablaAfectada.get();
-    }
-
-    public String getColumnaAfectada() {
-        return columnaAfectada.get();
-    }
-
-    public int getIdRegistroModificado() {
-        return idRegistroModificado.get();
-    }
-
-    public String getDatoPrevioModificacion() {
-        return datoPrevioModificacion.get();
-    }
-
-    public String getDatoModificado() {
-        return datoModificado.get();
-    }
-
-    // --- Property Getters para enlace de datos (Binding) en JavaFX ---
-    // (Estos son los métodos que usa la TableView para enlazar las columnas)
-
-    public IntegerProperty idRegActProperty() {
-        return idRegAct;
-    }
-
+    // La TableColumn del FXML usa 'fechaModificacion'
     public ObjectProperty<Timestamp> fechaModificacionProperty() {
         return fechaModificacion;
     }
 
+    // La TableColumn del FXML usa 'nombreUsuario'
     public StringProperty nombreUsuarioProperty() {
         return nombreUsuario;
     }
 
+    // La TableColumn del FXML usa 'tablaAfectada'
     public StringProperty tablaAfectadaProperty() {
         return tablaAfectada;
     }
 
+    // La TableColumn del FXML usa 'columnaAfectada'
     public StringProperty columnaAfectadaProperty() {
         return columnaAfectada;
     }
 
+    // La TableColumn del FXML usa 'idRegistroModificado'
     public IntegerProperty idRegistroModificadoProperty() {
         return idRegistroModificado;
     }
 
-    public StringProperty datoPrevioModificacionProperty() {
-        return datoPrevioModificacion;
+    // La TableColumn del FXML usa 'datoPrevio'
+    public StringProperty datoPrevioProperty() {
+        return datoPrevio;
     }
 
+    // La TableColumn del FXML usa 'datoModificado'
     public StringProperty datoModificadoProperty() {
         return datoModificado;
     }
+
+    // Getters Simples (usados por CellFactory y otros)
+    public Timestamp getFechaModificacion() {
+        return fechaModificacion.get();
+    }
+    // ... otros getters simples
 }
