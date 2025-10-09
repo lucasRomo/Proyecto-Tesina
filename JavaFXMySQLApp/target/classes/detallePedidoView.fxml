@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+
+<?import javafx.scene.control.Label?>
+
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.text.Font?>
+
+<?import javafx.scene.control.TableView?>
+
+<?import javafx.scene.control.TableColumn?>
+
+<?import javafx.scene.control.Button?>
+
+<?import javafx.scene.layout.HBox?>
+
+<?import javafx.scene.control.TextField?>
+
+<?import javafx.scene.control.ComboBox?>
+
+<?import javafx.scene.control.Separator?>
+
+<?import javafx.scene.layout.GridPane?>
+
+<?import javafx.scene.control.TextArea?>
+
+<?import javafx.scene.layout.ColumnConstraints?>
+
+<?import javafx.scene.layout.Priority?>
+
+<VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.DetallePedidoController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <Label text="Detalle y Finalización de Pedido" style="-fx-font-weight: bold;">
+        <font>
+            <Font size="22.0" />
+        </font>
+    </Label>
+    <Separator />
+
+    <!-- Sección de Información del Pedido -->
+    <GridPane hgap="10.0" vgap="5.0" style="-fx-border-color: #ccc; -fx-border-radius: 5; -fx-padding: 10;" maxWidth="Infinity">
+        <columnConstraints>
+            <!-- Columna de Etiquetas (títulos) -->
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="120.0" />
+            <!-- Columna de Valores (etiquetas y textarea) -->
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="250.0" />
+        </columnConstraints>
+        <Label text="ID Pedido:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <Label fx:id="lblIdPedido" text="N/A" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <Label text="Cliente:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <Label fx:id="lblCliente" text="N/A" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <Label text="Estado:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <Label fx:id="lblEstado" text="N/A" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        <Label text="Empleado:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <Label fx:id="lblEmpleado" text="N/A" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <Label text="Instrucciones:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <!-- CORRECCIÓN 1: Se eliminó VBox.vgrow="NEVER" -->
+        <TextArea fx:id="lblInstrucciones" editable="false" prefRowCount="2" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+    </GridPane>
+
+    <Separator />
+
+    <!-- Sección de Adición de Productos Manual (Anotación) -->
+    <VBox spacing="5.0" style="-fx-border-color: #ccc; -fx-border-radius: 5; -fx-padding: 10;" maxWidth="Infinity">
+        <Label text="Añadir Producto (Anotación Manual)" style="-fx-font-weight: bold;" />
+        <GridPane hgap="10.0" vgap="5.0">
+            <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="250.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="120.0" />
+            </columnConstraints>
+            <Label text="Descripción:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <TextField fx:id="txtDescripcion" promptText="Nombre del producto o servicio" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+            <Label text="Cantidad:" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+            <TextField fx:id="txtCantidad" promptText="Ej: 1" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label text="P. Unitario:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+            <TextField fx:id="txtPrecioUnitario" promptText="Ej: 15.50" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <Button text="Añadir a Pedido" onAction="#handleAgregarDetalle" maxWidth="1.7976931348623157E308" style="-fx-background-color: #28a745; -fx-text-fill: white;" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+        </GridPane>
+    </VBox>
+
+    <TableView fx:id="detallesTable" VBox.vgrow="ALWAYS" prefHeight="250.0">
+        <columns>
+            <TableColumn fx:id="descripcionColumn" prefWidth="300.0" text="Descripción" />
+            <TableColumn fx:id="cantidadColumn" prefWidth="100.0" text="Cantidad" />
+            <TableColumn fx:id="precioUnitarioColumn" prefWidth="100.0" text="Precio Unitario" />
+            <TableColumn fx:id="subtotalColumn" prefWidth="120.0" text="Subtotal" />
+            <TableColumn fx:id="accionColumn" prefWidth="80.0" text="Acción" />
+        </columns>
+    </TableView>
+
+    <!-- Totales y Pago -->
+    <HBox alignment="CENTER_RIGHT" spacing="15.0" style="-fx-padding: 10 0 0 0;">
+        <Label text="TOTAL A PAGAR:" style="-fx-font-weight: bold; -fx-font-size: 16;" />
+        <!-- CORRECCIÓN 2: Uso de comillas dobles para el texto inicial de la etiqueta -->
+        <Label fx:id="lblTotalPagar" text=" 0.00" style="-fx-font-weight: bold; -fx-font-size: 16; -fx-text-fill: #dc3545;" />
+    </HBox>
+
+    <Separator />
+
+    <!-- Sección de Finalización / Ticket -->
+    <GridPane hgap="10.0" vgap="10.0" style="-fx-border-color: #007bff; -fx-border-radius: 5; -fx-padding: 10;" maxWidth="Infinity">
+        <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="120.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+        </columnConstraints>
+
+        <Label text="Método de Pago:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <ComboBox fx:id="cmbMetodoPago" promptText="Seleccionar..." maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+        <Label text="Monto Entregado:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <TextField fx:id="txtMontoEntregado" promptText="0.00" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+        <Label text="Vuelto:" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <!-- CORRECCIÓN 3: Uso de comillas dobles para el texto inicial de la etiqueta -->
+        <Label fx:id="lblVuelto" text=" 0.00" style="-fx-font-weight: bold; -fx-text-fill: #28a745;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+        <HBox spacing="10.0" alignment="CENTER_RIGHT" GridPane.columnSpan="2" GridPane.rowIndex="3" maxWidth="Infinity">
+            <Button text="Finalizar Pedido (Retirado)" onAction="#finalizarPedido" style="-fx-background-color: #ffc107; -fx-font-weight: bold;" />
+            <Button text="Generar Ticket PDF" onAction="#generarTicketPDF" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold;" />
+            <Button text="Cerrar Ventana" onAction="#volverAlMenuPedidos" style="-fx-background-color: #6c757d; -fx-text-fill: white;" />
+        </HBox>
+    </GridPane>
+
+</VBox>

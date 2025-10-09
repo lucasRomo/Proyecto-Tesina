@@ -72,7 +72,6 @@ public class TicketPDFUtil {
         // Filas de detalles
         for (DetallePedido detalle : detalles) {
             table.addCell(new Paragraph(String.valueOf(detalle.getCantidad())));
-            table.addCell(new Paragraph(detalle.getDescripcion()));
             table.addCell(new Paragraph(String.format("$%.2f", detalle.getPrecioUnitario())).setTextAlignment(TextAlignment.RIGHT));
             table.addCell(new Paragraph(String.format("$%.2f", detalle.getSubtotal())).setTextAlignment(TextAlignment.RIGHT));
         }

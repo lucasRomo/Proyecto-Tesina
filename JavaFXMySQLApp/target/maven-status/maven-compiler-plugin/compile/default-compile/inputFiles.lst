@@ -6,6 +6,7 @@ C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\ap
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\PedidosPrimerMenuController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\ProductoController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\ProveedorController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\RegistroClienteDatosEspecificosController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\RegistroController.java
@@ -20,6 +21,7 @@ C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\ap
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\VerHistorialPedidosController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\VerPedidosController.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\controller\VerProveedoresController.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\CategoriaDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\ClienteDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\ComprobantePagoDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\DetallePedidoDAO.java
@@ -28,12 +30,14 @@ C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\ap
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\InsumoDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\PedidoDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\PersonaDAO.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\ProductoDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\ProveedorDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\TipoDocumentoDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\TipoProveedorDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\dao\UsuarioDAO.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\MainApp.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\AsignacionPedido.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Categoria.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Cliente.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\DetallePedido.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Direccion.java
@@ -41,6 +45,7 @@ C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\ap
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Insumo.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Pedido.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Persona.java
+C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Producto.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\Proveedor.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\TipoDocumento.java
 C:\Users\SFC\OneDrive\Escritorio\tesina github 2\JavaFXMySQLApp\src\main\java\app\model\TipoProveedor.java

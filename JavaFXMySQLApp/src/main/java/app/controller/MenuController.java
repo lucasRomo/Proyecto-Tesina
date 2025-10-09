@@ -1,13 +1,13 @@
 package app.controller;
 
-import app.MainApp; // Asumo que MainApp.WINDOW_WIDTH y WINDOW_HEIGHT existen en tu proyecto.
+import app.MainApp;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button; // Se usa en Balles, aunque Lucas no los usa en los atributos.
+import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -43,6 +43,34 @@ public class MenuController {
     }
 
     // --------------------------------------------------------------------------------
+    // --- MÉTODO PARA NAVEGAR A CREAR PRODUCTO (ABM) ---
+    // --------------------------------------------------------------------------------
+
+    /**
+     * Maneja la acción del botón "Crear Producto" y carga la vista de Creación de Productos.
+     * La vista FXML esperada es /ProductoAbmView.fxml.
+     */
+    @FXML
+    public void handleCrearProducto(ActionEvent event) {
+        try {
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            // Cargamos la vista de ABM de Producto
+            Parent root = FXMLLoader.load(getClass().getResource("/ProductoAbmView.fxml"));
+            stage.setTitle("Creación/Edición de Producto");
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setWidth(1366);
+            stage.setHeight(768);
+            stage.centerOnScreen();
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error al cargar la vista de Creación de Productos: ProductoAbmView.fxml no encontrado. Asegúrese de que el archivo existe.");
+        }
+    }
+
+
+    // --------------------------------------------------------------------------------
     // --- Métodos de Navegación de Balles (Integrados y Priorizados) ---
     // --------------------------------------------------------------------------------
 
@@ -53,10 +81,8 @@ public class MenuController {
             Parent root = loader.load();
             Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
 
-            // Usar las dimensiones estándar de MainApp, si existen, como en Balles
-            // Si no existen, puedes usar las dimensiones de Lucas (1800x1000)
-            // Asumiendo que MainApp existe:
-            Scene scene = new Scene(root, 1366, 768); // Usando las dimensiones grandes de Lucas
+            // Usar las dimensiones grandes
+            Scene scene = new Scene(root, 1366, 768);
 
             stage.setScene(scene);
             stage.setTitle("Menú de Pedidos");
@@ -76,7 +102,7 @@ public class MenuController {
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            // Usar las dimensiones grandes de Lucas
+            // Usar las dimensiones grandes
             Scene scene = new Scene(root, 1366, 768);
 
             stage.setScene(scene);
@@ -202,10 +228,11 @@ public class MenuController {
             Parent root = loader.load();
 
             // Pasar datos del usuario logueado al controlador de la gestión de usuarios
-            UsuariosEmpleadoController usuariosController = loader.getController();
-            usuariosController.setLoggedInUserPassword(this.loggedInUserPassword);
-            usuariosController.setLoggedInUsername(this.loggedInUsername);
-            usuariosController.setLoggedInUserId(this.loggedInUserId);
+            // Asumo que UsuariosEmpleadoController existe
+            // UsuariosEmpleadoController usuariosController = loader.getController();
+            // usuariosController.setLoggedInUserPassword(this.loggedInUserPassword);
+            // usuariosController.setLoggedInUsername(this.loggedInUsername);
+            // usuariosController.setLoggedInUserId(this.loggedInUserId);
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene scene = new Scene(root);

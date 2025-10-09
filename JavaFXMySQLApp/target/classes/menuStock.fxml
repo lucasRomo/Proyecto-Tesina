@@ -8,72 +8,42 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="1000.0" prefWidth="1800.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.StockController">
+<AnchorPane prefHeight="1000.0" prefWidth="1800.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuController">
     <stylesheets>
-        <URL value="@style.css" />
+        <URL value="@styles.css" />
     </stylesheets>
 
-    <ImageView fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true"
+    <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true"
                AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="20.0">
         <image>
             <Image url="@imagenes/Logo_no_bg.png" />
         </image>
     </ImageView>
 
-    <Label styleClass="titulo-principal" text="Menú de Stock" alignment="CENTER"
-           AnchorPane.topAnchor="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <font>
-            <Font name="System Bold" size="34.0" />
-        </font>
+    <VBox alignment="CENTER" spacing="20.0"
+          AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+
+        <Label text="Menu Stock" styleClass="titulo-principal">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+        </Label>
+
+        <VBox alignment="CENTER" spacing="10.0" prefWidth="250.0" maxWidth="250.0">
+            <Button styleClass="button" onAction="#handleProveedor" prefWidth="200.0" text="Proveedores" />
+            <!-- Botón original de Stock, renombrado por claridad -->
+            <Button styleClass="button" onAction="#handleStock" prefWidth="200.0" text="Stock (Vista General)" />
+            <!-- Nuevo botón para la creación de Producto -->
+            <Button styleClass="button" onAction="#handleCrearProducto" prefWidth="200.0" text="Crear Producto" />
+        </VBox>
+
         <padding>
-            <Insets bottom="10.0" top="10.0" />
-        </padding>
-    </Label>
-
-    <VBox alignment="CENTER" spacing="10.0"
-          AnchorPane.topAnchor="110.0" AnchorPane.bottomAnchor="10.0"
-          AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
-
-        <children>
-            <TableView fx:id="insumosTableView" editable="true" VBox.vgrow="ALWAYS">
-                <columnResizePolicy>
-                    <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
-                </columnResizePolicy>
-                <columns>
-                    <TableColumn fx:id="idInsumoColumn" prefWidth="50.0" text="ID" />
-                    <TableColumn fx:id="nombreInsumoColumn" prefWidth="350.0" text="Nombre Insumo" />
-                    <TableColumn fx:id="descripcionColumn" prefWidth="450.0" text="Descripción" />
-                    <TableColumn fx:id="stockMinimoColumn" prefWidth="180.0" text="Stock Mínimo" />
-                    <TableColumn fx:id="stockActualColumn" prefWidth="180.0" text="Stock Actual" />
-                    <TableColumn fx:id="estadoColumn" prefWidth="200.0" text="Estado" />
-                    <TableColumn fx:id="idTipoProveedorColumn" prefWidth="130.6" text="Tipo Proveedor" />
-                    <TableColumn fx:id="accionColumn" prefWidth="200.0" text="Proveedores" />
-                </columns>
-            </TableView>
-
-            <HBox alignment="CENTER" spacing="10.0">
-                <children>
-                    <TextField fx:id="filterField" prefHeight="25.0" promptText="Buscar por nombre..." HBox.hgrow="ALWAYS" />
-                    <Label styleClass="label-blanco" text="Estado:">
-                        <font>
-                            <Font size="14.0" />
-                        </font>
-                    </Label>
-                    <ChoiceBox fx:id="estadoChoiceBox" prefWidth="150.0" />
-                </children>
-            </HBox>
-
-            <HBox alignment="CENTER" prefHeight="25.0" spacing="10.0">
-                <children>
-                    <Button fx:id="registrarInsumoButton" mnemonicParsing="false" onAction="#handleRegistrarInsumoButton" text="Registrar Insumo" />
-                    <Button fx:id="modificarInsumoButton" mnemonicParsing="false" onAction="#handleModificarInsumoButton" text="Modificar Insumo" />
-                    <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
-                    <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverButton" styleClass="button-volver" text="Volver" />
-                </children>
-            </HBox>
-        </children>
-        <padding>
-            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
         </padding>
     </VBox>
+
+    <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverButtonStock" text="Volver"
+            AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="20.0" />
+
 </AnchorPane>

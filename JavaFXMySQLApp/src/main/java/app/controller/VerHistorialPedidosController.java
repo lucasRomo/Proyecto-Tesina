@@ -5,11 +5,12 @@ import app.dao.PedidoDAO;
 import app.model.Pedido;
 import app.model.Cliente;
 import app.model.Empleado;
-import app.model.DetallePedido; // NUEVA IMPORTACIÓN
+import app.model.DetallePedido;
 import app.dao.ClienteDAO;
 import app.dao.EmpleadoDAO;
-import app.dao.ComprobantePagoDAO; // NUEVA IMPORTACIÓN
-import app.util.TicketPDFUtil; // NUEVA IMPORTACIÓN
+import app.dao.ComprobantePagoDAO;
+import app.dao.DetallePedidoDAO; // ¡Añadido! Necesitas el DAO de DetallePedido para obtener los detalles.
+import app.util.TicketPDFUtil;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -28,7 +29,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import javafx.stage.FileChooser; // ¡Añadido! Para guardar el archivo
 
+import java.io.File; // ¡Añadido! Para manejar archivos
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -80,7 +83,8 @@ public class VerHistorialPedidosController implements Initializable {
     private PedidoDAO pedidoDAO;
     private ClienteDAO clienteDAO;
     private EmpleadoDAO empleadoDAO;
-    private ComprobantePagoDAO comprobantePagoDAO; // NUEVO DAO
+    private ComprobantePagoDAO comprobantePagoDAO;
+    private DetallePedidoDAO detallePedidoDAO; // ¡Añadido!
 
     private ObservableList<Pedido> pedidosRetiradosMaestra;
     private FilteredList<Pedido> pedidosFiltrados;
@@ -92,7 +96,8 @@ public class VerHistorialPedidosController implements Initializable {
         pedidoDAO = new PedidoDAO();
         clienteDAO = new ClienteDAO();
         empleadoDAO = new EmpleadoDAO();
-        comprobantePagoDAO = new ComprobantePagoDAO(); // INICIALIZACIÓN NUEVA
+        comprobantePagoDAO = new ComprobantePagoDAO();
+        detallePedidoDAO = new DetallePedidoDAO(); // ¡Inicializado!
 
         // 1. Configurar las columnas de la tabla
         configurarColumnas();
@@ -282,12 +287,12 @@ public class VerHistorialPedidosController implements Initializable {
     }
 
     // ----------------------------------------------------------------------------------
-    // NUEVO MÉTODO: Generar Ticket PDF
+    // MÉTODO CORREGIDO: Generar Ticket PDF
     // ----------------------------------------------------------------------------------
 
     /**
      * Maneja la generación del ticket PDF para el pedido seleccionado.
-     * Este método debería estar conectado a un botón "Generar Ticket" en el FXML.
+     * Pide al usuario la ubicación de guardado y llama al método estático 'generarTicket'.
      */
     @FXML
     private void handleGenerarTicketPDF(ActionEvent event) {
@@ -298,42 +303,54 @@ public class VerHistorialPedidosController implements Initializable {
             return;
         }
 
-        // 1. Obtener los detalles del pedido usando el DAO
-        // ASUMIMOS que PedidoDAO tiene este método:
-        List<DetallePedido> detalles = pedidoDAO.getDetallesPorPedido(pedidoSeleccionado.getIdPedido());
+        // 1. Obtener los detalles del pedido usando el DAO de DetallePedido
+        // Usamos detallePedidoDAO que acabamos de agregar/inicializar
+        List<DetallePedido> detalles = detallePedidoDAO.getDetallesPorPedido(pedidoSeleccionado.getIdPedido());
 
         if (detalles.isEmpty()) {
             mostrarAlerta("Error", "No se encontraron detalles de productos para este pedido.", Alert.AlertType.ERROR);
             return;
         }
 
-        // 2. Generar el PDF
-        String nombreArchivo = "Ticket_Pedido_" + pedidoSeleccionado.getIdPedido() + ".pdf";
-        // Guarda el archivo en el Escritorio del usuario (cambiar según la necesidad)
-        String rutaGuardado = System.getProperty("user.home") + "/Desktop/" + nombreArchivo;
+        // 2. Usar FileChooser para que el usuario elija dónde guardar (Mejor práctica)
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar Ticket de Pedido N° " + pedidoSeleccionado.getIdPedido());
 
-        try {
-            // Llamar a la utilidad estática para generar el PDF
-            TicketPDFUtil.generarPDF(pedidoSeleccionado, detalles, rutaGuardado);
+        // Configurar la extensión por defecto como PDF
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Archivos PDF (*.pdf)", "*.pdf");
+        fileChooser.getExtensionFilters().add(extFilter);
 
-            // 3. Actualizar la base de datos con la ruta del archivo
-            // ASUMIMOS que ComprobantePagoDAO tiene este método:
-            boolean rutaActualizada = comprobantePagoDAO.actualizarRutaTicket(
-                    pedidoSeleccionado.getIdPedido(), rutaGuardado
-            );
+        // Sugerir un nombre de archivo
+        String nombreSugerido = "Ticket_Pedido_" + pedidoSeleccionado.getIdPedido() + ".pdf";
+        fileChooser.setInitialFileName(nombreSugerido);
 
-            if (rutaActualizada) {
-                mostrarAlerta("Éxito", "Ticket generado y guardado en:\n" + rutaGuardado + "\n\nLa ruta ha sido registrada en la base de datos.", Alert.AlertType.INFORMATION);
-            } else {
-                mostrarAlerta("Advertencia", "Ticket generado y guardado en:\n" + rutaGuardado + "\n\nAVISO: No se pudo actualizar la ruta del archivo en la base de datos (ComprobantePago).", Alert.AlertType.WARNING);
+        // Obtener la Stage actual
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            String rutaGuardado = file.getAbsolutePath();
+            try {
+                // LLAMADA CORREGIDA: Usamos 'generarTicket' (el nombre correcto) con 3 argumentos
+                TicketPDFUtil.generarTicket(pedidoSeleccionado, detalles, rutaGuardado);
+
+                // 3. Opcional: Actualizar la base de datos con la ruta del archivo (solo si tienes el campo)
+                // Esto es útil para la próxima vez que quieras abrir el mismo ticket sin regenerar.
+                /*
+                boolean rutaActualizada = comprobantePagoDAO.actualizarRutaTicket(
+                        pedidoSeleccionado.getIdPedido(), rutaGuardado
+                );
+                */
+
+                mostrarAlerta("Éxito", "Ticket generado y guardado exitosamente en:\n" + rutaGuardado, Alert.AlertType.INFORMATION);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                mostrarAlerta("Error", "Ocurrió un error al generar o guardar el ticket: " + e.getMessage(), Alert.AlertType.ERROR);
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            mostrarAlerta("Error", "Ocurrió un error al generar o guardar el ticket: " + e.getMessage(), Alert.AlertType.ERROR);
-        } catch (Exception e) {
-            e.printStackTrace();
-            mostrarAlerta("Error", "Ocurrió un error inesperado: " + e.getMessage(), Alert.AlertType.ERROR);
+        } else {
+            // El usuario canceló la acción de guardar
+            mostrarAlerta("Cancelado", "La generación del ticket PDF fue cancelada.", Alert.AlertType.INFORMATION);
         }
     }
 

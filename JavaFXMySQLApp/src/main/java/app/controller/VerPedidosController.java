@@ -1,9 +1,7 @@
 package app.controller;
 
 import app.dao.PedidoDAO;
-import app.model.DetallePedido;
 import app.model.Pedido;
-import app.util.TicketPDFUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -28,7 +26,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -36,6 +33,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+
+// IMPORTACIÓN AÑADIDA
+import app.controller.DetallePedidoController;
 
 public class VerPedidosController implements Initializable {
 
@@ -52,9 +52,7 @@ public class VerPedidosController implements Initializable {
     private TableColumn<Pedido, String> empleadoColumn;
     @FXML
     private TableColumn<Pedido, String> estadoColumn;
-    // Se asume que esta columna es parte del FXML original y se mantiene
-    @FXML
-    private TableColumn<Pedido, String> metodoPagoColumn;
+
     @FXML
     private TableColumn<Pedido, Double> montoTotalColumn;
     @FXML
@@ -67,7 +65,7 @@ public class VerPedidosController implements Initializable {
     @FXML
     private TableColumn<Pedido, String> instruccionesColumn;
 
-    // Columna para el botón de Ticket/Factura
+    // Columna para el botón de Ticket/Factura (IMPORTANTE: Tipo Void para la celda con botón)
     @FXML
     private TableColumn<Pedido, Void> ticketColumn;
 
@@ -75,11 +73,11 @@ public class VerPedidosController implements Initializable {
     @FXML
     private ComboBox<String> empleadoFilterComboBox;
 
-    // ComboBox para filtrar por estado (si se requiere en el FXML)
+    // ComboBox para filtrar por estado
     @FXML
     private ComboBox<String> estadoFilterComboBox;
 
-    // ComboBox para filtrar por método de pago (si se requiere en el FXML)
+    // ComboBox para filtrar por método de pago
     @FXML
     private ComboBox<String> metodoPagoFilterComboBox;
 
@@ -96,13 +94,6 @@ public class VerPedidosController implements Initializable {
         clienteColumn.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         empleadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombreEmpleado"));
         estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
-
-        // Configuración de metodoPagoColumn
-        if (metodoPagoColumn != null) {
-            metodoPagoColumn.setCellValueFactory(new PropertyValueFactory<>("metodoPago"));
-            metodoPagoColumn.setEditable(false);
-        }
-
         montoTotalColumn.setCellValueFactory(new PropertyValueFactory<>("montoTotal"));
         montoEntregadoColumn.setCellValueFactory(new PropertyValueFactory<>("montoEntregado"));
         instruccionesColumn.setCellValueFactory(new PropertyValueFactory<>("instrucciones"));
@@ -180,7 +171,8 @@ public class VerPedidosController implements Initializable {
             cargarPedidos(); // Recarga los pedidos con el nuevo filtro
         });
 
-        // --- 7. Configuración de Filtros Adicionales (Se asume que existen en FXML) ---
+        // --- 7. Configuración de Filtros Adicionales ---
+        // Se asume que estos ComboBox existen en el FXML, por lo que los configuramos.
         if (estadoFilterComboBox != null) {
             estadoFilterComboBox.setItems(FXCollections.observableArrayList(estados));
             estadoFilterComboBox.getItems().add(0, "Todos los Estados");
@@ -189,7 +181,7 @@ public class VerPedidosController implements Initializable {
         }
 
         if (metodoPagoFilterComboBox != null) {
-            // Asumiendo que PedidoDAO.getTiposPago() existe
+            // Asumiendo que PedidoDAO.getTiposPago() existe y retorna una List<String>
             List<String> tiposPago = pedidoDAO.getTiposPago();
             tiposPago.add(0, "Todos los Métodos");
             metodoPagoFilterComboBox.setItems(FXCollections.observableArrayList(tiposPago));
@@ -198,7 +190,7 @@ public class VerPedidosController implements Initializable {
         }
 
 
-        // Carga inicial de pedidos (que ya filtra los 'Retirado' por defecto)
+        // Carga inicial de pedidos
         cargarPedidos();
     } // CIERRE DEL MÉTODO initialize
 
@@ -242,11 +234,13 @@ public class VerPedidosController implements Initializable {
      * Configura la columna para incluir un botón "Detallar/Ticket".
      */
     private void configurarColumnaTicket() {
+        // Aseguramos que la columna es de tipo Void
         ticketColumn.setCellFactory(param -> new TableCell<Pedido, Void>() {
             private final Button btn = new Button("Detallar/Ticket");
             private final HBox pane = new HBox(btn);
 
             {
+                // Manejador de evento al hacer clic en el botón
                 btn.setOnAction((ActionEvent event) -> {
                     // Obtiene el objeto Pedido de la fila actual
                     Pedido pedido = getTableView().getItems().get(getIndex());
@@ -283,7 +277,9 @@ public class VerPedidosController implements Initializable {
 
             // Obtener el controlador de la ventana de detalle
             DetallePedidoController controller = loader.getController();
-            controller.initData(pedido); // Inicializa el controlador con el pedido seleccionado
+
+            // Inicializa el controlador con el pedido seleccionado
+            controller.setPedido(pedido);
 
             // Crear y configurar la nueva Stage (ventana modal)
             Stage stage = new Stage();
@@ -299,7 +295,7 @@ public class VerPedidosController implements Initializable {
 
         } catch (IOException e) {
             e.printStackTrace();
-            mostrarAlerta("Error", "No se pudo cargar la ventana de Detalle de Pedido.\n" + e.getMessage(), Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "No se pudo cargar la ventana de Detalle de Pedido.\nVerifique que 'detallePedidoView.fxml' existe en el classpath.\n" + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
@@ -333,7 +329,7 @@ public class VerPedidosController implements Initializable {
      * y los filtros de Estado y Método de Pago.
      */
     private void cargarPedidos() {
-        // Obtiene la lista de pedidos del DAO (el DAO ya excluye los pedidos 'Retirado' y aplica el filtro de empleado)
+        // Obtiene la lista de pedidos del DAO
         List<Pedido> listaCompleta = pedidoDAO.getPedidosPorEmpleado(idEmpleadoFiltro);
 
         // --- Aplicar filtros de UI adicionales ---
@@ -384,6 +380,21 @@ public class VerPedidosController implements Initializable {
         }
     }
 
+    /**
+     * Maneja el clic en el botón Limpiar Filtros.
+     */
+    @FXML
+    private void handleLimpiarFiltros(ActionEvent event) {
+        // Resetea todos los ComboBox a su primera opción ("Todos...")
+        if (empleadoFilterComboBox != null) empleadoFilterComboBox.getSelectionModel().selectFirst();
+        if (estadoFilterComboBox != null) estadoFilterComboBox.getSelectionModel().selectFirst();
+        if (metodoPagoFilterComboBox != null) metodoPagoFilterComboBox.getSelectionModel().selectFirst();
+
+        // El listener de valor del ComboBox de Empleado ya llama a cargarPedidos(), pero lo aseguramos
+        idEmpleadoFiltro = 0;
+        cargarPedidos();
+    }
+
     @FXML
     private void handleVolver(ActionEvent event) {
         try {
@@ -399,21 +410,6 @@ public class VerPedidosController implements Initializable {
             e.printStackTrace();
             mostrarAlerta("Error", "No se pudo volver al menú de pedidos.", Alert.AlertType.ERROR);
         }
-    }
-
-    /**
-     * Maneja el clic en el botón Limpiar Filtros.
-     */
-    @FXML
-    private void handleLimpiarFiltros(ActionEvent event) {
-        // Resetea todos los ComboBox a su primera opción ("Todos...")
-        if (empleadoFilterComboBox != null) empleadoFilterComboBox.getSelectionModel().selectFirst();
-        if (estadoFilterComboBox != null) estadoFilterComboBox.getSelectionModel().selectFirst();
-        if (metodoPagoFilterComboBox != null) metodoPagoFilterComboBox.getSelectionModel().selectFirst();
-
-        // El listener de valor del ComboBox de Empleado ya llama a cargarPedidos(), pero lo aseguramos
-        idEmpleadoFiltro = 0;
-        cargarPedidos();
     }
 
     /**
