@@ -182,11 +182,9 @@ public class UsuarioDAO {
     // Nota: El objeto Usuario model que le pasas tiene que tener el campo estado.
     public boolean modificarUsuariosEmpleados(Usuario usuario, Connection conn) throws SQLException {
         if (usuario == null || usuario.getIdUsuario() <= 0) {
-            System.out.println("Error: Usuario inválido o id_usuario = " + (usuario != null ? usuario.getIdUsuario() : "null"));
             return false;
         }
 
-        System.out.println("Procesando usuario con id_usuario = " + usuario.getIdUsuario()); // Nueva traza
         // Obtener id_persona desde Usuario
         String getPersonaSql = "SELECT id_persona FROM Usuario WHERE id_usuario = ?";
         int idPersona = -1;
@@ -196,7 +194,6 @@ public class UsuarioDAO {
                 if (rs.next()) {
                     idPersona = rs.getInt("id_persona");
                 } else {
-                    System.out.println("Error: No se encontró id_persona para id_usuario = " + usuario.getIdUsuario());
                     return false;
                 }
             }
@@ -205,11 +202,9 @@ public class UsuarioDAO {
         // Actualizar estado en la tabla Empleado
         String updateSql = "UPDATE Empleado SET estado = ? WHERE id_persona = ?";
         try (PreparedStatement stmt = conn.prepareStatement(updateSql)) {
-            System.out.println("Actualizando estado '" + usuario.getEstado() + "' para id_persona = " + idPersona);
             stmt.setString(1, usuario.getEstado());
             stmt.setInt(2, idPersona);
             int rowsAffected = stmt.executeUpdate();
-            System.out.println("Filas afectadas en Empleado: " + rowsAffected);
             return rowsAffected > 0;
         }
     }

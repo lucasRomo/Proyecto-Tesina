@@ -79,19 +79,16 @@ public class HistorialActividadDAO {
             // Si ya existe, actualiza el registro existente usando id_RegAct
             String updateSql = "UPDATE RegistroActividad SET dato_previo_modificacion = ?, dato_modificado = ?, fecha_modificacion = NOW() WHERE id_RegAct = ?";
             try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
-                System.out.println("Actualizando historial para id_RegAct = " + existingIdRegAct);
                 updateStmt.setString(1, valorAnterior);
                 updateStmt.setString(2, valorNuevo);
                 updateStmt.setInt(3, existingIdRegAct);
                 int rowsAffected = updateStmt.executeUpdate();
-                System.out.println("Filas afectadas en historial (update): " + rowsAffected + " para id_RegAct = " + existingIdRegAct);
                 return rowsAffected > 0;
             }
         } else {
             // Si no existe, inserta un nuevo registro
             String insertSql = "INSERT INTO RegistroActividad (id_usuario_responsable, tabla_afectada, columna_afectada, id_registro_modificado, dato_previo_modificacion, dato_modificado, fecha_modificacion) VALUES (?, ?, ?, ?, ?, ?, NOW())";
             try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
-                System.out.println("Insertando historial para id_registro_modificado = " + idRegistro + ", columna = " + columna);
                 insertStmt.setInt(1, idUsuarioResponsable);
                 insertStmt.setString(2, tabla);
                 insertStmt.setString(3, columna);
@@ -99,7 +96,6 @@ public class HistorialActividadDAO {
                 insertStmt.setString(5, valorAnterior);
                 insertStmt.setString(6, valorNuevo);
                 int rowsAffected = insertStmt.executeUpdate();
-                System.out.println("Filas afectadas en historial (insert): " + rowsAffected);
                 return rowsAffected > 0;
             }
         }
