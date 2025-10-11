@@ -231,29 +231,24 @@ public class UsuarioDAO {
         return contrasena;
     }
 
-    public Usuario obtenerUsuarioPorId(int idUsuario) throws SQLException {
-        String sql = "SELECT id_usuario, nombre_usuario, contrasena, estado, id_persona FROM Usuario WHERE id_usuario = ?";
-
-        try (Connection connection = getConnection();
-             PreparedStatement stmt = connection.prepareStatement(sql)) {
-
+    public Usuario obtenerUsuarioPorId(int idUsuario, Connection conn) throws SQLException {
+        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, u.id_persona, e.estado " +
+                "FROM Usuario u " +
+                "JOIN Empleado e ON u.id_persona = e.id_persona " +
+                "WHERE u.id_usuario = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idUsuario);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Usuario user = new Usuario();
                     user.setIdUsuario(rs.getInt("id_usuario"));
                     user.setUsuario(rs.getString("nombre_usuario"));
                     user.setContrasena(rs.getString("contrasena"));
-                    user.setEstado(rs.getString("estado")); // Asegurar que se obtiene el estado
                     user.setIdPersona(rs.getInt("id_persona"));
-
+                    user.setEstado(rs.getString("estado")); // Obtenido de Empleado
                     return user;
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Error al obtener usuario por ID: " + e.getMessage());
-            throw e;
         }
         return null;
     }

@@ -25,6 +25,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -335,187 +336,114 @@ public class UsuariosEmpleadoController implements Initializable {
     }
 
     @FXML
-    public void handleModificarUsuarioButton(ActionEvent event) {
+    private void handleModificarUsuarioButton(ActionEvent event) {
         UsuarioEmpleadoTableView selectedUsuario = usuariosEditableView.getSelectionModel().getSelectedItem();
-        if (selectedUsuario == null) {
-            mostrarAlerta("Advertencia", "Por favor, seleccione un usuario para modificar.", Alert.AlertType.WARNING);
-            return;
-        }
+        if (selectedUsuario != null) {
+            // Diálogo de confirmación con contraseña
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Confirmar modificación");
+            dialog.setHeaderText("Verificación de seguridad");
+            dialog.setContentText("Por favor, ingresa tu contraseña para confirmar la modificación:");
 
-        // Se crea un diálogo de entrada para solicitar la contraseña
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Confirmar Modificación");
-        dialog.setHeaderText("Verificación de Seguridad");
-        dialog.setContentText("Por favor, ingrese su contraseña para confirmar la modificación:");
+            Optional<String> result = dialog.showAndWait();
+            if (result.isPresent()) {
+                String inputPassword = result.get().trim();
+                String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword().trim();
+                if (inputPassword.equals(loggedInUserPassword)) {
+                    try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+                        conn.setAutoCommit(false);
 
-        // Se obtiene el resultado del diálogo
-        Optional<String> result = dialog.showAndWait();
+                        int idUsuarioResponsable = SessionManager.getInstance().getLoggedInUserId();
+                        // Obtener usuario original con datos de Persona y Empleado
+                        Usuario originalUser = usuarioDAO.obtenerUsuarioPorId(selectedUsuario.getIdUsuario(), conn);
+                        if (originalUser == null) {
+                            mostrarAlerta("Error", "Usuario no encontrado.", Alert.AlertType.ERROR);
+                            return;
+                        }
 
-        // Se valida la contraseña ingresada
-        result.ifPresent(password -> {
-            String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword();
-            int loggedInUserId = SessionManager.getInstance().getLoggedInUserId();
-            Connection conn = null; // Variable de conexión para la transacción
+                        // Obtener datos originales de Persona
+                        Persona originalPersona = personaDAO.obtenerPersonaPorId(originalUser.getIdPersona(), conn);
+                        if (originalPersona == null) {
+                            mostrarAlerta("Error", "Datos de Persona no encontrados.", Alert.AlertType.ERROR);
+                            return;
+                        }
 
-            if (loggedInUserPassword != null && password.trim().equals(loggedInUserPassword.trim())) {
-                try {
-                    // 1. INICIAR TRANSACCIÓN
-                    conn = DriverManager.getConnection(URL, USER, PASSWORD);
-                    conn.setAutoCommit(false);
+                        // Obtener datos originales de Empleado
+                        Empleado originalEmpleado = empleadoDAO.obtenerEmpleadoPorId(originalUser.getIdPersona(), conn);
+                        if (originalEmpleado == null) {
+                            mostrarAlerta("Error", "Datos de Empleado no encontrados.", Alert.AlertType.ERROR);
+                            return;
+                        }
 
-                    // 2. OBTENER DATOS ORIGINALES ANTES DEL CAMBIO
-                    Usuario originalUser = usuarioDAO.obtenerUsuarioPorId(selectedUsuario.getIdUsuario());
-                    Persona originalPersona = personaDAO.getPersonaById(selectedUsuario.getIdPersona());
-                    Empleado originalEmpleado = empleadoDAO.getEmpleadoById(selectedUsuario.getIdPersona()); // Usamos idPersona para buscar empleado
+                        boolean exito = true;
 
-                    if (originalUser == null || originalPersona == null) {
-                        mostrarAlerta("Error", "No se encontraron los datos originales para el usuario (Usuario o Persona).", Alert.AlertType.ERROR);
-                        if (conn != null) conn.rollback();
-                        return;
+                        // Comparar y registrar cambios en Usuario
+                        if (!selectedUsuario.getUsuario().equals(originalUser.getUsuario())) {
+                            exito = exito && historialDAO.insertarRegistro(idUsuarioResponsable, "Usuario", "nombre_usuario", selectedUsuario.getIdUsuario(), originalUser.getUsuario(), selectedUsuario.getUsuario(), conn);
+                        }
+                        if (!selectedUsuario.getContrasena().equals(originalUser.getContrasenia())) {
+                            exito = exito && historialDAO.insertarRegistro(idUsuarioResponsable, "Usuario", "contrasena", selectedUsuario.getIdUsuario(), originalUser.getContrasenia(), selectedUsuario.getContrasena(), conn);
+                        }
+
+                        // Comparar y registrar cambios en Persona
+                        if (!selectedUsuario.getNombre().equals(originalPersona.getNombre())) {
+                            exito = exito && historialDAO.insertarRegistro(idUsuarioResponsable, "Persona", "nombre", selectedUsuario.getIdPersona(), originalPersona.getNombre(), selectedUsuario.getNombre(), conn);
+                        }
+                        if (!selectedUsuario.getApellido().equals(originalPersona.getApellido())) {
+                            exito = exito && historialDAO.insertarRegistro(idUsuarioResponsable, "Persona", "apellido", selectedUsuario.getIdPersona(), originalPersona.getApellido(), selectedUsuario.getApellido(), conn);
+                        }
+
+                        // Comparar y registrar cambios en Empleado
+                        if (selectedUsuario.getSalario() != originalEmpleado.getSalario()) {
+                            exito = exito && historialDAO.insertarRegistro(idUsuarioResponsable, "Empleado", "salario", selectedUsuario.getIdPersona(), String.valueOf(originalEmpleado.getSalario()), String.valueOf(selectedUsuario.getSalario()), conn);
+                        }
+
+                        // Actualizar las tablas
+                        // Actualizar Usuario
+                        String updateUsuarioSql = "UPDATE Usuario SET nombre_usuario = ?, contrasena = ? WHERE id_usuario = ?";
+                        try (PreparedStatement stmt = conn.prepareStatement(updateUsuarioSql)) {
+                            stmt.setString(1, selectedUsuario.getUsuario());
+                            stmt.setString(2, selectedUsuario.getContrasena());
+                            stmt.setInt(3, selectedUsuario.getIdUsuario());
+                            stmt.executeUpdate();
+                        }
+
+                        // Actualizar Persona
+                        String updatePersonaSql = "UPDATE Persona SET nombre = ?, apellido = ? WHERE id_persona = ?";
+                        try (PreparedStatement stmt = conn.prepareStatement(updatePersonaSql)) {
+                            stmt.setString(1, selectedUsuario.getNombre());
+                            stmt.setString(2, selectedUsuario.getApellido());
+                            stmt.setInt(3, selectedUsuario.getIdPersona());
+                            stmt.executeUpdate();
+                        }
+
+                        // Actualizar Empleado
+                        String updateEmpleadoSql = "UPDATE Empleado SET salario = ? WHERE id_persona = ?";
+                        try (PreparedStatement stmt = conn.prepareStatement(updateEmpleadoSql)) {
+                            stmt.setDouble(1, selectedUsuario.getSalario());
+                            stmt.setInt(2, selectedUsuario.getIdPersona());
+                            stmt.executeUpdate();
+                        }
+
+                        if (exito) {
+                            conn.commit();
+                            mostrarAlerta("Éxito", "Usuario modificado exitosamente.", Alert.AlertType.INFORMATION);
+                            usuariosEditableView.refresh();
+                        } else {
+                            conn.rollback();
+                            mostrarAlerta("Error", "No se pudo modificar el usuario. Se realizó ROLLBACK.", Alert.AlertType.ERROR);
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                        mostrarAlerta("Error", "Ocurrió un error en la base de datos: " + e.getMessage(), Alert.AlertType.ERROR);
                     }
-
-                    // Variables de control y IDs
-                    String originalContrasena = originalUser.getContrasenia();
-                    String originalUsuarioNombre = originalUser.getUsuario();
-                    int idUsuarioResponsable = SessionManager.getInstance().getLoggedInUserId();
-                    int idRegistroAfectadoPersona = selectedUsuario.getIdPersona();
-
-                    // 3. Preparar DTOs con los datos modificados del TableView
-                    Usuario userToModify = new Usuario(selectedUsuario.getIdUsuario(), selectedUsuario.getUsuario(), selectedUsuario.getContrasena());
-                    userToModify.setEstado(selectedUsuario.getEstado());
-
-                    Persona personaToModify = new Persona(selectedUsuario.getIdPersona(), selectedUsuario.getNombre(), selectedUsuario.getApellido());
-                    personaToModify.setNumeroDocumento(originalPersona.getNumeroDocumento());
-                    personaToModify.setIdTipoDocumento(originalPersona.getIdTipoDocumento());
-                    personaToModify.setIdDireccion(originalPersona.getIdDireccion());
-
-                    // 4. Realizar las modificaciones en la base de datos (Pasando la CONEXIÓN)
-                    // NOTA CRÍTICA: Los DAOs DEBEN aceptar la conexión como parámetro.
-                    boolean exitoUsuario = usuarioDAO.modificarUsuariosEmpleados(userToModify, conn);
-                    boolean exitoPersona = personaDAO.modificarPersona(personaToModify, conn);
-
-                    boolean exitoEmpleado = true;
-
-                    if (originalEmpleado != null) {
-                        // Si existe registro de empleado, actualizamos el salario.
-                        Empleado empleadoToModify = new Empleado(selectedUsuario.getIdPersona(), selectedUsuario.getSalario());
-
-                        // EL MÉTODO QUE DABA ERROR EN LA LÍNEA 399 - AHORA CON CONEXIÓN
-                        exitoEmpleado = empleadoDAO.actualizarEmpleadoCompleto(empleadoToModify, conn);
-                    } else {
-                        exitoEmpleado = true;
-                    }
-
-                    boolean exitoGeneral = exitoUsuario && exitoPersona && exitoEmpleado;
-
-                    if (exitoGeneral) {
-
-                        // 5. REGISTRAR CAMBIOS EN EL HISTORIAL (Lógica de registro refinada)
-
-                        // 5.1. Comparación de datos de USUARIO (nombre de usuario)
-                        if (!selectedUsuario.getUsuario().equals(originalUsuarioNombre)) {
-                            // Asumiendo que insertarRegistro soporta la conexión para ser parte de la transacción
-                            historialDAO.insertarRegistro(idUsuarioResponsable, "Usuario", "usuario", selectedUsuario.getIdUsuario(), originalUsuarioNombre, selectedUsuario.getUsuario(), conn);
-                        }
-
-                        // 5.2. Comparación de datos de USUARIO (estado)
-                        if (!selectedUsuario.getEstado().equals(originalUser.getEstado())) {
-                            historialDAO.insertarRegistro(idUsuarioResponsable, "Usuario", "estado", selectedUsuario.getIdUsuario(), originalUser.getEstado(), selectedUsuario.getEstado(), conn);
-                        }
-
-                        // 5.3. Comparación de datos de USUARIO (contraseña)
-                        if (!selectedUsuario.getContrasena().equals(originalContrasena)) {
-                            historialDAO.insertarRegistro(idUsuarioResponsable, "Usuario", "contrasena", selectedUsuario.getIdUsuario(), "***(Oculto)***", "***(Oculto)***", conn);
-                        }
-
-                        // 5.4. Comparación de datos de PERSONA (nombre, apellido)
-                        // Nombre
-                        if (!String.valueOf(selectedUsuario.getNombre()).equals(String.valueOf(originalPersona.getNombre()))) {
-                            historialDAO.insertarRegistro(idUsuarioResponsable, "Persona", "nombre", idRegistroAfectadoPersona, originalPersona.getNombre(), selectedUsuario.getNombre(), conn);
-                        }
-
-                        // Apellido
-                        if (!String.valueOf(selectedUsuario.getApellido()).equals(String.valueOf(originalPersona.getApellido()))) {
-                            historialDAO.insertarRegistro(idUsuarioResponsable, "Persona", "apellido", idRegistroAfectadoPersona, originalPersona.getApellido(), selectedUsuario.getApellido(), conn);
-                        }
-
-                        // 5.5. Comparación de datos de EMPLEADO (salario) - Solo si originalEmpleado NO es null
-                        if (originalEmpleado != null) {
-                            double originalSalario = originalEmpleado.getSalario();
-                            int idRegistroAfectadoEmpleado = selectedUsuario.getIdPersona();
-
-                            if (Double.compare(selectedUsuario.getSalario(), originalSalario) != 0) {
-                                historialDAO.insertarRegistro(idUsuarioResponsable, "Empleado", "salario", idRegistroAfectadoEmpleado, String.valueOf(originalSalario), String.valueOf(selectedUsuario.getSalario()), conn);
-                            }
-                        }
-
-                        // 6. Confirmar la Transacción (COMMIT)
-                        conn.commit();
-
-                        // 7. Muestra de éxito y lógica de redirección
-                        mostrarAlerta("Éxito", "Usuario modificado exitosamente. Los cambios han sido registrados.", Alert.AlertType.INFORMATION);
-
-                        try {
-                            cargarDatosyConfigurarFiltros();
-                        } catch (SQLException e) {
-                            System.err.println("Error al recargar datos después de la modificación: " + e.getMessage());
-                        }
-
-                        boolean esUsuarioLogueado = selectedUsuario.getIdUsuario() == loggedInUserId;
-                        boolean cambioContrasena = !selectedUsuario.getContrasena().equals(originalContrasena);
-                        boolean cambioNombreUsuario = !selectedUsuario.getUsuario().equals(originalUsuarioNombre);
-
-                        if (esUsuarioLogueado && (cambioContrasena || cambioNombreUsuario)) {
-                            SessionManager.getInstance().clearSession();
-                            Alert alertaRedirect = new Alert(Alert.AlertType.INFORMATION);
-                            alertaRedirect.setTitle("Credenciales Modificadas");
-                            alertaRedirect.setHeaderText(null);
-                            alertaRedirect.setContentText("Su nombre de usuario y/o contraseña ha sido modificado. Será redirigido al menú de inicio para volver a iniciar sesión.");
-                            alertaRedirect.showAndWait();
-                            redireccionarAInicioSesion(event);
-                        }
-                    } else {
-                        // 8. Si falla, hacer Rollback
-                        if (conn != null) conn.rollback();
-
-                        String detalleEmpleado = (originalEmpleado != null ? "\nEmpleado: " + exitoEmpleado : "\nEmpleado: No aplicable");
-                        String mensajeErrorDetallado = "No se pudo modificar el usuario. Se ha deshecho la operación (ROLLBACK). Estado de las actualizaciones: \nUsuario: " + exitoUsuario + "\nPersona: " + exitoPersona + detalleEmpleado;
-                        mostrarAlerta("Error", mensajeErrorDetallado, Alert.AlertType.ERROR);
-                    }
-
-                } catch (SQLException e) {
-                    // 9. Manejo de excepciones SQL
-                    try {
-                        if (conn != null) conn.rollback();
-                    } catch (SQLException rollbackEx) {
-                        System.err.println("Error al intentar hacer rollback: " + rollbackEx.getMessage());
-                    }
-                    e.printStackTrace();
-                    mostrarAlerta("Error", "Ocurrió un error en la base de datos (SQL Exception). Se realizó ROLLBACK. Mensaje: " + e.getMessage(), Alert.AlertType.ERROR);
-                } catch (Exception e) {
-                    // 10. Manejo de otras excepciones
-                    try {
-                        if (conn != null) conn.rollback();
-                    } catch (SQLException rollbackEx) {
-                        System.err.println("Error al intentar hacer rollback tras otra excepción: " + rollbackEx.getMessage());
-                    }
-                    e.printStackTrace();
-                    mostrarAlerta("Error", "Ocurrió un error inesperado. Se realizó ROLLBACK. Mensaje: " + e.getMessage(), Alert.AlertType.ERROR);
-                } finally {
-                    // 11. Cerrar la conexión
-                    try {
-                        if (conn != null) {
-                            conn.setAutoCommit(true);
-                            conn.close();
-                        }
-                    } catch (SQLException closeEx) {
-                        System.err.println("Error al cerrar la conexión: " + closeEx.getMessage());
-                    }
+                } else {
+                    mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
                 }
-            } else {
-                mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
             }
-        });
+        } else {
+            mostrarAlerta("Advertencia", "Por favor, seleccione un usuario para modificar.", Alert.AlertType.WARNING);
+        }
     }
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {

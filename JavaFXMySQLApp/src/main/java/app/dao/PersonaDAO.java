@@ -124,32 +124,21 @@ public class PersonaDAO {
         return false;
     }
 
-    public Persona getPersonaById(int idPersona) {
-        Persona persona = null;
-
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SELECT_PERSONA_BY_ID)) {
-
+    public Persona obtenerPersonaPorId(int idPersona, Connection conn) throws SQLException {
+        String sql = "SELECT nombre, apellido FROM Persona WHERE id_persona = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idPersona);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    persona = new Persona();
-                    persona.setIdPersona(rs.getInt("id_persona"));
+                    Persona persona = new Persona();
+                    persona.setIdPersona(idPersona);
                     persona.setNombre(rs.getString("nombre"));
                     persona.setApellido(rs.getString("apellido"));
-                    persona.setIdTipoDocumento(rs.getInt("id_tipo_documento"));
-                    persona.setNumeroDocumento(rs.getString("numero_documento"));
-                    persona.setIdDireccion(rs.getInt("id_direccion"));
-                    persona.setTelefono(rs.getString("telefono"));
-                    persona.setEmail(rs.getString("email"));
+                    return persona;
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Error al obtener persona por ID: " + e.getMessage());
-            e.printStackTrace();
         }
-        return persona;
+        return null;
     }
 
     // =========================================================================

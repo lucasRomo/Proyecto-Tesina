@@ -89,31 +89,20 @@ public class EmpleadoDAO {
         return empleados;
     }
 
-    public Empleado getEmpleadoById(int id) {
-        Empleado empleado = null;
-        String sql = "SELECT e.id_empleado, e.fecha_contratacion, e.cargo, e.salario, e.estado, " +
-                "e.id_persona, p.nombre, p.apellido FROM Empleado e JOIN Persona p ON e.id_persona = p.id_persona WHERE e.id_empleado = ?";
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
+    public Empleado obtenerEmpleadoPorId(int idPersona, Connection conn) throws SQLException {
+        String sql = "SELECT salario FROM Empleado WHERE id_persona = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idPersona);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    empleado = new Empleado(
-                            rs.getInt("id_empleado"),
-                            rs.getDate("fecha_contratacion").toLocalDate(),
-                            rs.getString("cargo"),
-                            rs.getDouble("salario"),
-                            rs.getString("estado"),
-                            rs.getInt("id_persona"),
-                            rs.getString("nombre"),
-                            rs.getString("apellido")
-                    );
+                    Empleado empleado = new Empleado();
+                    empleado.setIdPersona(idPersona);
+                    empleado.setSalario(rs.getDouble("salario"));
+                    return empleado;
                 }
             }
-        } catch (SQLException e) {
-            System.out.println("Error al obtener empleado por ID: " + e.getMessage());
         }
-        return empleado;
+        return null;
     }
 
 
