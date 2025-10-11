@@ -28,12 +28,15 @@
             </font>
         </Label>
         <ComboBox fx:id="empleadoFilterComboBox" prefWidth="200.0" promptText="Seleccionar Empleado" />
-        <!-- Se añaden ComboBox faltantes para compatibilidad con el Controller -->
+
         <Label text="Estado:" textFill="#fff8f8" />
         <ComboBox fx:id="estadoFilterComboBox" prefWidth="150.0" promptText="Todos los Estados" />
-        <Label text="Método Pago:" textFill="#fff8f8" />
-        <ComboBox fx:id="metodoPagoFilterComboBox" prefWidth="150.0" promptText="Todos los Métodos" />
+
+        <!-- CAMBIO: Label y fx:id de Método Pago a Tipo Pago -->
+        <Label text="Tipo Pago:" textFill="#fff8f8" />
+        <ComboBox fx:id="tipoPagoFilterComboBox" prefWidth="150.0" promptText="Todos los Tipos" />
     </HBox>
+
     <TableView fx:id="pedidosTable" editable="true" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="idPedidoColumn" prefWidth="75.0" text="ID">
@@ -56,6 +59,13 @@
                     <PropertyValueFactory property="estado" />
                 </cellValueFactory>
             </TableColumn>
+            <!-- NUEVO: Columna para Tipo de Pago con property="tipoPago" -->
+            <TableColumn fx:id="tipoPagoColumn" prefWidth="100.0" text="Tipo Pago">
+                <cellValueFactory>
+                    <PropertyValueFactory property="tipoPago" />
+                </cellValueFactory>
+            </TableColumn>
+
             <!-- Nota: montoTotal y montoEntregado deben ser Double en el FXML -->
             <TableColumn fx:id="montoTotalColumn" prefWidth="100.0" text="Monto Total">
                 <cellValueFactory>

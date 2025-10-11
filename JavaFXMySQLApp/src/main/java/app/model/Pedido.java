@@ -13,12 +13,15 @@ public class Pedido {
     private LocalDateTime fechaEntregaEstimada;
     private LocalDateTime fechaFinalizacion;
     private String estado;
-    private String metodoPago; // <-- REINCORPORADO
+    // La columna 'metodo_pago' ha sido eliminada de la base de datos (se usa 'tipoPago' de ComprobantePago)
+    private String tipoPago; // <-- Viene de ComprobantePago, usado solo para mostrar en la UI
     private String instrucciones;
     private double montoTotal;
     private double montoEntregado;
 
-    // Constructor para crear un NUEVO Pedido desde la UI (ej. CrearPedidoController)
+    /**
+     * Constructor para crear un NUEVO Pedido. No maneja información de pago.
+     */
     public Pedido(int idCliente, int idEmpleado, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada,
                   LocalDateTime fechaFinalizacion, String estado, String instrucciones,
                   double montoTotal, double montoEntregado) {
@@ -31,12 +34,15 @@ public class Pedido {
         this.instrucciones = instrucciones;
         this.montoTotal = montoTotal;
         this.montoEntregado = montoEntregado;
-        this.metodoPago = null; // Inicializado como nulo al crear el pedido
+        this.tipoPago = "N/A"; // Inicializado para evitar NullPointer en la UI antes de la consulta
     }
 
-    // Constructor COMPLETO para cuando se recuperan Pedidos con sus nombres (ej. PedidoDAO.getAllPedidos)
+    /**
+     * Constructor COMPLETO para cuando se recuperan Pedidos del DAO.
+     * Incluye 'tipoPago' recuperado del JOIN a ComprobantePago.
+     */
     public Pedido(int idPedido, int idCliente, String nombreCliente, int idEmpleado, String nombreEmpleado,
-                  String estado, String metodoPago, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada,
+                  String estado, String tipoPago, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada,
                   LocalDateTime fechaFinalizacion, String instrucciones, double montoTotal, double montoEntregado) {
         this.idPedido = idPedido;
         this.idCliente = idCliente;
@@ -44,7 +50,7 @@ public class Pedido {
         this.idEmpleado = idEmpleado;
         this.nombreEmpleado = nombreEmpleado;
         this.estado = estado;
-        this.metodoPago = metodoPago; // <-- Asignado desde el DAO
+        this.tipoPago = tipoPago; // <-- Asignado desde el DAO (ComprobantePago)
         this.fechaCreacion = fechaCreacion;
         this.fechaEntregaEstimada = fechaEntregaEstimada;
         this.fechaFinalizacion = fechaFinalizacion;
@@ -81,9 +87,9 @@ public class Pedido {
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
 
-    // MÉTODO REQUERIDO POR EL CONTROLADOR PARA MOSTRAR Y FILTRAR
-    public String getMetodoPago() { return metodoPago; }
-    public void setMetodoPago(String metodoPago) { this.metodoPago = metodoPago; }
+    // GETTER/SETTER para el tipo de pago (proveniente de ComprobantePago)
+    public String getTipoPago() { return tipoPago; }
+    public void setTipoPago(String tipoPago) { this.tipoPago = tipoPago; }
 
     public String getInstrucciones() { return instrucciones; }
     public void setInstrucciones(String instrucciones) { this.instrucciones = instrucciones; }

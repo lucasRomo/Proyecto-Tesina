@@ -9,7 +9,7 @@ import app.model.DetallePedido;
 import app.dao.ClienteDAO;
 import app.dao.EmpleadoDAO;
 import app.dao.ComprobantePagoDAO;
-import app.dao.DetallePedidoDAO; // ¡Añadido! Necesitas el DAO de DetallePedido para obtener los detalles.
+import app.dao.DetallePedidoDAO;
 import app.util.TicketPDFUtil;
 
 import javafx.collections.FXCollections;
@@ -23,15 +23,17 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableCell; // Importación para TableCell
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import javafx.stage.FileChooser; // ¡Añadido! Para guardar el archivo
+import javafx.stage.FileChooser;
 
-import java.io.File; // ¡Añadido! Para manejar archivos
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -39,6 +41,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador para la vista del historial de pedidos (solo estado "Retirado").
+ */
 public class VerHistorialPedidosController implements Initializable {
 
     // --- Constantes y Formateadores ---
@@ -52,7 +57,7 @@ public class VerHistorialPedidosController implements Initializable {
     @FXML
     private ComboBox<Empleado> empleadoFilterComboBox;
     @FXML
-    private ComboBox<String> metodoPagoFilterComboBox;
+    private ComboBox<String> tipoPagoFilterComboBox;
 
     // --- Campos FXML de la Tabla ---
     @FXML
@@ -66,25 +71,28 @@ public class VerHistorialPedidosController implements Initializable {
     @FXML
     private TableColumn<Pedido, String> estadoColumn;
     @FXML
-    private TableColumn<Pedido, String> metodoPagoColumn;
+    private TableColumn<Pedido, String> tipoPagoColumn;
     @FXML
     private TableColumn<Pedido, Double> montoTotalColumn;
     @FXML
     private TableColumn<Pedido, Double> montoEntregadoColumn;
 
-    // Mapea a fechaFinalizacion
     @FXML
-    private TableColumn<Pedido, LocalDateTime> fechaEntregaEstimadaColumn;
+    private TableColumn<Pedido, LocalDateTime> fechaEntregaEstimadaColumn; // Se usa para mostrar fechaFinalizacion
 
     @FXML
     private TableColumn<Pedido, String> instruccionesColumn;
+
+    // Columna para el botón de Ticket
+    @FXML
+    private TableColumn<Pedido, Void> accionesColumn;
 
     // --- DAOs y Listas ---
     private PedidoDAO pedidoDAO;
     private ClienteDAO clienteDAO;
     private EmpleadoDAO empleadoDAO;
     private ComprobantePagoDAO comprobantePagoDAO;
-    private DetallePedidoDAO detallePedidoDAO; // ¡Añadido!
+    private DetallePedidoDAO detallePedidoDAO;
 
     private ObservableList<Pedido> pedidosRetiradosMaestra;
     private FilteredList<Pedido> pedidosFiltrados;
@@ -97,7 +105,7 @@ public class VerHistorialPedidosController implements Initializable {
         clienteDAO = new ClienteDAO();
         empleadoDAO = new EmpleadoDAO();
         comprobantePagoDAO = new ComprobantePagoDAO();
-        detallePedidoDAO = new DetallePedidoDAO(); // ¡Inicializado!
+        detallePedidoDAO = new DetallePedidoDAO();
 
         // 1. Configurar las columnas de la tabla
         configurarColumnas();
@@ -120,21 +128,107 @@ public class VerHistorialPedidosController implements Initializable {
         clienteColumn.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
         empleadoColumn.setCellValueFactory(new PropertyValueFactory<>("nombreEmpleado"));
         estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
-        metodoPagoColumn.setCellValueFactory(new PropertyValueFactory<>("metodoPago"));
+        tipoPagoColumn.setCellValueFactory(new PropertyValueFactory<>("tipoPago"));
         montoTotalColumn.setCellValueFactory(new PropertyValueFactory<>("montoTotal"));
         montoEntregadoColumn.setCellValueFactory(new PropertyValueFactory<>("montoEntregado"));
         instruccionesColumn.setCellValueFactory(new PropertyValueFactory<>("instrucciones"));
 
-        // Mapeamos a "fechaFinalizacion" para el historial
+        // Mapeamos a "fechaFinalizacion" ya que esta vista es solo para pedidos 'Retirado' (historial)
         fechaEntregaEstimadaColumn.setCellValueFactory(new PropertyValueFactory<>("fechaFinalizacion"));
 
         // Configuramos la celda para formatear la fecha/hora
         fechaEntregaEstimadaColumn.setCellFactory(column -> new FormattedDateTableCell<>(DATE_FORMATTER));
+
+        // Configurar la columna de Acciones para el botón Ticket
+        agregarBotonTicketATabla();
     }
 
     /**
+     * Configura la columna de acciones para mostrar un botón "Ticket" en cada fila.
+     */
+    private void agregarBotonTicketATabla() {
+        // No necesita un PropertyValueFactory, solo actúa como un contenedor para el botón.
+        accionesColumn.setCellValueFactory(param -> null);
+
+        accionesColumn.setCellFactory(param -> new TableCell<Pedido, Void>() {
+            private final Button btn = new Button("Ticket");
+
+            {
+                // Estilo del botón
+                btn.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-cursor: hand;");
+
+                // Asignar el evento al botón
+                btn.setOnAction((ActionEvent event) -> {
+                    // Obtener el pedido de la fila actual
+                    Pedido pedido = getTableView().getItems().get(getIndex());
+
+                    // Llamar a la lógica de generación de PDF
+                    generarTicketPDFParaPedido(pedido);
+                });
+            }
+
+            @Override
+            public void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(btn);
+                }
+            }
+        });
+    }
+
+    /**
+     * Lógica para generar el ticket PDF (reutilizada por el botón).
+     * @param pedido El objeto Pedido para el cual se generará el ticket.
+     */
+    private void generarTicketPDFParaPedido(Pedido pedido) {
+
+        // 1. Obtener los detalles del pedido
+        List<DetallePedido> detalles = detallePedidoDAO.getDetallesPorPedido(pedido.getIdPedido());
+
+        if (detalles.isEmpty()) {
+            mostrarAlerta("Error", "No se encontraron detalles de productos para este pedido.", Alert.AlertType.ERROR);
+            return;
+        }
+
+        // 2. Usar FileChooser para que el usuario elija dónde guardar
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar Ticket de Pedido N° " + pedido.getIdPedido());
+
+        // Configurar la extensión por defecto como PDF
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Archivos PDF (*.pdf)", "*.pdf");
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        // Sugerir un nombre de archivo
+        String nombreSugerido = "Ticket_Pedido_" + pedido.getIdPedido() + ".pdf";
+        fileChooser.setInitialFileName(nombreSugerido);
+
+        // Obtener el Stage actual de la ventana
+        Stage stage = (Stage) pedidosTable.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            String rutaGuardado = file.getAbsolutePath();
+            try {
+                // LLAMADA A LA UTILIDAD PDF
+                TicketPDFUtil.generarTicket(pedido, detalles, rutaGuardado);
+
+                mostrarAlerta("Éxito", "Ticket generado y guardado exitosamente en:\n" + rutaGuardado, Alert.AlertType.INFORMATION);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                mostrarAlerta("Error", "Ocurrió un error al generar o guardar el ticket: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        } else {
+            mostrarAlerta("Cancelado", "La generación del ticket PDF fue cancelada.", Alert.AlertType.INFORMATION);
+        }
+    }
+
+    // --- Clase auxiliar FormattedDateTableCell (sin cambios, ya era correcta) ---
+    /**
      * Clase auxiliar para formatear columnas de tipo LocalDateTime a String.
-     * Esto maneja el formateo de fecha/hora en la columna de la tabla.
      */
     public static class FormattedDateTableCell<S, T extends LocalDateTime> extends javafx.scene.control.TableCell<S, T> {
         private final DateTimeFormatter formatter;
@@ -175,7 +269,7 @@ public class VerHistorialPedidosController implements Initializable {
     private void inicializarFiltros() {
         // --- 1. Clientes ---
         ObservableList<Cliente> clientes = FXCollections.observableArrayList();
-        clientes.add(null); // Opción para limpiar filtro
+        clientes.add(null); // Opción para limpiar filtro (Mostrar Todos)
         clientes.addAll(clienteDAO.getAllClientes());
 
         clienteFilterComboBox.setItems(clientes);
@@ -191,7 +285,7 @@ public class VerHistorialPedidosController implements Initializable {
 
         // --- 2. Empleados ---
         ObservableList<Empleado> empleados = FXCollections.observableArrayList();
-        empleados.add(null); // Opción para limpiar filtro
+        empleados.add(null); // Opción para limpiar filtro (Mostrar Todos)
         empleados.addAll(empleadoDAO.getAllEmpleados());
 
         empleadoFilterComboBox.setItems(empleados);
@@ -204,15 +298,15 @@ public class VerHistorialPedidosController implements Initializable {
             public Empleado fromString(String string) { return null; }
         });
 
-        // --- 3. Métodos de Pago ---
-        ObservableList<String> metodosPago = FXCollections.observableArrayList();
-        metodosPago.add(null); // Opción para limpiar filtro
+        // --- 3. Tipos de Pago ---
+        ObservableList<String> tiposPago = FXCollections.observableArrayList();
+        tiposPago.add(null); // Opción para limpiar filtro (Mostrar Todos)
 
-        // **IMPORTANTE: Debes asegurarte de que este método exista en tu PedidoDAO real.**
-        metodosPago.addAll(pedidoDAO.getTiposPago());
+        // El DAO debe obtener los Tipos de Pago únicos de los pedidos
+        tiposPago.addAll(pedidoDAO.getTiposPago());
 
-        metodoPagoFilterComboBox.setItems(metodosPago);
-        metodoPagoFilterComboBox.setConverter(new StringConverter<String>() {
+        tipoPagoFilterComboBox.setItems(tiposPago);
+        tipoPagoFilterComboBox.setConverter(new StringConverter<String>() {
             @Override
             public String toString(String pago) {
                 return (pago != null) ? pago : "Mostrar Todos los Tipos de Pago";
@@ -232,8 +326,8 @@ public class VerHistorialPedidosController implements Initializable {
         if (empleadoFilterComboBox != null) {
             empleadoFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> actualizarFiltro());
         }
-        if (metodoPagoFilterComboBox != null) {
-            metodoPagoFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> actualizarFiltro());
+        if (tipoPagoFilterComboBox != null) {
+            tipoPagoFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> actualizarFiltro());
         }
     }
 
@@ -244,24 +338,32 @@ public class VerHistorialPedidosController implements Initializable {
         pedidosFiltrados.setPredicate(pedido -> {
             // 1. Predicado Cliente
             Cliente clienteSeleccionado = clienteFilterComboBox.getSelectionModel().getSelectedItem();
+            // Si hay un cliente seleccionado (no null) Y el ID del pedido no coincide, filtrar
             if (clienteSeleccionado != null && pedido.getIdCliente() != clienteSeleccionado.getIdCliente()) {
                 return false;
             }
 
             // 2. Predicado Empleado
             Empleado empleadoSeleccionado = empleadoFilterComboBox.getSelectionModel().getSelectedItem();
+            // Si hay un empleado seleccionado (no null) Y el ID del pedido no coincide, filtrar
             if (empleadoSeleccionado != null && pedido.getIdEmpleado() != empleadoSeleccionado.getIdEmpleado()) {
                 return false;
             }
 
             // 3. Predicado Tipo de Pago
-            String metodoPagoSeleccionado = metodoPagoFilterComboBox.getSelectionModel().getSelectedItem();
-            // Si el método de pago del pedido es nulo o vacío, lo tratamos como "N/A"
-            String pedidoMetodoPago = (pedido.getMetodoPago() != null && !pedido.getMetodoPago().isEmpty()) ? pedido.getMetodoPago() : "N/A";
+            String tipoPagoSeleccionado = tipoPagoFilterComboBox.getSelectionModel().getSelectedItem();
 
-            if (metodoPagoSeleccionado != null) {
-                // Compara el método de pago seleccionado con el del pedido (ignorando mayúsculas/minúsculas)
-                if (!metodoPagoSeleccionado.equalsIgnoreCase(pedidoMetodoPago)) {
+            // Si se seleccionó un tipo de pago (tipoPagoSeleccionado no es null)
+            if (tipoPagoSeleccionado != null) {
+                String pedidoTipoPago = pedido.getTipoPago();
+
+                // Si el tipo de pago del pedido es nulo o vacío, no coincide con el seleccionado
+                if (pedidoTipoPago == null || pedidoTipoPago.isEmpty()) {
+                    return false;
+                }
+
+                // Si no coincide el tipo de pago (ignorando mayúsculas/minúsculas), filtrar
+                if (!tipoPagoSeleccionado.equalsIgnoreCase(pedidoTipoPago)) {
                     return false;
                 }
             }
@@ -282,86 +384,17 @@ public class VerHistorialPedidosController implements Initializable {
     private void handleLimpiarFiltros(ActionEvent event) {
         if (clienteFilterComboBox != null) clienteFilterComboBox.getSelectionModel().clearSelection();
         if (empleadoFilterComboBox != null) empleadoFilterComboBox.getSelectionModel().clearSelection();
-        if (metodoPagoFilterComboBox != null) metodoPagoFilterComboBox.getSelectionModel().clearSelection();
+        if (tipoPagoFilterComboBox != null) tipoPagoFilterComboBox.getSelectionModel().clearSelection();
         // Los listeners se encargan de llamar a actualizarFiltro()
     }
 
-    // ----------------------------------------------------------------------------------
-    // MÉTODO CORREGIDO: Generar Ticket PDF
-    // ----------------------------------------------------------------------------------
-
-    /**
-     * Maneja la generación del ticket PDF para el pedido seleccionado.
-     * Pide al usuario la ubicación de guardado y llama al método estático 'generarTicket'.
-     */
-    @FXML
-    private void handleGenerarTicketPDF(ActionEvent event) {
-        Pedido pedidoSeleccionado = pedidosTable.getSelectionModel().getSelectedItem();
-
-        if (pedidoSeleccionado == null) {
-            mostrarAlerta("Advertencia", "Por favor, seleccione un pedido de la tabla para generar el ticket.", Alert.AlertType.WARNING);
-            return;
-        }
-
-        // 1. Obtener los detalles del pedido usando el DAO de DetallePedido
-        // Usamos detallePedidoDAO que acabamos de agregar/inicializar
-        List<DetallePedido> detalles = detallePedidoDAO.getDetallesPorPedido(pedidoSeleccionado.getIdPedido());
-
-        if (detalles.isEmpty()) {
-            mostrarAlerta("Error", "No se encontraron detalles de productos para este pedido.", Alert.AlertType.ERROR);
-            return;
-        }
-
-        // 2. Usar FileChooser para que el usuario elija dónde guardar (Mejor práctica)
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar Ticket de Pedido N° " + pedidoSeleccionado.getIdPedido());
-
-        // Configurar la extensión por defecto como PDF
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Archivos PDF (*.pdf)", "*.pdf");
-        fileChooser.getExtensionFilters().add(extFilter);
-
-        // Sugerir un nombre de archivo
-        String nombreSugerido = "Ticket_Pedido_" + pedidoSeleccionado.getIdPedido() + ".pdf";
-        fileChooser.setInitialFileName(nombreSugerido);
-
-        // Obtener la Stage actual
-        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        File file = fileChooser.showSaveDialog(stage);
-
-        if (file != null) {
-            String rutaGuardado = file.getAbsolutePath();
-            try {
-                // LLAMADA CORREGIDA: Usamos 'generarTicket' (el nombre correcto) con 3 argumentos
-                TicketPDFUtil.generarTicket(pedidoSeleccionado, detalles, rutaGuardado);
-
-                // 3. Opcional: Actualizar la base de datos con la ruta del archivo (solo si tienes el campo)
-                // Esto es útil para la próxima vez que quieras abrir el mismo ticket sin regenerar.
-                /*
-                boolean rutaActualizada = comprobantePagoDAO.actualizarRutaTicket(
-                        pedidoSeleccionado.getIdPedido(), rutaGuardado
-                );
-                */
-
-                mostrarAlerta("Éxito", "Ticket generado y guardado exitosamente en:\n" + rutaGuardado, Alert.AlertType.INFORMATION);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                mostrarAlerta("Error", "Ocurrió un error al generar o guardar el ticket: " + e.getMessage(), Alert.AlertType.ERROR);
-            }
-        } else {
-            // El usuario canceló la acción de guardar
-            mostrarAlerta("Cancelado", "La generación del ticket PDF fue cancelada.", Alert.AlertType.INFORMATION);
-        }
-    }
-
-
     /**
      * Vuelve al menú principal de pedidos.
+     * @param event El evento de acción.
      */
     @FXML
     private void handleVolver(ActionEvent event) {
         try {
-            // NOTA: Asegúrate de que "/PedidosPrimerMenu.fxml" sea la ruta correcta
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/PedidosPrimerMenu.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -373,7 +406,7 @@ public class VerHistorialPedidosController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
             // Llamada que requiere 3 parámetros (String, String, Alert.AlertType)
-            mostrarAlerta("Error", "No se pudo volver al menú de pedidos.", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "No se pudo volver al menú de pedidos. Verifique la ruta del FXML.", Alert.AlertType.ERROR);
         }
     }
 

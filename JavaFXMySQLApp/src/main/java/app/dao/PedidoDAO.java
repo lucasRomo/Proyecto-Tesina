@@ -18,7 +18,8 @@ import java.util.List;
 
 /**
  * DAO (Data Access Object) para la entidad Pedido.
- * Maneja la persistencia de los objetos Pedido en la base de datos.
+ * Se ha ajustado para ELIMINAR TODA REFERENCIA a 'metodo_pago' de la tabla Pedido,
+ * y se obtiene el 'tipo_pago' de la tabla 'ComprobantePago' mediante un JOIN en las consultas SELECT.
  */
 public class PedidoDAO {
 
@@ -38,47 +39,19 @@ public class PedidoDAO {
     }
 
     // ----------------------------------------------------------------------------------
-    // MÉTODO CLAVE: Modificar Monto Total (AÑADIDO PARA SOLUCIONAR EL ERROR)
-    // ----------------------------------------------------------------------------------
-
-    /**
-     * Modifica únicamente el monto total de un pedido existente.
-     * @param idPedido El ID del pedido a modificar.
-     * @param nuevoMonto El nuevo monto total del pedido.
-     * @return true si la modificación fue exitosa.
-     */
-    public boolean modificarMontoTotal(int idPedido, double nuevoMonto) {
-        String sql = "UPDATE Pedido SET monto_total = ? WHERE id_pedido = ?";
-        try (Connection conn = obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setDouble(1, nuevoMonto);
-            stmt.setInt(2, idPedido);
-
-            int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
-        } catch (SQLException e) {
-            System.err.println("Error al modificar el monto total del pedido " + idPedido + ": " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
-    // ----------------------------------------------------------------------------------
     // MÉTODOS DE CREACIÓN Y MODIFICACIÓN
     // ----------------------------------------------------------------------------------
 
     /**
-     * Guarda un nuevo Pedido. Acepta el tipoPago para registrar el método de pago
-     * directamente en la tabla Pedido.
+     * Guarda un nuevo Pedido. La información de pago se maneja EXCLUSIVAMENTE
+     * en la tabla ComprobantePago en otro proceso.
      * @param pedido El objeto Pedido a guardar.
-     * @param tipoPago El método de pago seleccionado. (NUEVO PARAMETRO)
      * @return true si la operación fue exitosa.
      */
-    public boolean savePedido(Pedido pedido, String tipoPago) {
-        String sqlPedido = "INSERT INTO Pedido (id_cliente, estado, fecha_creacion, fecha_entrega_estimada, instrucciones, monto_total, monto_entregado, metodo_pago) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    public boolean savePedido(Pedido pedido, String tipoPago) { // tipoPago no se usa para Pedido, pero se mantiene la firma si es necesario
+        // ELIMINADA la columna metodo_pago del INSERT de la tabla Pedido
+        String sqlPedido = "INSERT INTO Pedido (id_cliente, estado, fecha_creacion, fecha_entrega_estimada, instrucciones, monto_total, monto_entregado) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         String sqlAsignacion = "INSERT INTO AsignacionPedido (id_pedido, id_empleado, fecha_asignacion) VALUES (?, ?, ?)";
 
         Connection conn = null;
@@ -107,13 +80,7 @@ public class PedidoDAO {
             stmtPedido.setDouble(6, pedido.getMontoTotal());
             stmtPedido.setDouble(7, pedido.getMontoEntregado());
 
-            // metodo_pago: USAMOS EL NUEVO PARAMETRO 'tipoPago'
-            if (tipoPago != null && !tipoPago.isEmpty() && !tipoPago.equals("N/A")) {
-                stmtPedido.setString(8, tipoPago);
-            } else {
-                stmtPedido.setNull(8, Types.VARCHAR);
-            }
-
+            // Eliminado el parámetro 8 (metodo_pago)
 
             int affectedRowsPedido = stmtPedido.executeUpdate();
 
@@ -174,13 +141,13 @@ public class PedidoDAO {
     }
 
     /**
-     * Modifica un pedido existente. Se ha añadido 'metodo_pago' al UPDATE.
+     * Modifica un pedido existente. ELIMINADO 'metodo_pago' del UPDATE.
      * @param pedido El objeto Pedido con los datos actualizados.
      * @return true si la modificación fue exitosa.
      */
     public boolean modificarPedido(Pedido pedido) {
-        // Se añade el campo 'metodo_pago' para el proceso de Comprobante
-        String sql = "UPDATE Pedido SET id_cliente = ?, estado = ?, fecha_entrega_estimada = ?, fecha_finalizacion = ?, instrucciones = ?, monto_total = ?, monto_entregado = ?, metodo_pago = ? WHERE id_pedido = ?";
+        // ELIMINADO el campo 'metodo_pago'
+        String sql = "UPDATE Pedido SET id_cliente = ?, estado = ?, fecha_entrega_estimada = ?, fecha_finalizacion = ?, instrucciones = ?, monto_total = ?, monto_entregado = ? WHERE id_pedido = ?";
         try (Connection conn = obtenerConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -205,19 +172,37 @@ public class PedidoDAO {
             stmt.setDouble(6, pedido.getMontoTotal());
             stmt.setDouble(7, pedido.getMontoEntregado());
 
-            // 8: NUEVO CAMPO: metodo_pago
-            if (pedido.getMetodoPago() != null && !pedido.getMetodoPago().isEmpty() && !pedido.getMetodoPago().equals("N/A")) {
-                stmt.setString(8, pedido.getMetodoPago());
-            } else {
-                stmt.setNull(8, Types.VARCHAR);
-            }
+            // ELIMINADO el parámetro 8 (metodo_pago)
 
-            // 9: WHERE id_pedido
-            stmt.setInt(9, pedido.getIdPedido());
+            // 8: WHERE id_pedido
+            stmt.setInt(8, pedido.getIdPedido()); // El índice se reduce por la eliminación de metodo_pago
 
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
         } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Modifica únicamente el monto total de un pedido existente.
+     * @param idPedido El ID del pedido a modificar.
+     * @param nuevoMonto El nuevo monto total del pedido.
+     * @return true si la modificación fue exitosa.
+     */
+    public boolean modificarMontoTotal(int idPedido, double nuevoMonto) {
+        String sql = "UPDATE Pedido SET monto_total = ? WHERE id_pedido = ?";
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setDouble(1, nuevoMonto);
+            stmt.setInt(2, idPedido);
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al modificar el monto total del pedido " + idPedido + ": " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -230,7 +215,7 @@ public class PedidoDAO {
 
     /**
      * Obtiene una lista de todos los pedidos ACTIVOS (estado <> 'Retirado'),
-     * con la opción de filtrar por Empleado.
+     * haciendo JOIN con ComprobantePago para obtener el tipo_pago.
      * @param idEmpleado El ID del empleado asignado. Si es 0 o negativo, trae todos.
      * @return Lista de objetos Pedido.
      */
@@ -239,15 +224,16 @@ public class PedidoDAO {
 
         String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
                 "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
-                "p.metodo_pago, " +
-                "c.nombre AS nombre_cliente, c.apellido AS apellido_cliente, " +
-                "ap.id_empleado, pr.nombre AS nombre_empleado, pr.apellido AS apellido_empleado " +
+                "cpr.tipo_pago, " + // <-- OBTENEMOS TIPO_PAGO DE COMPROBANTEPAGO
+                "clp.nombre AS nombre_cliente, clp.apellido AS apellido_cliente, " +
+                "ap.id_empleado, emp.nombre AS nombre_empleado, emp.apellido AS apellido_empleado " +
                 "FROM Pedido p " +
                 "LEFT JOIN Cliente cl ON p.id_cliente = cl.id_cliente " +
-                "LEFT JOIN Persona c ON cl.id_persona = c.id_persona " +
+                "LEFT JOIN Persona clp ON cl.id_persona = clp.id_persona " +
                 "LEFT JOIN AsignacionPedido ap ON p.id_pedido = ap.id_pedido " +
                 "LEFT JOIN Empleado e ON ap.id_empleado = e.id_empleado " +
-                "LEFT JOIN Persona pr ON e.id_persona = pr.id_persona " +
+                "LEFT JOIN Persona emp ON e.id_persona = emp.id_persona " +
+                "LEFT JOIN ComprobantePago cpr ON p.id_pedido = cpr.id_pedido " + // <-- NUEVO JOIN: RELACIÓN DE PAGO
                 "WHERE p.estado <> 'Retirado' " +
                 (idEmpleado > 0 ? "AND ap.id_empleado = ? " : "") +
                 "GROUP BY p.id_pedido " +
@@ -259,6 +245,47 @@ public class PedidoDAO {
             if (idEmpleado > 0) {
                 stmt.setInt(1, idEmpleado);
             }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    pedidos.add(mapResultSetToPedido(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return pedidos;
+    }
+
+    /**
+     * Obtiene una lista de pedidos filtrada por un estado específico,
+     * haciendo JOIN con ComprobantePago para obtener el tipo_pago.
+     * @param estado El estado por el cual filtrar (ej. "Retirado").
+     * @return Lista de objetos Pedido.
+     */
+    public List<Pedido> getPedidosPorEstado(String estado) {
+        List<Pedido> pedidos = new ArrayList<>();
+
+        String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
+                "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
+                "cpr.tipo_pago, " + // <-- OBTENEMOS TIPO_PAGO DE COMPROBANTEPAGO
+                "clp.nombre AS nombre_cliente, clp.apellido AS apellido_cliente, " +
+                "ap.id_empleado, emp.nombre AS nombre_empleado, emp.apellido AS apellido_empleado " +
+                "FROM Pedido p " +
+                "LEFT JOIN Cliente cl ON p.id_cliente = cl.id_cliente " +
+                "LEFT JOIN Persona clp ON cl.id_persona = clp.id_persona " +
+                "LEFT JOIN AsignacionPedido ap ON p.id_pedido = ap.id_pedido " +
+                "LEFT JOIN Empleado e ON ap.id_empleado = e.id_empleado " +
+                "LEFT JOIN Persona emp ON e.id_persona = emp.id_persona " +
+                "LEFT JOIN ComprobantePago cpr ON p.id_pedido = cpr.id_pedido " + // <-- NUEVO JOIN: RELACIÓN DE PAGO
+                "WHERE p.estado = ? " +
+                "GROUP BY p.id_pedido " +
+                "ORDER BY p.fecha_finalizacion DESC";
+
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, estado);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -317,49 +344,10 @@ public class PedidoDAO {
 
 
     /**
-     * Obtiene una lista de pedidos filtrada por un estado específico.
-     * @param estado El estado por el cual filtrar (ej. "Retirado").
-     * @return Lista de objetos Pedido.
-     */
-    public List<Pedido> getPedidosPorEstado(String estado) {
-        List<Pedido> pedidos = new ArrayList<>();
-
-        String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
-                "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
-                "p.metodo_pago, " + // Traemos el método de pago desde la tabla Pedido
-                "c.nombre AS nombre_cliente, c.apellido AS apellido_cliente, " +
-                "ap.id_empleado, pr.nombre AS nombre_empleado, pr.apellido AS apellido_empleado " +
-                "FROM Pedido p " +
-                "LEFT JOIN Cliente cl ON p.id_cliente = cl.id_cliente " +
-                "LEFT JOIN Persona c ON cl.id_persona = c.id_persona " +
-                "LEFT JOIN AsignacionPedido ap ON p.id_pedido = ap.id_pedido " +
-                "LEFT JOIN Empleado e ON ap.id_empleado = e.id_empleado " +
-                "LEFT JOIN Persona pr ON e.id_persona = pr.id_persona " +
-                "WHERE p.estado = ? " +
-                "GROUP BY p.id_pedido " +
-                "ORDER BY p.fecha_finalizacion DESC";
-
-        try (Connection conn = obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, estado);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    pedidos.add(mapResultSetToPedido(rs));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return pedidos;
-    }
-
-    /**
      * Helper para mapear un ResultSet a un objeto Pedido.
+     * Ahora mapea el 'tipo_pago' en lugar de 'metodo_pago'.
      */
     private Pedido mapResultSetToPedido(ResultSet rs) throws SQLException {
-        // ... (Tu lógica existente para mapear datos) ...
 
         int idPedido = rs.getInt("id_pedido");
         int idCliente = rs.getInt("id_cliente");
@@ -376,10 +364,10 @@ public class PedidoDAO {
 
         String estado = rs.getString("estado");
 
-        // MODIFICACIÓN CLAVE: Extraer 'metodo_pago' directamente de la tabla Pedido
-        String metodoPago = rs.getString("metodo_pago");
-        if (metodoPago == null || metodoPago.trim().isEmpty()) {
-            metodoPago = "N/A";
+        // CAMBIO CLAVE: Extraer 'tipo_pago' del ResultSet (viene del JOIN a ComprobantePago)
+        String tipoPago = rs.getString("tipo_pago");
+        if (tipoPago == null || tipoPago.trim().isEmpty()) {
+            tipoPago = "N/A";
         }
 
         LocalDateTime fechaCreacion = rs.getTimestamp("fecha_creacion").toLocalDateTime();
@@ -401,7 +389,7 @@ public class PedidoDAO {
                 idEmpleadoResultado,
                 nombreEmpleado,
                 estado,
-                metodoPago,
+                tipoPago, // <--- Aquí se usa el nuevo campo tipoPago
                 fechaCreacion,
                 fechaEntregaEstimada,
                 fechaFinalizacion,

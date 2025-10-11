@@ -34,15 +34,14 @@ public class DetallePedidoController implements Initializable {
     @FXML private Label lblEmpleado;
     @FXML private TextArea lblInstrucciones;
     @FXML private Label lblTotalPagar;
-    @FXML private ComboBox<String> cmbMetodoPago;
+    // Campo FXML MODIFICADO: Reemplaza cmbMetodoPago por cmbTipoPago
+    @FXML private ComboBox<String> cmbTipoPago;
     @FXML private TextField txtMontoEntregado;
     @FXML private Label lblVuelto;
 
-    // --- Componentes FXML de Adición de Producto (MODIFICADOS) ---
-    // ESTO REEMPLAZA A txtDescripcion en la nueva lógica del FXML
+    // --- Componentes FXML de Adición de Producto ---
     @FXML private ComboBox<Producto> cmbProducto;
     @FXML private TextField txtCantidad;
-    // Se mantiene, pero se ignora en la lógica de agregar detalle, ya que el precio viene del Producto
     @FXML private TextField txtPrecioUnitario;
 
     // --- Tabla de Detalles ---
@@ -78,8 +77,21 @@ public class DetallePedidoController implements Initializable {
         // 3. Configurar la columna de Acción
         configurarColumnaAccion();
 
-        // 4. Inicializar el ComboBox de Métodos de Pago
-        cmbMetodoPago.setItems(FXCollections.observableArrayList(pedidoDAO.getTiposPago()));
+        // 4. Inicializar el ComboBox de Tipos de Pago (Cambiado de 'Métodos de Pago')
+        // CORRECCIÓN: Se agrega la verificación de nulidad para evitar NullPointerException.
+        if (cmbTipoPago != null && pedidoDAO != null) {
+            try {
+                // Se asume que pedidoDAO.getTiposPago() devuelve List<String>
+                cmbTipoPago.setItems(FXCollections.observableArrayList(pedidoDAO.getTiposPago()));
+            } catch (Exception e) {
+                System.err.println("Error al cargar los Tipos de Pago desde la BD: " + e.getMessage());
+                mostrarAlerta(Alert.AlertType.ERROR, "Error de Carga", "Conexión Fallida", "No se pudieron cargar los tipos de pago desde la base de datos.");
+            }
+        } else {
+            // Este mensaje ayuda a diagnosticar si el problema es FXML o la inicialización del DAO
+            System.err.println("Error de Inicialización: cmbTipoPago o pedidoDAO es null.");
+        }
+
 
         // 5. Agregar listeners para cálculos en tiempo real
         txtMontoEntregado.textProperty().addListener((obs, oldVal, newVal) -> calcularVuelto());
@@ -99,8 +111,10 @@ public class DetallePedidoController implements Initializable {
      */
     private void cargarProductosDisponibles() {
         // Asumiendo que productoDAO.getAllProductos() devuelve List<Producto>
-        productosDisponibles.setAll(productoDAO.getAllProductos());
-        cmbProducto.setItems(productosDisponibles);
+        if (productoDAO != null) {
+            productosDisponibles.setAll(productoDAO.getAllProductos());
+            cmbProducto.setItems(productosDisponibles);
+        }
     }
 
     /**
@@ -162,7 +176,8 @@ public class DetallePedidoController implements Initializable {
                     DetallePedido detalle = getTableView().getItems().get(getIndex());
                     handleEliminarDetalle(detalle);
                 });
-                btnEliminar.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white;");
+                // Estilo personalizado para el botón
+                btnEliminar.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; -fx-cursor: hand;");
             }
 
             @Override
@@ -196,6 +211,7 @@ public class DetallePedidoController implements Initializable {
         alert.setContentText(mensaje);
 
         Optional<ButtonType> result = alert.showAndWait();
+        // Usar isPresent() en lugar de == ButtonType.OK porque showAndWait puede devolver Optional.empty()
         if (result.isPresent() && result.get() == ButtonType.OK) {
             detallesDelPedido.remove(detalle);
             recalcularTotalPedido();
@@ -209,18 +225,21 @@ public class DetallePedidoController implements Initializable {
     public void setPedido(Pedido pedido) {
         this.pedidoActual = pedido;
 
+        // Cargar detalles
         List<DetallePedido> detallesExistentes = detalleDAO.getDetallesPorPedido(pedido.getIdPedido());
         detallesDelPedido.setAll(detallesExistentes);
         detallesTable.setItems(detallesDelPedido);
 
+        // Cargar información del pedido
         lblIdPedido.setText(String.valueOf(pedido.getIdPedido()));
         lblCliente.setText(pedido.getNombreCliente());
         lblEstado.setText(pedido.getEstado());
         lblEmpleado.setText(pedido.getNombreEmpleado());
         lblInstrucciones.setText(pedido.getInstrucciones());
 
-        if (pedido.getMetodoPago() != null && !pedido.getMetodoPago().isEmpty()) {
-            cmbMetodoPago.getSelectionModel().select(pedido.getMetodoPago());
+        // MODIFICADO: Uso de getTipoPago() y cmbTipoPago
+        if (cmbTipoPago != null && pedido.getTipoPago() != null && !pedido.getTipoPago().isEmpty()) {
+            cmbTipoPago.getSelectionModel().select(pedido.getTipoPago());
         }
 
         if (pedido.getMontoEntregado() > 0.0) {
@@ -351,9 +370,10 @@ public class DetallePedidoController implements Initializable {
     @FXML
     private void finalizarPedido() {
         // 1. Validar campos de pago y detalles
-        String metodoPago = cmbMetodoPago.getSelectionModel().getSelectedItem();
-        if (metodoPago == null || metodoPago.isEmpty()) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Método de Pago Requerido", "Por favor, seleccione el método de pago antes de finalizar.");
+        // MODIFICADO: Uso de cmbTipoPago y variable tipoPago
+        String tipoPago = cmbTipoPago.getSelectionModel().getSelectedItem();
+        if (tipoPago == null || tipoPago.isEmpty()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Tipo de Pago Requerido", "Por favor, seleccione el tipo de pago antes de finalizar.");
             return;
         }
 
@@ -386,7 +406,8 @@ public class DetallePedidoController implements Initializable {
 
         // 2. Actualizar el modelo del pedido
         pedidoActual.setEstado("Retirado");
-        pedidoActual.setMetodoPago(metodoPago);
+        // MODIFICADO: Uso de setTipoPago()
+        pedidoActual.setTipoPago(tipoPago);
         pedidoActual.setMontoEntregado(montoEntregado);
         pedidoActual.setFechaFinalizacion(java.time.LocalDateTime.now());
         // El monto total ya fue actualizado por recalcularTotalPedido()

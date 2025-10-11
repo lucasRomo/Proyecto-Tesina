@@ -1,92 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.control.cell.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerHistorialPedidosController">
-    <stylesheets>
-        <URL value="@style.css" />
-    </stylesheets>
+<VBox alignment="TOP_CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.HistorialPedidosController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label styleClass="titulo-principal" text="Historial de Pedidos (Estado: Retirado)">
+    <Label text="Historial de Pedidos" style="-fx-font-weight: bold;">
         <font>
-            <Font name="System Bold" size="20.0" />
+            <Font size="24.0" />
         </font>
     </Label>
 
-    <!-- HBOX para los filtros de búsqueda -->
-    <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 10 0 10 0;">
-        <Label style="-fx-font-weight: bold;" text="Filtrar por:" textFill="WHITE" />
-
-        <ComboBox fx:id="clienteFilterComboBox" prefWidth="150" promptText="Cliente" />
-        <ComboBox fx:id="empleadoFilterComboBox" prefWidth="150" promptText="Empleado" />
-        <ComboBox fx:id="metodoPagoFilterComboBox" prefWidth="150" promptText="Tipo de Pago" />
-
-        <Region HBox.hgrow="ALWAYS" />
-
-        <Button onAction="#handleLimpiarFiltros" text="Limpiar Filtros" />
+    <!-- Barra de Búsqueda y Botones -->
+    <HBox alignment="CENTER_LEFT" spacing="10.0" maxWidth="Infinity">
+        <TextField fx:id="txtBusqueda" promptText="Buscar por ID, Cliente o Empleado..." HBox.hgrow="ALWAYS" />
+        <Button text="Refrescar" onAction="#handleRefrescar" style="-fx-background-color: #007bff; -fx-text-fill: white;" />
     </HBox>
-    <!-- FIN de HBOX para los filtros -->
 
-    <TableView fx:id="pedidosTable" editable="false" VBox.vgrow="ALWAYS">
+    <!-- Tabla de Pedidos -->
+    <TableView fx:id="pedidosTable" VBox.vgrow="ALWAYS" prefHeight="500.0">
         <columns>
-            <TableColumn fx:id="idPedidoColumn" prefWidth="75.0" text="ID">
-                <cellValueFactory>
-                    <PropertyValueFactory property="idPedido" />
-                </cellValueFactory>
-            </TableColumn>
-            <TableColumn fx:id="clienteColumn" prefWidth="150.0" text="Cliente">
-                <cellValueFactory>
-                    <PropertyValueFactory property="nombreCliente" />
-                </cellValueFactory>
-            </TableColumn>
-            <TableColumn fx:id="empleadoColumn" prefWidth="150.0" text="Empleado">
-                <cellValueFactory>
-                    <PropertyValueFactory property="nombreEmpleado" />
-                </cellValueFactory>
-            </TableColumn>
-            <TableColumn fx:id="estadoColumn" prefWidth="100.0" text="Estado">
-                <cellValueFactory>
-                    <PropertyValueFactory property="estado" />
-                </cellValueFactory>
-            </TableColumn>
-            <TableColumn fx:id="metodoPagoColumn" prefWidth="100.0" text="Método Pago">
-                <cellValueFactory>
-                    <PropertyValueFactory property="metodoPago" />
-                </cellValueFactory>
-            </TableColumn>
-            <TableColumn fx:id="montoTotalColumn" prefWidth="100.0" text="Monto Total">
-                <cellValueFactory>
-                    <PropertyValueFactory property="montoTotal" />
-                </cellValueFactory>
-            </TableColumn>
-            <TableColumn fx:id="montoEntregadoColumn" prefWidth="120.0" text="Monto Entregado">
-                <cellValueFactory>
-                    <PropertyValueFactory property="montoEntregado" />
-                </cellValueFactory>
-            </TableColumn>
-            <TableColumn fx:id="fechaEntregaEstimadaColumn" prefWidth="150.0" text="Fecha de Finalización">
-                <cellValueFactory>
-                    <PropertyValueFactory property="fechaEntregaEstimada" />
-                </cellValueFactory>
-            </TableColumn>
-            <TableColumn fx:id="instruccionesColumn" prefWidth="250.0" text="Instrucciones">
-                <cellValueFactory>
-                    <PropertyValueFactory property="instrucciones" />
-                </cellValueFactory>
-            </TableColumn>
+            <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID" />
+            <TableColumn fx:id="clienteColumn" prefWidth="150.0" text="Cliente" />
+            <TableColumn fx:id="empleadoColumn" prefWidth="150.0" text="Empleado" />
+            <TableColumn fx:id="montoColumn" prefWidth="100.0" text="Monto Total" />
+            <TableColumn fx:id="estadoColumn" prefWidth="100.0" text="Estado" />
+            <TableColumn fx:id="fechaCreacionColumn" prefWidth="150.0" text="F. Creación" />
+            <TableColumn fx:id="fechaFinalizacionColumn" prefWidth="150.0" text="F. Finalización" />
+
+            <!-- NUEVA COLUMNA PARA LA ACCIÓN DE DESCARGA -->
+            <TableColumn fx:id="descargaColumn" prefWidth="100.0" text="Ticket" />
         </columns>
     </TableView>
 
-    <HBox alignment="CENTER" spacing="10.0">
-        <Button onAction="#handleVolver" styleClass="button-volver" text="Volver al Menú" />
+    <!-- Pie de página o Controles Adicionales -->
+    <HBox alignment="CENTER_LEFT" spacing="10.0" maxWidth="Infinity">
+        <Label fx:id="lblConteo" text="Total de pedidos: 0" style="-fx-font-weight: bold;" />
     </HBox>
-
 </VBox>

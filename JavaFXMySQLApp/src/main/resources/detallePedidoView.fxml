@@ -101,7 +101,8 @@
         </columnConstraints>
 
         <Label text="Método de Pago:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-        <ComboBox fx:id="cmbMetodoPago" promptText="Seleccionar..." maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <!-- CORRECCIÓN: Cambiado fx:id="cmbMetodoPago" a fx:id="cmbTipoPago" para coincidir con el Controller -->
+        <ComboBox fx:id="cmbTipoPago" promptText="Seleccionar..." maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
         <Label text="Monto Entregado:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
         <TextField fx:id="txtMontoEntregado" promptText="0.00" GridPane.columnIndex="1" GridPane.rowIndex="1" />

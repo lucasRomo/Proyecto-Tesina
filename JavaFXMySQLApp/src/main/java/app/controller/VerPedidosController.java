@@ -79,7 +79,7 @@ public class VerPedidosController implements Initializable {
 
     // ComboBox para filtrar por método de pago
     @FXML
-    private ComboBox<String> metodoPagoFilterComboBox;
+    private ComboBox<String> metodoPagoFilterComboBox; // Se mantiene el nombre, pero filtra por 'tipo_pago'
 
     private PedidoDAO pedidoDAO;
     private int idEmpleadoFiltro = 0; // 0 significa 'Todos los Empleados'
@@ -345,7 +345,8 @@ public class VerPedidosController implements Initializable {
                     String metodoSeleccionado = metodoPagoFilterComboBox != null ? metodoPagoFilterComboBox.getSelectionModel().getSelectedItem() : null;
                     if (metodoSeleccionado != null && !metodoSeleccionado.equals("Todos los Métodos")) {
                         // El método de pago puede ser nulo o "N/A" si no hay comprobante
-                        return metodoSeleccionado.equals(p.getMetodoPago());
+                        // CAMBIO CLAVE: Usamos getTipoPago() que es lo que mapea el DAO desde ComprobantePago
+                        return metodoSeleccionado.equals(p.getTipoPago());
                     }
                     return true;
                 })

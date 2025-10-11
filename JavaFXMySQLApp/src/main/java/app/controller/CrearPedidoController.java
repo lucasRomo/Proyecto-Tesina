@@ -5,7 +5,7 @@ import app.model.Pedido;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
+import javafx.fxml.FXMLLoader; // ¡Esta es la importación que faltaba!
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -15,22 +15,25 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
+import javafx.fxml.Initializable;
 
 import java.io.IOException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List; // Importar List
+import java.util.ResourceBundle;
 
-public class CrearPedidoController {
+public class CrearPedidoController implements Initializable {
 
     // ComboBox existentes
     @FXML private ComboBox<String> clienteComboBox;
     @FXML private ComboBox<String> empleadoComboBox;
     @FXML private ComboBox<String> estadoComboBox;
-    @FXML private ComboBox<String> metodoPagoComboBox; // ComboBox para el tipo_pago en ComprobantePago
+    // RENOMBRADO: Usamos 'tipoPagoComboBox' para ser coherentes con el modelo ComprobantePago
+    @FXML private ComboBox<String> tipoPagoComboBox;
 
     // Otros campos
     @FXML private DatePicker fechaEntregaEstimadaPicker;
-    // @FXML private DatePicker fechaFinalizacionPicker; // ELIMINADO
     @FXML private TextField montoTotalField;
     @FXML private TextField montoEntregadoField;
     @FXML private TextArea instruccionesArea;
@@ -41,17 +44,26 @@ public class CrearPedidoController {
     /**
      * Inicializa el controlador. Se llama automáticamente después de que se carga el FXML.
      */
-    @FXML
-    public void initialize() {
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
         // Inicializar ComboBox de Estado
         estadoComboBox.setItems(FXCollections.observableArrayList(
                 "Pendiente", "En Proceso", "Finalizado", "Entregado", "Cancelado"
         ));
+        // Seleccionar Pendiente por defecto
+        estadoComboBox.getSelectionModel().select("Pendiente");
 
-        // Inicializar ComboBox de Método de Pago con las opciones requeridas para ComprobantePago
-        metodoPagoComboBox.setItems(FXCollections.observableArrayList(
-                "Transferencia", "Efectivo", "Tarjeta"
-        ));
+
+        // --- Carga de ComboBox desde el DAO ---
+
+        // Inicializar ComboBox de Tipo de Pago (usa el método del DAO)
+        try {
+            List<String> listaTiposPago = pedidoDAO.getTiposPago();
+            tipoPagoComboBox.setItems(FXCollections.observableArrayList(listaTiposPago));
+            tipoPagoComboBox.getSelectionModel().selectFirst(); // Seleccionar el primero por defecto
+        } catch (Exception e) {
+            System.err.println("Error al cargar tipos de pago: " + e.getMessage());
+        }
 
         // Cargar Clientes
         try {
@@ -67,6 +79,7 @@ public class CrearPedidoController {
             List<String> listaEmpleados = pedidoDAO.getAllEmpleadosDisplay();
             listaEmpleados.add(0, "0 - Sin Asignar");
             empleadoComboBox.setItems(FXCollections.observableArrayList(listaEmpleados));
+            empleadoComboBox.getSelectionModel().selectFirst(); // Seleccionar "Sin Asignar" por defecto
         } catch (Exception e) {
             System.err.println("Error al cargar empleados: " + e.getMessage());
         }
@@ -93,13 +106,12 @@ public class CrearPedidoController {
 
             String estado = estadoComboBox.getSelectionModel().getSelectedItem();
             // Obtener el tipo de pago para pasarlo al DAO para ComprobantePago
-            String tipoPago = metodoPagoComboBox.getSelectionModel().getSelectedItem();
+            String tipoPago = tipoPagoComboBox.getSelectionModel().getSelectedItem();
             LocalDateTime fechaCreacion = LocalDateTime.now();
 
             LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaPicker.getValue() != null)
                     ? fechaEntregaEstimadaPicker.getValue().atStartOfDay() : null;
 
-            // ELIMINACIÓN DE fechaFinalizacionPicker
             LocalDateTime fechaFinalizacion = null; // Se inicializa a null, ya que se llenará al finalizar el pedido.
 
             String instrucciones = instruccionesArea.getText();
@@ -109,22 +121,22 @@ public class CrearPedidoController {
                     : 0.0;
 
 
-            // Constructor de Pedido: se pasa null para fechaFinalizacion
+            // Constructor de Pedido que solo acepta los campos de la tabla Pedido (9 argumentos)
             Pedido nuevoPedido = new Pedido(
                     idCliente,
                     idEmpleado,
                     fechaCreacion,
                     fechaEntregaEstimada,
-                    fechaFinalizacion, // Ahora es null
+                    fechaFinalizacion,
                     estado,
                     instrucciones,
                     montoTotal,
                     montoEntregado
             );
 
-            // LLAMADA AL DAO MODIFICADA: Se pasa el tipoPago como segundo argumento
+            // LLAMADA AL DAO MODIFICADA: Se pasa el tipoPago como segundo argumento.
             if (pedidoDAO.savePedido(nuevoPedido, tipoPago)) {
-                mostrarAlerta("Éxito", "Pedido guardado", "El nuevo pedido se ha guardado exitosamente.", Alert.AlertType.INFORMATION);
+                mostrarAlerta("Éxito", "Pedido guardado", "El nuevo pedido se ha guardado exitosamente junto con su asignación y comprobante de pago.", Alert.AlertType.INFORMATION);
                 volverAlMenuPedidos(event);
             } else {
                 mostrarAlerta("Error", "Error al guardar", "No se pudo guardar el pedido ni su comprobante de pago en la base de datos.", Alert.AlertType.ERROR);
@@ -162,8 +174,9 @@ public class CrearPedidoController {
         if (estadoComboBox.getSelectionModel().isEmpty()) {
             errorMessage += "Debes seleccionar un estado para el pedido.\n";
         }
-        if (metodoPagoComboBox.getSelectionModel().isEmpty()) {
-            errorMessage += "Debes seleccionar un método de pago.\n";
+        // Validación del ComboBox de Tipo de Pago
+        if (tipoPagoComboBox.getSelectionModel().isEmpty()) {
+            errorMessage += "Debes seleccionar un tipo de pago.\n";
         }
 
         if (montoTotalField.getText() == null || montoTotalField.getText().isEmpty()) {
@@ -180,6 +193,7 @@ public class CrearPedidoController {
 
         if (montoEntregadoField.getText() != null && !montoEntregadoField.getText().isEmpty()) {
             try {
+                // Verificar que el monto entregado no sea negativo
                 if (Double.parseDouble(montoEntregadoField.getText()) < 0) {
                     errorMessage += "El monto entregado debe ser un número positivo o cero.\n";
                 }

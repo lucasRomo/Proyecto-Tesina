@@ -30,8 +30,9 @@
         <Label text="Estado:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <ComboBox fx:id="estadoComboBox" promptText="Seleccione Estado" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-        <Label text="Método de Pago:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        <ComboBox fx:id="metodoPagoComboBox" promptText="Seleccione Método" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <!-- CAMBIO: Etiqueta y fx:id de Método de Pago a Tipo de Pago -->
+        <Label text="Tipo de Pago:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <ComboBox fx:id="tipoPagoComboBox" promptText="Seleccione Tipo" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
         <Label text="Fecha de Entrega Estimada:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
         <DatePicker fx:id="fechaEntregaEstimadaPicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
