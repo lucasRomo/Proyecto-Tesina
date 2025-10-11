@@ -12,19 +12,28 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 
 public class UsuarioDAO {
-    private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
+    private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina?useSSL=false&serverTimezone=UTC";
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
     private Connection getConnection() throws SQLException {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("ERROR: No se encontró el driver JDBC de MySQL.");
+            throw new SQLException("Falta el driver JDBC", e);
+        }
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
-    // Método de inserción corregido para incluir el id_persona
+    // =========================================================================
+    // MODIFICACIÓN #1: Nueva sobrecarga para inserción en transacciones.
+    // Se usa la conexión recibida por parámetro.
+    // =========================================================================
+
     public boolean insertar(Usuario usuario, Connection conn) throws SQLException {
         String sql = "INSERT INTO Usuario (id_persona, nombre_usuario, contrasena) VALUES (?, ?, ?)";
 
-        // Usa la conexión 'conn' que se pasa como parámetro
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, usuario.getIdPersona());
             stmt.setString(2, usuario.getUsuario());
@@ -32,13 +41,20 @@ public class UsuarioDAO {
             stmt.executeUpdate();
             return true;
         }
+        // Nota: No se cierra conn aquí, se propaga la excepción si falla.
+    }
 
+    // Método original (mantengo el método de inserción sin conexión por si se usa fuera de transacción)
+    public boolean insertar(Usuario usuario) throws SQLException {
+        try (Connection conn = getConnection()) {
+            return insertar(usuario, conn); // Reutilizo la lógica
+        }
     }
 
 
     public ObservableList<UsuarioEmpleadoTableView> obtenerUsuariosEmpleados() throws SQLException {
         ObservableList<UsuarioEmpleadoTableView> listaUsuarios = FXCollections.observableArrayList();
-        // Se añade p.numero_documento a la consulta SELECT (ya corregido en el paso anterior)
+
         String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.nombre, p.apellido, p.numero_documento, e.salario, e.estado, p.id_persona, p.id_Direccion " +
                 "FROM Usuario u " +
                 "JOIN Empleado e ON u.id_persona = e.id_persona " +
@@ -60,7 +76,6 @@ public class UsuarioDAO {
                 int idPersona = rs.getInt("id_persona");
                 int idDireccion = rs.getInt("id_Direccion");
 
-                // NOTA: Asegúrate de que UsuarioEmpleadoTableView tenga el constructor actualizado.
                 UsuarioEmpleadoTableView usuarioEmpleado = new UsuarioEmpleadoTableView(idUsuario, usuario, contrasena, nombre, apellido, numeroDocumento, salario, estado, idPersona, idDireccion);
                 listaUsuarios.add(usuarioEmpleado);
             }
@@ -69,15 +84,13 @@ public class UsuarioDAO {
     }
 
     public boolean verificarUsuario(String Usuario, String Contrasenia) {
-        String contraseniaHasheada = Contrasenia;
-        // La consulta debe usar el nombre de tabla correcto: Usuario
         String sql = "SELECT * FROM Usuario Where nombre_usuario = ? AND contrasena = ?";
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, Usuario);
-            pstmt.setString(2, contraseniaHasheada);
+            pstmt.setString(2, Contrasenia); // Manteniendo la comparación directa por solicitud
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 return rs.next();
@@ -92,14 +105,13 @@ public class UsuarioDAO {
     public boolean verificarSiUsuarioExiste(String Usuario) {
         String sql = "SELECT COUNT(*) FROM Usuario WHERE nombre_usuario = ?";
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, Usuario);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    // Si el conteo es mayor que 0, significa que el usuario ya existe.
                     return rs.getInt(1) > 0;
                 }
             }
@@ -112,12 +124,13 @@ public class UsuarioDAO {
 
     /**
      * Modifica los datos principales del Usuario, Persona y Empleado asociado
-     * dentro de una sola transacción. (Mantiene la funcionalidad transaccional completa)
-     * * @param usuario El objeto UsuarioEmpleadoTableView que contiene los datos a modificar.
+     * dentro de una sola transacción (este método maneja su propia conexión).
+     * @param usuario El objeto UsuarioEmpleadoTableView que contiene los datos a modificar.
      * @return true si todas las modificaciones fueron exitosas.
      */
     public boolean modificarUsuariosEmpleados(UsuarioEmpleadoTableView usuario) {
-        // La lógica para la actualización de múltiples tablas debe ser una transacción
+        // Este método NO debe ser llamado desde el controlador que usa la transacción.
+        // Debe usarse un método que acepte la conexión.
         String sqlUpdateUsuario = "UPDATE Usuario SET nombre_usuario = ?, contrasena = ? WHERE id_usuario = ?";
         String sqlUpdatePersona = "UPDATE Persona SET nombre = ?, apellido = ? WHERE id_persona = ?";
         String sqlUpdateEmpleado = "UPDATE Empleado SET salario = ?, estado = ? WHERE id_persona = ?";
@@ -158,30 +171,47 @@ public class UsuarioDAO {
         }
     }
 
-    // --- CORRECCIÓN CLAVE: Método reintroducido para resolver el error 'cannot find symbol' ---
-    // Este método solo actualiza la tabla Usuario (username y contraseña).
-    private static final String UPDATE_USUARIO_SOLO =
-            "UPDATE Usuario SET nombre_usuario = ?, contrasena = ? WHERE id_usuario = ?";
+    // =========================================================================
+    // MODIFICACIÓN #2: Método de actualización de usuario para transacciones.
+    // Acepta la conexión 'conn' para ser parte de la transacción del controlador.
+    // ESTE ES EL MÉTODO QUE TU CONTROLADOR NECESITA (líneas 433, 562, etc.).
+    // =========================================================================
 
-    public boolean modificarUsuariosEmpleados(Usuario usuarioView) {
-        boolean exito = false;
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(UPDATE_USUARIO_SOLO)) {
 
-            ps.setString(1, usuarioView.getUsuario());
-            ps.setString(2, usuarioView.getContrasenia());
-            // No se incluye el campo 'estado' aquí.
-            ps.setInt(3, usuarioView.getIdUsuario());
-
-            if (ps.executeUpdate() > 0) {
-                exito = true;
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error al modificar datos del Usuario (simple): " + e.getMessage());
-            e.printStackTrace();
+    // Este método es usado en la transacción principal y en el cambio de estado.
+    // Nota: El objeto Usuario model que le pasas tiene que tener el campo estado.
+    public boolean modificarUsuariosEmpleados(Usuario usuario, Connection conn) throws SQLException {
+        if (usuario == null || usuario.getIdUsuario() <= 0) {
+            System.out.println("Error: Usuario inválido o id_usuario = " + (usuario != null ? usuario.getIdUsuario() : "null"));
+            return false;
         }
-        return exito;
+
+        System.out.println("Procesando usuario con id_usuario = " + usuario.getIdUsuario()); // Nueva traza
+        // Obtener id_persona desde Usuario
+        String getPersonaSql = "SELECT id_persona FROM Usuario WHERE id_usuario = ?";
+        int idPersona = -1;
+        try (PreparedStatement getStmt = conn.prepareStatement(getPersonaSql)) {
+            getStmt.setInt(1, usuario.getIdUsuario());
+            try (ResultSet rs = getStmt.executeQuery()) {
+                if (rs.next()) {
+                    idPersona = rs.getInt("id_persona");
+                } else {
+                    System.out.println("Error: No se encontró id_persona para id_usuario = " + usuario.getIdUsuario());
+                    return false;
+                }
+            }
+        }
+
+        // Actualizar estado en la tabla Empleado
+        String updateSql = "UPDATE Empleado SET estado = ? WHERE id_persona = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(updateSql)) {
+            System.out.println("Actualizando estado '" + usuario.getEstado() + "' para id_persona = " + idPersona);
+            stmt.setString(1, usuario.getEstado());
+            stmt.setInt(2, idPersona);
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Filas afectadas en Empleado: " + rowsAffected);
+            return rowsAffected > 0;
+        }
     }
     // --------------------------------------------------------------------------------------------
 
@@ -207,8 +237,7 @@ public class UsuarioDAO {
     }
 
     public Usuario obtenerUsuarioPorId(int idUsuario) throws SQLException {
-        // Solo necesitamos los campos de la tabla Usuario para la comparación de credenciales
-        String sql = "SELECT id_usuario, nombre_usuario, contrasena FROM Usuario WHERE id_usuario = ?";
+        String sql = "SELECT id_usuario, nombre_usuario, contrasena, estado, id_persona FROM Usuario WHERE id_usuario = ?";
 
         try (Connection connection = getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -221,20 +250,21 @@ public class UsuarioDAO {
                     user.setIdUsuario(rs.getInt("id_usuario"));
                     user.setUsuario(rs.getString("nombre_usuario"));
                     user.setContrasena(rs.getString("contrasena"));
+                    user.setEstado(rs.getString("estado")); // Asegurar que se obtiene el estado
+                    user.setIdPersona(rs.getInt("id_persona"));
 
                     return user;
                 }
             }
         } catch (SQLException e) {
             System.err.println("Error al obtener usuario por ID: " + e.getMessage());
-            throw e; // Relanza la excepción para que el controlador la maneje
+            throw e;
         }
         return null;
     }
 
     public Usuario obtenerUsuarioPorCredenciales(String nombreUsuario, String contrasena) {
 
-        // CORRECCIÓN FINAL: Usamos p.id_tipo_persona según el esquema DDL proporcionado.
         String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_persona, p.id_direccion, p.id_tipo_persona " +
                 "FROM Usuario u " +
                 "JOIN Persona p ON u.id_persona = p.id_persona " +
@@ -249,10 +279,8 @@ public class UsuarioDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    // Recuperamos el ID de Tipo de Persona (el rol)
                     int idTipoUsuario = rs.getInt("id_tipo_persona");
 
-                    // Creamos el objeto Usuario con todos los datos
                     usuarioEncontrado = new Usuario(
                             rs.getInt("id_usuario"),
                             rs.getString("nombre_usuario"),
