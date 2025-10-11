@@ -16,7 +16,7 @@ import app.controller.SessionManager;
 public class MenuController {
 
     // ===================================
-    // TAMAÑOS FIJOS DEFINIDOS
+    // TAMAÑOS FIJOS DEFINIDOS (Unificados)
     // ===================================
     private static final double DEFAULT_WIDTH = 1200;
     private static final double DEFAULT_HEIGHT = 700;
@@ -86,10 +86,10 @@ public class MenuController {
     @FXML
     private Button adminButton;
     @FXML
-    private Button maximizarButton; // Este botón ahora controla el cambio entre 1200x700 y 1800x1000
+    private Button maximizarButton; // Este botón controla el cambio entre 1200x700 y 1800x1000
 
     // ===================================
-    // MÉTODOS SETTER (Sin cambios)
+    // MÉTODOS SETTER
     // ===================================
     public void setLoggedInUserPassword(String password) {
         this.loggedInUserPassword = password;
@@ -104,7 +104,7 @@ public class MenuController {
     }
 
     // =========================================================================================
-    // MÉTODOS HANDLER DE NAVEGACIÓN (USANDO loadFixedSizeScene)
+    // MÉTODOS HANDLER DE NAVEGACIÓN (TODOS USANDO loadFixedSizeScene)
     // =========================================================================================
 
     @FXML
@@ -119,11 +119,23 @@ public class MenuController {
     @FXML
     public void handleStockabm(ActionEvent event) {
         try {
+            // Nota: el FXML es "AbmStock" pero el título es "Proveedor". Se mantiene la lógica de tamaño fijo.
             loadFixedSizeScene((Node) event.getSource(), "/menuAbmStock.fxml", "Menú de Proveedor");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    public void handleCrearProducto(ActionEvent event) {
+        try {
+            // Este método NO estaba en el controlador anterior, se incluye con la nueva lógica.
+            loadFixedSizeScene((Node) event.getSource(), "/ProductoAbmView.fxml", "Creación/Edición de Producto");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @FXML
     public void handleProveedor(ActionEvent event) {
@@ -234,7 +246,7 @@ public class MenuController {
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            loadFixedSizeScene((Node) event.getSource(), "/menuAbms.fxml", "Menú Principal");
+            loadFixedSizeScene((Node) event.getSource(), "/menuAbms.fxml", "Menú ABMs");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -258,6 +270,7 @@ public class MenuController {
         }
     }
 
+    // Método Volver para Informes (Se asume la ruta lógica)
     @FXML
     private void handleVolverButtonInformes(ActionEvent event) {
         try {
@@ -267,6 +280,7 @@ public class MenuController {
         }
     }
 
+    // Método Volver para Comprobantes (Se asume la ruta lógica)
     @FXML
     private void handleVolverButtonComprobantes(ActionEvent event) {
         try {

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import java.net.URL?>
+<VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerHistorialPedidosController">
+    <stylesheets>
+        <URL value="style.css" />
+    </stylesheets>
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <Label text="Historial de Pedidos (Estado: Retirado)" styleClass="titulo-principal">
+        <font>
+            <Font name="System Bold" size="20.0" />
+        </font>
+    </Label>
+
+    <TableView fx:id="pedidosTable" VBox.vgrow="ALWAYS" editable="false">
+        <columns>
+            <TableColumn fx:id="idPedidoColumn" text="ID" prefWidth="75.0">
+                <cellValueFactory>
+                    <PropertyValueFactory property="idPedido" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="clienteColumn" text="Cliente" prefWidth="150.0">
+                <cellValueFactory>
+                    <PropertyValueFactory property="nombreCliente" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="empleadoColumn" text="Empleado" prefWidth="150.0">
+                <cellValueFactory>
+                    <PropertyValueFactory property="nombreEmpleado" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="estadoColumn" text="Estado" prefWidth="100.0">
+                <cellValueFactory>
+                    <PropertyValueFactory property="estado" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="metodoPagoColumn" text="Método Pago" prefWidth="100.0">
+                <cellValueFactory>
+                    <PropertyValueFactory property="metodoPago" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="montoTotalColumn" text="Monto Total" prefWidth="100.0">
+                <cellValueFactory>
+                    <PropertyValueFactory property="montoTotal" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="montoEntregadoColumn" text="Monto Entregado" prefWidth="120.0">
+                <cellValueFactory>
+                    <PropertyValueFactory property="montoEntregado" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="fechaEntregaEstimadaColumn" text="Fecha de Entrega" prefWidth="150.0">
+                <cellValueFactory>
+                    <PropertyValueFactory property="fechaEntregaEstimada" />
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="instruccionesColumn" text="Instrucciones" prefWidth="250.0">
+                <cellValueFactory>
+                    <PropertyValueFactory property="instrucciones" />
+                </cellValueFactory>
+            </TableColumn>
+        </columns>
+    </TableView>
+
+    <HBox spacing="10.0" alignment="CENTER">
+        <!-- El historial no requiere guardar cambios, solo el botón de volver -->
+        <Button onAction="#handleVolver" text="Volver al Menú" styleClass="button-volver"/>
+    </HBox>
+
+</VBox>

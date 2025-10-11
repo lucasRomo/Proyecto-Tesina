@@ -14,7 +14,7 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label text="Crear Nuevo Pedido"  styleClass="titulo-principal">
+    <Label styleClass="titulo-principal" text="Crear Nuevo Pedido">
         <font>
             <Font name="System Bold" size="24.0" />
         </font>
@@ -30,11 +30,14 @@
         <Label text="Estado:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <ComboBox fx:id="estadoComboBox" promptText="Seleccione Estado" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-        <Label text="Fecha de Entrega Estimada:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        <DatePicker fx:id="fechaEntregaEstimadaPicker" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <!-- CAMBIO: Etiqueta y fx:id de Método de Pago a Tipo de Pago -->
+        <Label text="Tipo de Pago:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <ComboBox fx:id="tipoPagoComboBox" promptText="Seleccione Tipo" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-        <Label text="Fecha de Finalización:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-        <DatePicker fx:id="fechaFinalizacionPicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+        <Label text="Fecha de Entrega Estimada:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <DatePicker fx:id="fechaEntregaEstimadaPicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+        <!-- FECHA FINALIZACION ELIMINADA (Estaba en rowIndex 5) -->
 
         <Label text="Monto Total:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
         <TextField fx:id="montoTotalField" promptText="Monto Total" GridPane.columnIndex="1" GridPane.rowIndex="5" />

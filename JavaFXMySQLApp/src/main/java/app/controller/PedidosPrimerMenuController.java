@@ -1,6 +1,5 @@
 package app.controller;
 
-import app.MainApp;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -21,40 +20,64 @@ public class PedidosPrimerMenuController {
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            // CORRECCIÓN: Usar 1800x1000 en lugar de constantes
-            stage.setScene(new Scene(root, 1800, 1000));
+            stage.setScene(new Scene(root, 1366, 768));
 
             stage.setTitle("Crear Pedido");
 
-            // CORRECCIÓN: Centrar la ventana
             stage.centerOnScreen();
 
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo cargar la vista 'Crear Pedido'.", Alert.AlertType.ERROR);
         }
     }
 
 
     @FXML
     private void handleVerPedidos(ActionEvent event) {
-        System.out.println("Intentando cargar la vista de pedidos...");
+        System.out.println("Intentando cargar la vista de pedidos activos...");
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/verPedidos.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            // CORRECCIÓN: Usar 1800x1000 en lugar de constantes
-            stage.setScene(new Scene(root, 1800, 1000));
+            stage.setScene(new Scene(root, 1366, 768));
 
-            stage.setTitle("Ver Pedidos");
+            stage.setTitle("Ver Pedidos (Activos)");
 
-            // CORRECCIÓN: Centrar la ventana
             stage.centerOnScreen();
 
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo cargar la vista 'Ver Pedidos'.", Alert.AlertType.ERROR);
+        }
+    }
+
+    /**
+     * Maneja la acción del botón "Historial de Pedidos (Retirados)".
+     * Carga la vista para ver solo los pedidos con estado "Retirado".
+     */
+    @FXML
+    private void handleVerHistorial(ActionEvent event) {
+        System.out.println("Intentando cargar la vista de historial de pedidos...");
+        try {
+            // Carga el nuevo FXML para el historial
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/verHistorialPedidos.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            stage.setScene(new Scene(root, 1366, 768));
+
+            stage.setTitle("Historial de Pedidos (Retirados)");
+
+            stage.centerOnScreen();
+
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo cargar la vista 'Historial de Pedidos'.", Alert.AlertType.ERROR);
         }
     }
 
@@ -66,12 +89,10 @@ public class PedidosPrimerMenuController {
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            // CORRECCIÓN: Usar 1800x1000 en lugar de constantes
-            stage.setScene(new Scene(root, 1800, 1000));
+            stage.setScene(new Scene(root, 1366, 768));
 
             stage.setTitle("Menú Principal");
 
-            // CORRECCIÓN: Centrar la ventana
             stage.centerOnScreen();
 
             stage.show();
