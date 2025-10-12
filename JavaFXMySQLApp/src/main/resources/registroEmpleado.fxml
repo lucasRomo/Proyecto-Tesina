@@ -95,7 +95,7 @@
     </GridPane>
     <HBox alignment="CENTER" spacing="10.0">
         <children>
-            <Button fx:id="volverButton" onAction="#handleVolverButton" text="Volver" />
+            <Button fx:id="volverButton" onAction="#handleVolverButton" text="Volver" styleClass="cancel-button"/>
             <Button fx:id="siguienteButton" onAction="#handleSiguienteButton" text="Siguiente" />
         </children>
     </HBox>

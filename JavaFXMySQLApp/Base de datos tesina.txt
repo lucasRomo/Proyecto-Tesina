@@ -1,0 +1,315 @@
+-- -----------------------------------------------------
+-- Borra la base de datos si existe para evitar conflictos
+-- -----------------------------------------------------
+DROP DATABASE IF EXISTS proyectoTesina;
+
+-- -----------------------------------------------------
+-- Creación de la base de datos y uso
+-- -----------------------------------------------------
+CREATE DATABASE IF NOT EXISTS proyectoTesina;
+USE proyectoTesina;
+
+-- -----------------------------------------------------
+-- Estructura de Tablas
+-- -----------------------------------------------------
+
+-- Tabla TipoDocumento
+CREATE TABLE IF NOT EXISTS TipoDocumento (
+  id_tipo_documento INT NOT NULL AUTO_INCREMENT,
+  nombre_tipo VARCHAR(45) NOT NULL,
+  PRIMARY KEY (id_tipo_documento)
+);
+
+-- Tabla Direccion
+CREATE TABLE IF NOT EXISTS Direccion (
+  id_direccion INT NOT NULL AUTO_INCREMENT,
+  calle VARCHAR(100) NOT NULL,
+  numero VARCHAR(10) NOT NULL,
+  piso VARCHAR(10) NULL,
+  departamento VARCHAR(10) NULL,
+  codigo_postal VARCHAR(10) NULL,
+  ciudad VARCHAR(45) NOT NULL,
+  provincia VARCHAR(45) NOT NULL,
+  pais VARCHAR(45) NOT NULL,
+  PRIMARY KEY (id_direccion)
+);
+
+-- Tabla TipoPersona
+CREATE TABLE IF NOT EXISTS TipoPersona (
+  id_tipo_persona INT NOT NULL AUTO_INCREMENT,
+  nombre_tipo VARCHAR(45) NOT NULL,
+  PRIMARY KEY (id_tipo_persona)
+);
+
+-- Tabla Persona (ACTUALIZADA: Ahora incluye DEFAULT '1' para id_tipo_persona)
+CREATE TABLE IF NOT EXISTS Persona (
+  id_persona INT NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(45) NOT NULL,
+  apellido VARCHAR(45) NOT NULL,
+  numero_documento VARCHAR(20) NOT NULL,
+  telefono VARCHAR(20) NULL,
+  email VARCHAR(100) NULL,
+  id_tipo_documento INT NOT NULL,
+  id_direccion INT NOT NULL,
+  id_tipo_persona INT NOT NULL DEFAULT 1,
+  PRIMARY KEY (id_persona),
+  UNIQUE INDEX numero_documento_UNIQUE (numero_documento)
+);
+
+-- Tabla Cliente
+CREATE TABLE IF NOT EXISTS Cliente (
+  id_cliente INT NOT NULL AUTO_INCREMENT,
+  razon_social VARCHAR(100) NULL,
+  persona_contacto VARCHAR(100) NULL,
+  condiciones_pago VARCHAR(100) NULL,
+  estado VARCHAR(20) NOT NULL DEFAULT 'Activo',
+  id_persona INT NOT NULL,
+  PRIMARY KEY (id_cliente)
+);
+
+-- Tabla Empleado
+CREATE TABLE IF NOT EXISTS Empleado (
+  id_empleado INT NOT NULL AUTO_INCREMENT,
+  fecha_contratacion DATE NULL,
+  cargo VARCHAR(45) NULL,
+  salario DECIMAL(10,2) NULL,
+  estado VARCHAR(20) NOT NULL DEFAULT 'Activo',
+  id_persona INT NOT NULL,
+  PRIMARY KEY (id_empleado)
+);
+
+-- Tabla Usuario
+CREATE TABLE IF NOT EXISTS Usuario (
+  id_usuario INT NOT NULL AUTO_INCREMENT,
+  nombre_usuario VARCHAR(45) NOT NULL,
+  contrasena VARCHAR(255) NOT NULL,
+  id_persona INT NOT NULL,
+  PRIMARY KEY (id_usuario),
+  UNIQUE INDEX nombre_usuario_UNIQUE (nombre_usuario)
+);
+
+-- Tabla TipoProveedor
+CREATE TABLE IF NOT EXISTS TipoProveedor (
+  id_tipo_proveedor INT NOT NULL AUTO_INCREMENT,
+  descripcion VARCHAR(100) NOT NULL,
+  PRIMARY KEY (id_tipo_proveedor)
+);
+
+-- Tabla Proveedor
+CREATE TABLE IF NOT EXISTS Proveedor (
+  id_proveedor INT NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(100) NOT NULL,
+  contacto VARCHAR(100) NULL,
+  mail VARCHAR(100) NULL,
+  estado VARCHAR(20) NOT NULL DEFAULT 'Activo',
+  id_direccion INT NOT NULL,
+  id_tipo_proveedor INT NOT NULL,
+  PRIMARY KEY (id_proveedor)
+);
+
+-- Tabla Categoria
+CREATE TABLE IF NOT EXISTS Categoria (
+  id_categoria INT NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(45) NOT NULL,
+  descripcion VARCHAR(255) NULL,
+  PRIMARY KEY (id_categoria)
+);
+
+-- Tabla Producto
+CREATE TABLE IF NOT EXISTS Producto (
+  id_producto INT NOT NULL AUTO_INCREMENT,
+  nombre_producto VARCHAR(100) NOT NULL,
+  descripcion TEXT NULL,
+  precio DECIMAL(10,2) NOT NULL,
+  stock INT NULL,
+  id_categoria INT NOT NULL,
+  PRIMARY KEY (id_producto)
+);
+
+-- Tabla Insumo
+CREATE TABLE IF NOT EXISTS Insumo (
+  id_insumo INT NOT NULL AUTO_INCREMENT,
+  nombre_insumo VARCHAR(100) NOT NULL,
+  descripcion VARCHAR(255) NULL,
+  stock_minimo INT NULL,
+  stock_actual INT NULL,
+  estado VARCHAR(20) NOT NULL DEFAULT 'Activo',
+  id_tipo_proveedor INT NOT NULL,
+  PRIMARY KEY (id_insumo)
+);
+
+-- Tabla Pedido
+CREATE TABLE IF NOT EXISTS Pedido (
+  id_pedido INT NOT NULL AUTO_INCREMENT,
+  id_cliente INT NOT NULL,
+  fecha_creacion DATETIME NOT NULL,
+  fecha_entrega_estimada DATETIME NULL,
+  fecha_finalizacion DATETIME NULL,
+  estado VARCHAR(45) NOT NULL,
+  instrucciones VARCHAR(255) NULL,
+  monto_total DECIMAL(10,2) NOT NULL,
+  monto_entregado DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (id_pedido)
+);
+
+-- Tabla DetallePedido
+CREATE TABLE IF NOT EXISTS DetallePedido (
+  id_detalle INT NOT NULL AUTO_INCREMENT,
+  id_pedido INT NOT NULL,
+  id_producto INT NOT NULL,
+  cantidad INT NOT NULL,
+  precio_unitario DECIMAL(10,2) NOT NULL,
+  subtotal DECIMAL(10,2) NOT NULL,
+  descripcion VARCHAR(255) NULL,
+  PRIMARY KEY (id_detalle)
+);
+
+-- Tabla AsignacionPedido
+CREATE TABLE IF NOT EXISTS AsignacionPedido (
+  id_asignacion INT NOT NULL AUTO_INCREMENT,
+  fecha_asignacion DATETIME NOT NULL,
+  id_pedido INT NOT NULL,
+  id_empleado INT NOT NULL,
+  PRIMARY KEY (id_asignacion)
+);
+
+-- Tabla HistorialEstadoPedido
+CREATE TABLE IF NOT EXISTS HistorialEstadoPedido (
+  id_historial INT NOT NULL AUTO_INCREMENT,
+  fecha_cambio DATETIME NOT NULL,
+  estado_anterior VARCHAR(45) NULL,
+  estado_nuevo VARCHAR(45) NOT NULL,
+  id_pedido INT NOT NULL,
+  id_empleado_responsable INT NOT NULL,
+  PRIMARY KEY (id_historial)
+);
+
+-- Tabla Factura
+CREATE TABLE IF NOT EXISTS Factura (
+  id_factura INT NOT NULL AUTO_INCREMENT,
+  id_pedido INT NOT NULL,
+  id_cliente INT NOT NULL,
+  numero_factura VARCHAR(45) NOT NULL,
+  fecha_emision DATETIME NOT NULL,
+  monto_total DECIMAL(10,2) NOT NULL,
+  estado_pago VARCHAR(45) NOT NULL,
+  PRIMARY KEY (id_factura),
+  UNIQUE INDEX numero_factura_UNIQUE (numero_factura)
+);
+
+-- Tabla ComprobantePago
+CREATE TABLE IF NOT EXISTS ComprobantePago (
+  id_comprobante INT NOT NULL AUTO_INCREMENT,
+  id_pedido INT NOT NULL,
+  id_cliente INT NOT NULL,
+  archivo VARCHAR(255) NULL,
+  tipo_pago VARCHAR(45) NOT NULL,
+  monto_pago DECIMAL(10,2) NOT NULL,
+  fecha_carga DATETIME NOT NULL,
+  fecha_verificacion DATETIME NULL,
+  estado_verificacion VARCHAR(45) NULL,
+  PRIMARY KEY (id_comprobante)
+);
+
+-- Tabla RegistroActividad
+CREATE TABLE IF NOT EXISTS RegistroActividad (
+  id_RegAct INT NOT NULL AUTO_INCREMENT,
+  fecha_modificacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id_usuario_responsable INT NOT NULL,
+  tabla_afectada VARCHAR(100) NOT NULL,
+  columna_afectada VARCHAR(100) NULL,
+  id_registro_modificado INT NULL,
+  dato_previo_modificacion TEXT NULL,
+  dato_modificado TEXT NULL,
+  PRIMARY KEY (id_RegAct) -- <--- CORREGIDO: Se cambió 'PRIMARY TABLE' por 'PRIMARY KEY'
+);
+
+-- -----------------------------------------------------
+-- Claves Foráneas (FK)
+-- -----------------------------------------------------
+
+ALTER TABLE Persona ADD CONSTRAINT fk_Persona_TipoDocumento
+  FOREIGN KEY (id_tipo_documento) REFERENCES TipoDocumento (id_tipo_documento);
+
+ALTER TABLE Persona ADD CONSTRAINT fk_Persona_Direccion
+  FOREIGN KEY (id_direccion) REFERENCES Direccion (id_direccion);
+
+ALTER TABLE Persona ADD CONSTRAINT fk_Persona_TipoPersona
+  FOREIGN KEY (id_tipo_persona) REFERENCES TipoPersona (id_tipo_persona);
+
+ALTER TABLE Cliente ADD CONSTRAINT fk_Cliente_Persona
+  FOREIGN KEY (id_persona) REFERENCES Persona (id_persona);
+
+ALTER TABLE Empleado ADD CONSTRAINT fk_Empleado_Persona
+  FOREIGN KEY (id_persona) REFERENCES Persona (id_persona);
+
+ALTER TABLE Usuario ADD CONSTRAINT fk_Usuario_Persona
+  FOREIGN KEY (id_persona) REFERENCES Persona (id_persona);
+
+ALTER TABLE Proveedor ADD CONSTRAINT fk_Proveedor_Direccion
+  FOREIGN KEY (id_direccion) REFERENCES Direccion (id_direccion);
+
+ALTER TABLE Proveedor ADD CONSTRAINT fk_Proveedor_TipoProveedor
+  FOREIGN KEY (id_tipo_proveedor) REFERENCES TipoProveedor (id_tipo_proveedor);
+
+ALTER TABLE Producto ADD CONSTRAINT fk_Producto_Categoria
+  FOREIGN KEY (id_categoria) REFERENCES Categoria (id_categoria);
+
+ALTER TABLE Insumo ADD CONSTRAINT fk_Insumo_TipoProveedor
+  FOREIGN KEY (id_tipo_proveedor) REFERENCES TipoProveedor (id_tipo_proveedor);
+
+ALTER TABLE Pedido ADD CONSTRAINT fk_Pedido_Cliente
+  FOREIGN KEY (id_cliente) REFERENCES Cliente (id_cliente);
+
+ALTER TABLE DetallePedido ADD CONSTRAINT fk_DetallePedido_Pedido
+  FOREIGN KEY (id_pedido) REFERENCES Pedido (id_pedido);
+ALTER TABLE DetallePedido ADD CONSTRAINT fk_DetallePedido_Producto
+  FOREIGN KEY (id_producto) REFERENCES Producto (id_producto);
+
+ALTER TABLE AsignacionPedido ADD CONSTRAINT fk_AsignacionPedido_Pedido
+  FOREIGN KEY (id_pedido) REFERENCES Pedido (id_pedido);
+
+ALTER TABLE AsignacionPedido ADD CONSTRAINT fk_AsignacionPedido_Empleado
+  FOREIGN KEY (id_empleado) REFERENCES Empleado (id_empleado);
+
+ALTER TABLE HistorialEstadoPedido ADD CONSTRAINT fk_HistorialEstadoPedido_Pedido
+  FOREIGN KEY (id_pedido) REFERENCES Pedido (id_pedido);
+
+ALTER TABLE HistorialEstadoPedido ADD CONSTRAINT fk_HistorialEstadoPedido_Empleado
+  FOREIGN KEY (id_empleado_responsable) REFERENCES Empleado (id_empleado);
+
+ALTER TABLE Factura ADD CONSTRAINT fk_Factura_Cliente
+  FOREIGN KEY (id_cliente) REFERENCES Cliente (id_cliente);
+ALTER TABLE Factura ADD CONSTRAINT fk_Factura_Pedido
+  FOREIGN KEY (id_pedido) REFERENCES Pedido (id_pedido);
+
+ALTER TABLE ComprobantePago ADD CONSTRAINT fk_ComprobantePago_Cliente
+  FOREIGN KEY (id_cliente) REFERENCES Cliente (id_cliente);
+ALTER TABLE ComprobantePago ADD CONSTRAINT fk_ComprobantePago_Pedido
+  FOREIGN KEY (id_pedido) REFERENCES Pedido (id_pedido);
+
+-- Registro de Actividad
+ALTER TABLE RegistroActividad ADD CONSTRAINT fk_RegistroActividad_Usuario
+  FOREIGN KEY (id_usuario_responsable) REFERENCES Usuario (id_usuario);
+
+-- -----------------------------------------------------
+-- Datos iniciales (sembrado)
+-- -----------------------------------------------------
+
+INSERT INTO TipoDocumento (nombre_tipo) VALUES ('DNI');
+INSERT INTO TipoDocumento (nombre_tipo) VALUES ('CUIT');
+INSERT INTO TipoDocumento (nombre_tipo) VALUES ('CUIL');
+INSERT INTO TipoDocumento (nombre_tipo) VALUES ('Pasaporte');
+
+INSERT INTO TipoPersona (nombre_tipo) VALUES ('Cliente');
+INSERT INTO TipoPersona (nombre_tipo) VALUES ('Empleado');
+INSERT INTO TipoPersona (nombre_tipo) Values ('Proveedor');
+INSERT INTO TipoPersona (nombre_tipo) Values ('Administrador');
+
+INSERT INTO TipoProveedor (descripcion) VALUES ('Papel');
+INSERT INTO TipoProveedor (descripcion) VALUES ('Tinta');
+INSERT INTO TipoProveedor (descripcion) VALUES ('Maquinaria');
+
+INSERT INTO Categoria (nombre) VALUES ('Folletos');
+INSERT INTO Categoria (nombre) VALUES ('Tarjetas Personales');
+INSERT INTO Categoria (nombre) VALUES ('Lonas');
