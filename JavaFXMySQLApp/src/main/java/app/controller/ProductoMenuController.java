@@ -20,7 +20,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-// NOTA: Se eliminan los import de los Converters predeterminados.
 import javafx.util.StringConverter;
 
 import java.io.IOException;
@@ -29,61 +28,62 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-// =========================================================================
-// CLASES CONVERTIDORAS PERSONALIZADAS PARA EVITAR NumberFormatException
-// =========================================================================
-
-/**
- * Conversor seguro para Double. Si la conversión falla (ej: hay letras),
- * devuelve null, permitiendo que el handleEditCommit maneje la validación.
- */
-class SafeDoubleStringConverter extends StringConverter<Double> {
-    @Override
-    public String toString(Double object) {
-        return object != null ? object.toString() : "";
-    }
-
-    @Override
-    public Double fromString(String string) {
-        if (string == null || string.trim().isEmpty()) {
-            return null; // Devuelve null si está vacío, manejado en el controlador.
-        }
-        try {
-            return Double.parseDouble(string.trim());
-        } catch (NumberFormatException e) {
-            return null; // Devuelve null si hay letras/formato inválido, manejado en el controlador.
-        }
-    }
-}
-
-/**
- * Conversor seguro para Integer. Si la conversión falla (ej: hay letras),
- * devuelve null, permitiendo que el handleEditCommit maneje la validación.
- */
-class SafeIntegerStringConverter extends StringConverter<Integer> {
-    @Override
-    public String toString(Integer object) {
-        return object != null ? object.toString() : "";
-    }
-
-    @Override
-    public Integer fromString(String string) {
-        if (string == null || string.trim().isEmpty()) {
-            return null; // Devuelve null si está vacío, manejado en el controlador.
-        }
-        try {
-            return Integer.parseInt(string.trim());
-        } catch (NumberFormatException e) {
-            return null; // Devuelve null si hay letras/formato inválido, manejado en el controlador.
-        }
-    }
-}
-
-// =========================================================================
-// CONTROLADOR PRINCIPAL
-// =========================================================================
-
 public class ProductoMenuController {
+
+    // =========================================================================
+    // CLASES CONVERTIDORAS AUXILIARES ANIDADAS Y ESTÁTICAS
+    // =========================================================================
+
+    /**
+     * Conversor seguro para Double. Si la conversión falla (ej: hay letras/vacío),
+     * devuelve null, permitiendo que el handleEditCommit maneje la validación y la alerta.
+     */
+    private static class SafeDoubleStringConverter extends StringConverter<Double> {
+        @Override
+        public String toString(Double object) {
+            return object != null ? object.toString() : "";
+        }
+
+        @Override
+        public Double fromString(String string) {
+            if (string == null || string.trim().isEmpty()) {
+                return null; // Devuelve null si está vacío.
+            }
+            try {
+                return Double.parseDouble(string.trim());
+            } catch (NumberFormatException e) {
+                return null; // Devuelve null si hay letras/formato inválido.
+            }
+        }
+    }
+
+    /**
+     * Conversor seguro para Integer. Si la conversión falla (ej: hay letras/vacío),
+     * devuelve null, permitiendo que el handleEditCommit maneje la validación y la alerta.
+     */
+    private static class SafeIntegerStringConverter extends StringConverter<Integer> {
+        @Override
+        public String toString(Integer object) {
+            return object != null ? object.toString() : "";
+        }
+
+        @Override
+        public Integer fromString(String string) {
+            if (string == null || string.trim().isEmpty()) {
+                return null; // Devuelve null si está vacío.
+            }
+            try {
+                // Usamos Integer.parseInt() que automáticamente valida si hay punto decimal.
+                return Integer.parseInt(string.trim());
+            } catch (NumberFormatException e) {
+                return null; // Devuelve null si hay letras/formato inválido.
+            }
+        }
+    }
+
+    // =========================================================================
+    // ELEMENTOS FXML Y DAOs
+    // =========================================================================
 
     @FXML private TableView<Producto> productosTableView;
     @FXML private TableColumn<Producto, Integer> idProductoColumn;
@@ -118,7 +118,9 @@ public class ProductoMenuController {
         setupFilter();
     }
 
-    // ... (loadCategoriaLists sin cambios) ...
+    // --------------------------------------------------------------------------
+    // LÓGICA DE CARGA Y CONFIGURACIÓN DE COLUMNAS
+    // --------------------------------------------------------------------------
 
     private void loadCategoriaLists() {
         List<Categoria> categoriasDB = categoriaDAO.getAllCategorias();
@@ -186,9 +188,10 @@ public class ProductoMenuController {
         );
     }
 
-    // --- MANEJO DE EDICIÓN Y VALIDACIONES ---
+    // --------------------------------------------------------------------------
+    // MANEJO DE EDICIÓN Y VALIDACIONES
+    // --------------------------------------------------------------------------
 
-    // ... (handleNameEditCommit sin cambios) ...
     private void handleNameEditCommit(Producto producto, String newValue) {
         String trimmedValue = newValue.trim();
         if (trimmedValue.isEmpty()) {
@@ -207,7 +210,6 @@ public class ProductoMenuController {
         applyChangeToModel(producto);
     }
 
-    // ... (handleDescriptionEditCommit sin cambios) ...
     private void handleDescriptionEditCommit(Producto producto, String newValue) {
         producto.setDescripcion(newValue != null ? newValue.trim() : "");
         applyChangeToModel(producto);
@@ -261,7 +263,6 @@ public class ProductoMenuController {
         applyChangeToModel(producto);
     }
 
-    // ... (handleCategoryEditCommit, applyChangeToModel, loadProductos, setupFilter, filterData, y manejadores de botones sin cambios) ...
     private void handleCategoryEditCommit(Producto producto, String newCategoryName) {
         int newIdCategoria = categoriaNamesMap.entrySet().stream()
                 .filter(entry -> entry.getValue().equals(newCategoryName))
@@ -277,7 +278,9 @@ public class ProductoMenuController {
         productosTableView.refresh();
     }
 
-    // --- LÓGICA DE CARGA Y FILTRO ---
+    // --------------------------------------------------------------------------
+    // LÓGICA DE DATOS Y FILTRO
+    // --------------------------------------------------------------------------
 
     private void loadProductos() {
         masterData = FXCollections.observableArrayList(productoDAO.getAllProductos());
@@ -335,14 +338,16 @@ public class ProductoMenuController {
         });
     }
 
-    // --- MANEJO DE BOTONES ---
+    // --------------------------------------------------------------------------
+    // MANEJO DE BOTONES Y NAVEGACIÓN
+    // --------------------------------------------------------------------------
 
     @FXML
     private void handleRegistrarProductoButton(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/registrarProducto.fxml"));
             Parent root = loader.load();
-            ProductoController registroController = loader.getController();
+            // ProductoController registroController = loader.getController(); // No es necesario si no se pasa data
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
@@ -368,6 +373,8 @@ public class ProductoMenuController {
     private void handleModificarProductoButton(ActionEvent event) {
         boolean allSuccess = true;
         for (Producto producto : masterData) {
+            // Se asume que el método applyChangeToModel no llama al DAO, sino que
+            // la actualización masiva se hace aquí al presionar "Modificar Producto"
             if (!productoDAO.updateProducto(producto)) {
                 allSuccess = false;
                 System.err.println("Fallo al actualizar producto con ID: " + producto.getIdProducto());
@@ -410,7 +417,10 @@ public class ProductoMenuController {
         }
     }
 
-    // --- UTILIDADES ---
+    // --------------------------------------------------------------------------
+    // UTILIDADES
+    // --------------------------------------------------------------------------
+
     private void showAlert(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
