@@ -89,7 +89,7 @@ public class VerHistorialPedidosController implements Initializable {
     @FXML
     private TableColumn<Pedido, String> instruccionesColumn;
 
-    // NUEVA Columna para el botón de Ver Comprobante
+    // Columna para el botón de Ver Comprobante
     @FXML
     private TableColumn<Pedido, Void> comprobantePagoColumn;
 
@@ -227,7 +227,6 @@ public class VerHistorialPedidosController implements Initializable {
         if (comprobanteFile.exists()) {
             try {
                 // Abrir el PDF con el visor predeterminado del sistema operativo
-                // Requiere la importación de java.awt.Desktop
                 if (Desktop.isDesktopSupported()) {
                     Desktop.getDesktop().open(comprobanteFile);
                 } else {
@@ -403,7 +402,6 @@ public class VerHistorialPedidosController implements Initializable {
         tiposPago.add(null); // Opción para limpiar filtro (Mostrar Todos)
 
         // El DAO debe obtener los Tipos de Pago únicos de los pedidos
-        // (Asegúrate de que este método exista y funcione en tu PedidoDAO)
         tiposPago.addAll(pedidoDAO.getTiposPago());
 
         tipoPagoFilterComboBox.setItems(tiposPago);
@@ -489,29 +487,29 @@ public class VerHistorialPedidosController implements Initializable {
         // Los listeners se encargan de llamar a actualizarFiltro()
     }
 
+    // ===============================================
+    // *** MÉTODO VOLVER CORREGIDO ***
+    // ===============================================
     /**
-     * Vuelve al menú principal de pedidos.
+     * Vuelve al menú principal de pedidos usando el patrón de navegación unificado.
      * @param event El evento de acción.
      */
     @FXML
     private void handleVolver(ActionEvent event) {
         try {
-            // Asegúrate que esta ruta coincida con el nombre del FXML del menú principal de pedidos
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PedidosPrimerMenu.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            // Usamos las dimensiones estándar que usaste en otros controladores
-            stage.setScene(new Scene(root, 1366, 768));
-            stage.setTitle("Menú de Pedidos");
-            stage.centerOnScreen();
-            stage.show();
+            // Usa el método unificado para cargar la escena en la ventana principal,
+            // manteniendo el estado de maximización/tamaño de la aplicación.
+            MenuController.loadScene(
+                    (Node) event.getSource(),
+                    "/PedidosPrimerMenu.fxml",
+                    "Menú de Pedidos"
+            );
         } catch (IOException e) {
             e.printStackTrace();
-            // Llamada que requiere 3 parámetros (String, String, Alert.AlertType)
-            mostrarAlerta("Error", "No se pudo volver al menú de pedidos. Verifique la ruta del FXML.", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "No se pudo volver al menú de pedidos. Verifique la ruta del FXML y la clase MenuController.", Alert.AlertType.ERROR);
         }
     }
+    // ===============================================
 
     /**
      * Muestra una ventana de alerta.

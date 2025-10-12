@@ -5,22 +5,19 @@ import app.model.Pedido;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader; // ¡Esta es la importación que faltaba!
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
-import javafx.fxml.Initializable;
 
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.List; // Importar List
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class CrearPedidoController implements Initializable {
@@ -29,7 +26,6 @@ public class CrearPedidoController implements Initializable {
     @FXML private ComboBox<String> clienteComboBox;
     @FXML private ComboBox<String> empleadoComboBox;
     @FXML private ComboBox<String> estadoComboBox;
-    // RENOMBRADO: Usamos 'tipoPagoComboBox' para ser coherentes con el modelo ComprobantePago
     @FXML private ComboBox<String> tipoPagoComboBox;
 
     // Otros campos
@@ -38,7 +34,7 @@ public class CrearPedidoController implements Initializable {
     @FXML private TextField montoEntregadoField;
     @FXML private TextArea instruccionesArea;
 
-    private PedidoDAO pedidoDAO = new PedidoDAO();
+    private final PedidoDAO pedidoDAO = new PedidoDAO();
     private Stage dialogStage;
 
     /**
@@ -60,7 +56,9 @@ public class CrearPedidoController implements Initializable {
         try {
             List<String> listaTiposPago = pedidoDAO.getTiposPago();
             tipoPagoComboBox.setItems(FXCollections.observableArrayList(listaTiposPago));
-            tipoPagoComboBox.getSelectionModel().selectFirst(); // Seleccionar el primero por defecto
+            if (!listaTiposPago.isEmpty()) {
+                tipoPagoComboBox.getSelectionModel().selectFirst();
+            }
         } catch (Exception e) {
             System.err.println("Error al cargar tipos de pago: " + e.getMessage());
         }
@@ -105,14 +103,13 @@ public class CrearPedidoController implements Initializable {
             int idEmpleado = (empleadoSeleccionado != null) ? extractIdFromComboBox(empleadoSeleccionado) : 0;
 
             String estado = estadoComboBox.getSelectionModel().getSelectedItem();
-            // Obtener el tipo de pago para pasarlo al DAO para ComprobantePago
             String tipoPago = tipoPagoComboBox.getSelectionModel().getSelectedItem();
             LocalDateTime fechaCreacion = LocalDateTime.now();
 
             LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaPicker.getValue() != null)
                     ? fechaEntregaEstimadaPicker.getValue().atStartOfDay() : null;
 
-            LocalDateTime fechaFinalizacion = null; // Se inicializa a null, ya que se llenará al finalizar el pedido.
+            LocalDateTime fechaFinalizacion = null;
 
             String instrucciones = instruccionesArea.getText();
             double montoTotal = Double.parseDouble(montoTotalField.getText());
@@ -121,7 +118,6 @@ public class CrearPedidoController implements Initializable {
                     : 0.0;
 
 
-            // Constructor de Pedido que solo acepta los campos de la tabla Pedido (9 argumentos)
             Pedido nuevoPedido = new Pedido(
                     idCliente,
                     idEmpleado,
@@ -134,9 +130,9 @@ public class CrearPedidoController implements Initializable {
                     montoEntregado
             );
 
-            // LLAMADA AL DAO MODIFICADA: Se pasa el tipoPago como segundo argumento.
             if (pedidoDAO.savePedido(nuevoPedido, tipoPago)) {
                 mostrarAlerta("Éxito", "Pedido guardado", "El nuevo pedido se ha guardado exitosamente junto con su asignación y comprobante de pago.", Alert.AlertType.INFORMATION);
+                // USAMOS EL MÉTODO CORREGIDO
                 volverAlMenuPedidos(event);
             } else {
                 mostrarAlerta("Error", "Error al guardar", "No se pudo guardar el pedido ni su comprobante de pago en la base de datos.", Alert.AlertType.ERROR);
@@ -174,7 +170,6 @@ public class CrearPedidoController implements Initializable {
         if (estadoComboBox.getSelectionModel().isEmpty()) {
             errorMessage += "Debes seleccionar un estado para el pedido.\n";
         }
-        // Validación del ComboBox de Tipo de Pago
         if (tipoPagoComboBox.getSelectionModel().isEmpty()) {
             errorMessage += "Debes seleccionar un tipo de pago.\n";
         }
@@ -193,7 +188,6 @@ public class CrearPedidoController implements Initializable {
 
         if (montoEntregadoField.getText() != null && !montoEntregadoField.getText().isEmpty()) {
             try {
-                // Verificar que el monto entregado no sea negativo
                 if (Double.parseDouble(montoEntregadoField.getText()) < 0) {
                     errorMessage += "El monto entregado debe ser un número positivo o cero.\n";
                 }
@@ -217,27 +211,22 @@ public class CrearPedidoController implements Initializable {
      */
     @FXML
     private void handleCancelar(ActionEvent event) {
+        // Llama a la función que usa el patrón de navegación unificado
         volverAlMenuPedidos(event);
     }
 
     /**
      * Lógica compartida para volver a la vista del menú de Pedidos.
+     * USA MenuController.loadScene() para mantener la maximización.
      */
     private void volverAlMenuPedidos(ActionEvent event) {
         try {
-            // Carga la vista del menú de pedidos
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pedidosPrimerMenu.fxml"));
-            Parent root = loader.load();
-
-            // Obtiene el Stage actual (la ventana)
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            // Configura la nueva escena
-            stage.setScene(new Scene(root, 1800, 1000));
-            stage.setTitle("Menú de Pedidos");
-            stage.centerOnScreen();
-            stage.show();
-
+            // *** CORRECCIÓN CRÍTICA: Uso del patrón de navegación unificado ***
+            MenuController.loadScene(
+                    (Node) event.getSource(),
+                    "/pedidosPrimerMenu.fxml",
+                    "Menú de Pedidos"
+            );
         } catch (IOException e) {
             e.printStackTrace();
             mostrarAlerta("Error de Carga", "No se pudo volver al menú de pedidos.", "Hubo un error al cargar 'pedidosPrimerMenu.fxml'.", Alert.AlertType.ERROR);

@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="1000.0" prefWidth="1800.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ClienteController">
+<AnchorPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ClienteController">
     <stylesheets>
         <URL value="@style.css" />
     </stylesheets>
@@ -27,10 +27,10 @@
         </padding>
     </Label>
 
-    <VBox alignment="CENTER" prefHeight="880.0" prefWidth="1760.0" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="110.0">
+    <VBox alignment="CENTER" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="110.0">
 
         <children>
-            <TableView fx:id="clientesTableView" editable="true" prefHeight="781.0" prefWidth="1860.0" VBox.vgrow="ALWAYS">
+            <TableView fx:id="clientesTableView" editable="true" VBox.vgrow="ALWAYS">
                 <columnResizePolicy>
                     <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
                 </columnResizePolicy>

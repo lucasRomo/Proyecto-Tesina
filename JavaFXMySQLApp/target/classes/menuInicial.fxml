@@ -42,7 +42,5 @@
         </padding>
     </VBox>
 
-    <Button fx:id="maximizarButton" onAction="#handleMaximizarButton" text="Maximizar"
-            AnchorPane.topAnchor="10.0"
-            AnchorPane.rightAnchor="10.0" />
+
 </AnchorPane>

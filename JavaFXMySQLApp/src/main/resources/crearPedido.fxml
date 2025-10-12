@@ -67,4 +67,5 @@
         <Button onAction="#handleGuardar" prefWidth="150" text="Guardar Pedido" />
         <Button onAction="#handleCancelar" prefWidth="150" text="Cancelar" />
     </HBox>
+
 </VBox>

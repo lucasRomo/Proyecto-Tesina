@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.regex.Pattern;
 
 public class EmpleadoController {
 
@@ -32,13 +33,9 @@ public class EmpleadoController {
     @FXML private TextField contraseniaField;
 
     // --- FXML Fields de la versión Balles ---
-    // NOTA: nombreField, apellidoField, idPersonaField no deberían estar aquí
-    // si los datos de Persona se reciben via setDatosPersona.
-    // Los campos de Empleado son los siguientes:
     @FXML private DatePicker fechaContratacionPicker;
     @FXML private TextField cargoField;
     @FXML private TextField salarioField;
-    // @FXML private TextField idPersonaField; // Este campo no es necesario si idPersona se obtiene de PersonaDAO
 
     // --- Atributos de Conexión (si tus DAOs no los manejan internamente) ---
     private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
@@ -63,9 +60,7 @@ public class EmpleadoController {
     // Método para inicializar, se puede usar para configurar el dialogStage si se abre como tal
     @FXML
     private void initialize() {
-        // Puedes poner aquí cualquier inicialización específica si el EmpleadoController
-        // tiene elementos que necesitan cargarse al iniciar la vista,
-        // por ejemplo, si tuviera un ComboBox de roles o estados que no sean fijos.
+        // Inicializaciones si son necesarias.
     }
 
     // Método de la versión Balles para cerrar el diálogo
@@ -105,7 +100,6 @@ public class EmpleadoController {
             conn.setAutoCommit(false); // Iniciar transacción
 
             // 1. Insertar Persona
-            // Nota: Aquí pasamos la conexión al DAO. Asegúrate de que PersonaDAO.insertarPersona acepta 'conn'.
             int idPersona = personaDAO.insertarPersona(this.personaData, conn);
 
             if (idPersona != -1) { // Si la persona se insertó correctamente
@@ -113,18 +107,15 @@ public class EmpleadoController {
                 Usuario nuevoUsuario = new Usuario(usuarioField.getText(), contraseniaField.getText());
                 nuevoUsuario.setIdPersona(idPersona); // Asignar el ID de la persona recién creada
 
-                // Asegúrate de que usuarioDAO.insertar acepta 'conn'
                 if (usuarioDAO.insertar(nuevoUsuario, conn)) {
                     // 3. Insertar Empleado
                     LocalDate fechaContratacion = fechaContratacionPicker.getValue();
                     String cargo = cargoField.getText();
                     double salario = Double.parseDouble(salarioField.getText());
-                    String estadoPorDefecto = "Activo"; // <-- ¡Estado por defecto!
+                    String estadoPorDefecto = "Activo";
 
-                    // Usar el constructor de Empleado con 5 parámetros (LocalDate, String, double, String, int)
                     Empleado nuevoEmpleado = new Empleado(fechaContratacion, cargo, salario, estadoPorDefecto, idPersona);
 
-                    // Asegúrate de que empleadoDAO.insertarEmpleado acepta 'conn'
                     if (empleadoDAO.insertarEmpleado(nuevoEmpleado, conn)) {
                         conn.commit(); // Confirmar la transacción
                         mostrarAlerta("Éxito", "Persona, Usuario y Empleado registrados exitosamente.", Alert.AlertType.INFORMATION);
@@ -178,18 +169,15 @@ public class EmpleadoController {
         }
     }
 
-    // Método para cancelar (de la versión Balles, adaptado para la lógica de Lucas)
+    // Método para cancelar (MANTENIDO)
     @FXML
     private void handleCancelar(ActionEvent event) {
-        // Aquí puedes decidir si simplemente cierras la ventana (como en Balles)
-        // o si rediriges a otra pantalla (como una vuelta atrás en el flujo de Lucas).
-        // Por ahora, si es un diálogo, lo cierra. Si es una ventana principal, redirige.
         if (dialogStage != null) {
             dialogStage.close();
         } else {
-            // Si no es un diálogo, redirigir a una pantalla anterior (ej. registro de persona)
             try {
-                Parent root = FXMLLoader.load(getClass().getResource("/registroPersona.fxml")); // Ajusta esta ruta
+                // Asume que la pantalla anterior es la de registro de persona
+                Parent root = FXMLLoader.load(getClass().getResource("/registroEmpleado.fxml"));
                 Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.setTitle("Registro de Persona");
@@ -208,16 +196,43 @@ public class EmpleadoController {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos obligatorios del empleado y usuario.", Alert.AlertType.WARNING);
             return false;
         }
+
+        // ====================================================================
+        // === VALIDACIÓN AGREGADA: CARGO SOLO LETRAS Y NO VACÍO ===
+        // ====================================================================
+        String cargo = cargoField.getText().trim();
+        if (cargo.isEmpty()) {
+            mostrarAlerta("Advertencia", "El campo 'Cargo' no puede estar vacío.", Alert.AlertType.WARNING);
+            return false;
+        }
+        if (!validarSoloLetras(cargo)) {
+            mostrarAlerta("Advertencia", "El campo 'Cargo' solo puede contener letras y espacios.", Alert.AlertType.WARNING);
+            return false;
+        }
+        // ====================================================================
+
+        // Validación de Salario
         try {
             Double.parseDouble(salarioField.getText());
         } catch (NumberFormatException e) {
             mostrarAlerta("Advertencia", "El salario debe ser un número válido.", Alert.AlertType.WARNING);
             return false;
         }
+
         return true;
     }
 
-    // Método de alerta unificado (de Balles, pero ahora usa AlertType.ERROR/WARNING/INFORMATION)
+    /**
+     * Valida si un texto contiene solo letras (incluyendo ñ, tildes y espacios).
+     */
+    private boolean validarSoloLetras(String texto) {
+        // Expresión regular que permite letras mayúsculas, minúsculas,
+        // tildes (áéíóúÁÉÍÓÚ), la letra ñ/Ñ y espacios en blanco.
+        String regex = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$";
+        return texto.matches(regex);
+    }
+
+    // Método de alerta unificado (MANTENIDO)
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);
         alert.setTitle(titulo);
@@ -226,7 +241,7 @@ public class EmpleadoController {
         alert.showAndWait();
     }
 
-    // Sobrecarga para mantener compatibilidad con las alertas de Lucas si eran solo de INFORMATION
+    // Sobrecarga para mantener compatibilidad (MANTENIDO)
     private void mostrarAlerta(String titulo, String mensaje) {
         mostrarAlerta(titulo, mensaje, Alert.AlertType.INFORMATION);
     }
@@ -237,6 +252,5 @@ public class EmpleadoController {
         fechaContratacionPicker.setValue(null);
         cargoField.clear();
         salarioField.clear();
-        // nombrePersonaLabel.setText(""); // Si quieres limpiar la etiqueta
     }
 }

@@ -2,12 +2,8 @@ package app.controller;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.stage.Stage;
 
 import java.io.IOException;
 
@@ -16,17 +12,12 @@ public class PedidosPrimerMenuController {
     @FXML
     private void handlecrearPedido(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/crearPedido.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            stage.setScene(new Scene(root, 1366, 768));
-
-            stage.setTitle("Crear Pedido");
-
-            stage.centerOnScreen();
-
-            stage.show();
+            // Usar el método unificado para cargar la escena en la ventana principal
+            MenuController.loadScene(
+                    (Node) event.getSource(),
+                    "/crearPedido.fxml",
+                    "Crear Pedido"
+            );
         } catch (IOException e) {
             e.printStackTrace();
             mostrarAlerta("Error", "No se pudo cargar la vista 'Crear Pedido'.", Alert.AlertType.ERROR);
@@ -38,17 +29,12 @@ public class PedidosPrimerMenuController {
     private void handleVerPedidos(ActionEvent event) {
         System.out.println("Intentando cargar la vista de pedidos activos...");
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/verPedidos.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            stage.setScene(new Scene(root, 1366, 768));
-
-            stage.setTitle("Ver Pedidos (Activos)");
-
-            stage.centerOnScreen();
-
-            stage.show();
+            // Usar el método unificado para cargar la escena en la ventana principal
+            MenuController.loadScene(
+                    (Node) event.getSource(),
+                    "/verPedidos.fxml",
+                    "Ver Pedidos (Activos)"
+            );
         } catch (IOException e) {
             e.printStackTrace();
             mostrarAlerta("Error", "No se pudo cargar la vista 'Ver Pedidos'.", Alert.AlertType.ERROR);
@@ -63,18 +49,12 @@ public class PedidosPrimerMenuController {
     private void handleVerHistorial(ActionEvent event) {
         System.out.println("Intentando cargar la vista de historial de pedidos...");
         try {
-            // Carga el nuevo FXML para el historial
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/verHistorialPedidos.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            stage.setScene(new Scene(root, 1366, 768));
-
-            stage.setTitle("Historial de Pedidos (Retirados)");
-
-            stage.centerOnScreen();
-
-            stage.show();
+            // Usar el método unificado para cargar la escena en la ventana principal
+            MenuController.loadScene(
+                    (Node) event.getSource(),
+                    "/verHistorialPedidos.fxml",
+                    "Historial de Pedidos (Retirados)"
+            );
         } catch (IOException e) {
             e.printStackTrace();
             mostrarAlerta("Error", "No se pudo cargar la vista 'Historial de Pedidos'.", Alert.AlertType.ERROR);
@@ -85,19 +65,15 @@ public class PedidosPrimerMenuController {
     @FXML
     private void handleVolverPedido(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/menuAbms.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            stage.setScene(new Scene(root, 1366, 768));
-
-            stage.setTitle("Menú Principal");
-
-            stage.centerOnScreen();
-
-            stage.show();
+            // Usar el método unificado para volver al menú anterior
+            MenuController.loadScene(
+                    (Node) event.getSource(),
+                    "/menuAbms.fxml",
+                    "Menú de ABMs" // Título corregido para reflejar el contenido del FXML
+            );
         } catch (IOException e) {
             e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo cargar la vista 'Menú ABMs'.", Alert.AlertType.ERROR);
         }
     }
 

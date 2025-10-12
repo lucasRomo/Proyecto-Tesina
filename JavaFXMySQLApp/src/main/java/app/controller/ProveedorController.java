@@ -23,6 +23,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
+import javafx.stage.Screen;
+import javafx.geometry.Rectangle2D;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -415,17 +417,40 @@ public class ProveedorController {
     @FXML
     public void handleRegistrarProveedorButton(ActionEvent event) {
         try {
+            // 1. Cargar el FXML de registro
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/registroProveedor.fxml"));
             Parent root = loader.load();
+
+            // 2. Configurar el controlador y el callback
             RegistroProveedorController registroController = loader.getController();
             registroController.setProveedorController(this);
 
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Registrar Nuevo Proveedor");
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.showAndWait();
+            // 3. Crear el nuevo Stage (ventana) y la Scene
+            Stage newStage = new Stage();
+            Scene newScene = new Scene(root);
+            newStage.setScene(newScene);
 
+            // 4. Obtener las dimensiones de la pantalla (Screen)
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+            double screenHeight = screenBounds.getHeight();
+
+            // 5. Aplicar el dimensionamiento solicitado:
+            // A. Establecer el ALTO al 100% de la pantalla
+            newStage.setHeight(screenHeight);
+
+            // B. Adaptar el ANCHO al contenido del FXML
+            // sizeToScene calcula el ancho mínimo requerido por el layout del FXML.
+            newStage.sizeToScene();
+
+            // 6. Configurar el modo (modal) y mostrar
+            newStage.setTitle("Registrar Nuevo Proveedor");
+            newStage.initModality(Modality.APPLICATION_MODAL);
+            newStage.centerOnScreen();
+
+            // Mostrar la nueva ventana y esperar a que se cierre (modal)
+            newStage.showAndWait();
+
+            // 7. Refrescar la tabla al volver
             refreshProveedoresTable();
 
         } catch (IOException e) {
@@ -532,14 +557,16 @@ public class ProveedorController {
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/menuAbmStock.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal");
-            stage.show();
+            // Se usa el método estático unificado para asegurar la navegación
+            // y que la nueva vista ocupe toda la ventana maximizada.
+            MenuController.loadScene(
+                    (Node) event.getSource(),
+                    "/menuAbmStock.fxml", // Ruta correcta para volver al menú ABM de Stock
+                    "Menú ABMs de Stock"   // Título de la ventana
+            );
         } catch (IOException e) {
             e.printStackTrace();
+            mostrarAlerta("Error de Navegación", "No se pudo cargar la vista anterior.", Alert.AlertType.ERROR);
         }
     }
 }

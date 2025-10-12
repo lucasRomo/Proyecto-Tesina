@@ -8,11 +8,6 @@ import javafx.stage.Stage;
 
 public class MainApp extends Application {
 
-    // Define el tamaño fijo deseado para toda la aplicación
-    // Tamaño inicial deseado (prudencial)
-    private static final double DEFAULT_WIDTH = 1200;
-    private static final double DEFAULT_HEIGHT = 700;
-
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/menuinicial.fxml"));
@@ -23,14 +18,15 @@ public class MainApp extends Application {
         stage.setTitle("Imprenta");
         stage.setScene(scene);
 
-        // 1. Inicia en el tamaño prudencial
-        stage.setWidth(DEFAULT_WIDTH);
-        stage.setHeight(DEFAULT_HEIGHT);
+        // CLAVE: Inicia la ventana en modo maximizado nativo del sistema operativo.
+        // Esto hace que la ventana ocupe el 100% de la pantalla.
+        stage.setMaximized(true);
 
-        // 2. CLAVE: La ventana NO es redimensionable por el usuario
-        stage.setResizable(false);
+        // Permite al usuario redimensionar la ventana (para poder restaurarla si desmaximiza).
+        // Si lo pones en 'false', el botón de restaurar/maximizar puede desaparecer o no funcionar como se espera.
+        stage.setResizable(true);
 
-        stage.centerOnScreen();
+        // No es necesario stage.centerOnScreen() para ventanas maximizadas.
         stage.show();
     }
 

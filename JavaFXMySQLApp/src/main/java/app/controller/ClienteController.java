@@ -19,7 +19,12 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
+
+// Importación CORREGIDA de Rectangle2D de JavaFX
+import javafx.geometry.Rectangle2D;
+
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -370,27 +375,62 @@ public class ClienteController {
         });
     }
 
+    // =========================================================================================
+    // === MÉTODO handleRegistrarClienteButton CORREGIDO Y FUNCIONAL ===========================
+    // =========================================================================================
     @FXML
     public void handleRegistrarClienteButton(ActionEvent event) {
         try {
+            // 1. Cargar el FXML de registro
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/registroCliente.fxml"));
             Parent root = loader.load();
 
-            RegistroController registroController = loader.getController();
-            registroController.setClienteController(this);
+            // 2. Configurar el controlador y el callback
+            // (Asumo la existencia de RegistroController y su método setClienteController)
+            // (Necesitas una clase llamada RegistroController con ese método)
+            Object controller = loader.getController();
+            if (controller instanceof RegistroController) {
+                ((RegistroController) controller).setClienteController(this);
+            } else {
+                System.err.println("Error: El controlador cargado no es RegistroController.");
+                // Opcional: manejar el error o continuar sin setear el controlador.
+            }
 
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Registrar Nuevo Cliente");
-            stage.showAndWait();
+            // 3. Crear el nuevo Stage (ventana) y la Scene
+            Stage newStage = new Stage();
+            Scene newScene = new Scene(root);
+            newStage.setScene(newScene);
 
+            // 4. Obtener las dimensiones de la pantalla (Screen)
+            // Usa Rectangle2D de JavaFX.geometry
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+            double screenHeight = screenBounds.getHeight();
+
+            // 5. Aplicar el dimensionamiento solicitado:
+            // A. Establecer el ALTO al 100% de la pantalla
+            newStage.setHeight(screenHeight);
+
+            // B. Adaptar el ANCHO al contenido del FXML
+            // sizeToScene se encarga de calcular el ancho mínimo requerido por el contenido
+            newStage.sizeToScene();
+
+            // 6. Configurar el modo (modal) y mostrar
+            newStage.setTitle("Registrar Nuevo Cliente");
+            newStage.initModality(Modality.APPLICATION_MODAL);
+            newStage.centerOnScreen();
+
+            // Mostrar la nueva ventana y esperar a que se cierre (modal)
+            newStage.showAndWait();
+
+            // 7. Refrescar la tabla al volver
             refreshClientesTable();
 
         } catch (IOException e) {
             e.printStackTrace();
-            mostrarAlerta("Error", "No se pudo cargar el formulario de registro de cliente.", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "No se pudo cargar el formulario de registro de cliente. Verifique la ruta del FXML.", Alert.AlertType.ERROR);
         }
     }
+    // =========================================================================================
 
     @FXML
     public void handleRefreshButton(ActionEvent event) {
@@ -528,22 +568,23 @@ public class ClienteController {
         alert.showAndWait();
     }
 
+    // =========================================================================================
+    // === handleVolverButton (Asumo la existencia de MenuController y su método loadScene) ===
+    // =========================================================================================
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/menuAbms.fxml"));
-
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            Scene scene = new Scene(root);
-
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal");
-            stage.show();
+            // Se utiliza MenuController.loadScene para volver al menú ABMs
+            MenuController.loadScene(
+                    (Node) event.getSource(),
+                    "/menuAbms.fxml",
+                    "Menú ABMs"
+            );
 
         } catch (IOException e) {
             e.printStackTrace();
+            mostrarAlerta("Error de Navegación", "No se pudo cargar la vista anterior.", Alert.AlertType.ERROR);
         }
     }
-}
 
+}

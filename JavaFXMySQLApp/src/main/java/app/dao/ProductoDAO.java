@@ -159,9 +159,8 @@ public class ProductoDAO {
 
     /**
      * Modifica un producto existente en la base de datos.
-     * **IMPORTANTE:** Si idCategoria es 0 en el modelo, se actualizará a NULL en la columna de la DB.
      * @param producto Objeto Producto con los nuevos datos.
-     * @return true si la modificación fue exitosa, false en caso contrario.
+     * @return true si la modificación **afectó alguna fila** (es decir, hubo un cambio real), false en caso contrario.
      */
     public boolean updateProducto(Producto producto) {
         String sql = "UPDATE " + TABLE_NAME + " SET " +
@@ -200,7 +199,7 @@ public class ProductoDAO {
             pstmt.setInt(6, producto.getIdProducto()); // Cláusula WHERE
 
             int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
+            return affectedRows > 0; // True solo si MySQL reporta una fila afectada
 
         } catch (SQLException e) {
             System.err.println("Error al actualizar producto: " + e.getMessage());
@@ -210,14 +209,12 @@ public class ProductoDAO {
 
     /**
      * Verifica si un nombre de producto ya existe, excluyendo opcionalmente el producto actual.
-     * Esto es crucial para la validación de unicidad en registro y edición.
      * @param nombre El nombre a verificar.
      * @param idProductoToExclude El ID del producto que se está editando (0 si es un nuevo registro).
      * @return true si el nombre ya está en uso por otro producto, false si es único.
      */
     public boolean isNombreProductoDuplicated(String nombre, int idProductoToExclude) {
         // Busca si existe un producto con el mismo nombre y cuyo ID no sea el que estamos editando
-        // Si idProductoToExclude es 0, busca duplicados con cualquier ID
         String sql = "SELECT COUNT(*) FROM " + TABLE_NAME +
                 " WHERE " + COL_NOMBRE + " = ? AND " + COL_ID + " != ?";
 
@@ -235,7 +232,7 @@ public class ProductoDAO {
         } catch (SQLException e) {
             System.err.println("Error al verificar duplicidad de nombre de producto: " + e.getMessage());
         }
-        return false; // Asumir que no hay duplicado si hay error en la DB (aunque lo ideal sería lanzar excepción)
+        return false;
     }
 
 

@@ -19,9 +19,13 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
+
+import javafx.stage.Screen;
+import javafx.geometry.Rectangle2D;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +38,6 @@ public class ProductoMenuController {
     // CLASES CONVERTIDORAS AUXILIARES ANIDADAS Y ESTÁTICAS
     // =========================================================================
 
-    /**
-     * Conversor seguro para Double. Si la conversión falla (ej: hay letras/vacío),
-     * devuelve null, permitiendo que el handleEditCommit maneje la validación y la alerta.
-     */
     private static class SafeDoubleStringConverter extends StringConverter<Double> {
         @Override
         public String toString(Double object) {
@@ -47,20 +47,16 @@ public class ProductoMenuController {
         @Override
         public Double fromString(String string) {
             if (string == null || string.trim().isEmpty()) {
-                return null; // Devuelve null si está vacío.
+                return null;
             }
             try {
                 return Double.parseDouble(string.trim());
             } catch (NumberFormatException e) {
-                return null; // Devuelve null si hay letras/formato inválido.
+                return null;
             }
         }
     }
 
-    /**
-     * Conversor seguro para Integer. Si la conversión falla (ej: hay letras/vacío),
-     * devuelve null, permitiendo que el handleEditCommit maneje la validación y la alerta.
-     */
     private static class SafeIntegerStringConverter extends StringConverter<Integer> {
         @Override
         public String toString(Integer object) {
@@ -70,13 +66,12 @@ public class ProductoMenuController {
         @Override
         public Integer fromString(String string) {
             if (string == null || string.trim().isEmpty()) {
-                return null; // Devuelve null si está vacío.
+                return null;
             }
             try {
-                // Usamos Integer.parseInt() que automáticamente valida si hay punto decimal.
                 return Integer.parseInt(string.trim());
             } catch (NumberFormatException e) {
-                return null; // Devuelve null si hay letras/formato inválido.
+                return null;
             }
         }
     }
@@ -129,22 +124,39 @@ public class ProductoMenuController {
                 .map(Categoria::getNombre)
                 .collect(Collectors.toList());
 
-        names.add(0, new Categoria(0, "Sin Categoría", "").getNombre());
+        Categoria sinCategoria = new Categoria(0, "-- Sin Categoría --", "");
+
+        names.add(0, sinCategoria.getNombre());
         categoriaNamesObservableList = FXCollections.observableArrayList(names);
+
+        categoriaNamesMap.put(0, sinCategoria.getNombre());
+
 
         categoriaFilterList = FXCollections.observableArrayList(categoriasDB);
 
         Categoria todos = new Categoria(-1, "Todos", "");
-        Categoria sinCategoria = new Categoria();
 
         categoriaFilterList.add(0, todos);
+
         if (!categoriaFilterList.stream().anyMatch(c -> c.getIdCategoria() == 0)) {
             categoriaFilterList.add(1, sinCategoria);
         } else {
-            categoriaFilterList.remove(sinCategoria);
-            categoriaFilterList.add(1, sinCategoria);
+            int indexSinCategoria = -1;
+            for (int i = 0; i < categoriaFilterList.size(); i++) {
+                if (categoriaFilterList.get(i).getIdCategoria() == 0) {
+                    indexSinCategoria = i;
+                    break;
+                }
+            }
+            if (indexSinCategoria != 1 && indexSinCategoria != -1) {
+                Categoria temp = categoriaFilterList.remove(indexSinCategoria);
+                categoriaFilterList.add(1, temp);
+            } else if (indexSinCategoria == -1) {
+                categoriaFilterList.add(1, sinCategoria);
+            }
         }
     }
+
 
     private void setupColumns() {
         idProductoColumn.setCellValueFactory(cellData -> cellData.getValue().idProductoProperty().asObject());
@@ -161,14 +173,12 @@ public class ProductoMenuController {
                 handleDescriptionEditCommit(event.getTableView().getItems().get(event.getTablePosition().getRow()), event.getNewValue())
         );
 
-        // APLICANDO EL CONVERSOR SEGURO DE DOUBLE
         precioColumn.setCellValueFactory(cellData -> cellData.getValue().precioProperty().asObject());
         precioColumn.setCellFactory(TextFieldTableCell.forTableColumn(new SafeDoubleStringConverter()));
         precioColumn.setOnEditCommit(event ->
                 handlePriceEditCommit(event.getTableView().getItems().get(event.getTablePosition().getRow()), event.getNewValue())
         );
 
-        // APLICANDO EL CONVERSOR SEGURO DE INTEGER
         stockColumn.setCellValueFactory(cellData -> cellData.getValue().stockProperty().asObject());
         stockColumn.setCellFactory(TextFieldTableCell.forTableColumn(new SafeIntegerStringConverter()));
         stockColumn.setOnEditCommit(event ->
@@ -177,7 +187,7 @@ public class ProductoMenuController {
 
         categoriaNombreColumn.setCellValueFactory(cellData -> {
             int idCategoria = cellData.getValue().getIdCategoria();
-            String nombre = categoriaNamesMap.getOrDefault(idCategoria, "N/A");
+            String nombre = categoriaNamesMap.getOrDefault(idCategoria, "-- Sin Categoría --");
             return new SimpleStringProperty(nombre);
         });
 
@@ -200,7 +210,7 @@ public class ProductoMenuController {
             return;
         }
 
-        if (productoDAO.isNombreProductoDuplicated(trimmedValue, producto.getIdProducto())) {
+        if (!trimmedValue.equals(producto.getNombreProducto()) && productoDAO.isNombreProductoDuplicated(trimmedValue, producto.getIdProducto())) {
             showAlert(Alert.AlertType.ERROR, "Error de Validación", "Ya existe un producto con el nombre: " + trimmedValue);
             productosTableView.refresh();
             return;
@@ -215,23 +225,16 @@ public class ProductoMenuController {
         applyChangeToModel(producto);
     }
 
-    /**
-     * Valida el precio editado: no vacío, numérico, y positivo.
-     * El SafeDoubleStringConverter asegura que llegamos aquí con un Double o null (si hay error de formato/vacío).
-     */
     private void handlePriceEditCommit(Producto producto, Double newValue) {
-
-        // El conversor devuelve null si la entrada no es numérica o está vacía.
         if (newValue == null) {
             showAlert(Alert.AlertType.ERROR, "Error de Validación", "El precio no puede estar vacío y debe ser un valor numérico positivo (ej: 12.50).");
-            productosTableView.refresh(); // Vuelve al valor anterior
+            productosTableView.refresh();
             return;
         }
 
-        // Validación de valor (debe ser positivo)
         if (newValue <= 0) {
             showAlert(Alert.AlertType.ERROR, "Error de Validación", "El precio debe ser un valor positivo.");
-            productosTableView.refresh(); // Vuelve al valor anterior
+            productosTableView.refresh();
             return;
         }
 
@@ -239,23 +242,16 @@ public class ProductoMenuController {
         applyChangeToModel(producto);
     }
 
-    /**
-     * Valida el stock editado: no vacío, entero, y no negativo.
-     * El SafeIntegerStringConverter asegura que llegamos aquí con un Integer o null (si hay error de formato/vacío).
-     */
     private void handleStockEditCommit(Producto producto, Integer newValue) {
-
-        // El conversor devuelve null si la entrada no es numérica entera o está vacía.
         if (newValue == null) {
             showAlert(Alert.AlertType.ERROR, "Error de Validación", "El stock no puede estar vacío y debe ser un número entero no negativo.");
-            productosTableView.refresh(); // Vuelve al valor anterior
+            productosTableView.refresh();
             return;
         }
 
-        // Validación de valor (debe ser no negativo)
         if (newValue < 0) {
             showAlert(Alert.AlertType.ERROR, "Error de Validación", "El stock no puede ser negativo.");
-            productosTableView.refresh(); // Vuelve al valor anterior
+            productosTableView.refresh();
             return;
         }
 
@@ -275,6 +271,7 @@ public class ProductoMenuController {
     }
 
     private void applyChangeToModel(Producto producto) {
+        // En el enfoque de edición en línea, este refresh es vital
         productosTableView.refresh();
     }
 
@@ -345,22 +342,42 @@ public class ProductoMenuController {
     @FXML
     private void handleRegistrarProductoButton(ActionEvent event) {
         try {
+            // 1. Cargar el FXML de registro
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/registrarProducto.fxml"));
             Parent root = loader.load();
-            // ProductoController registroController = loader.getController(); // No es necesario si no se pasa data
 
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Registro de Nuevo Producto");
+            // 2. Crear el nuevo Stage (ventana) y la Scene
+            Stage newStage = new Stage();
+            Scene newScene = new Scene(root);
+            newStage.setScene(newScene);
 
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            // 3. Obtener las dimensiones de la pantalla (Screen)
+            Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+            double screenHeight = screenBounds.getHeight();
 
-            stage.sizeToScene();
-            stage.setResizable(false);
+            // 4. Aplicar el dimensionamiento solicitado:
+            // A. Establecer el ALTO al 100% de la pantalla
+            newStage.setHeight(screenHeight);
 
-            stage.showAndWait();
+            // B. Adaptar el ANCHO al contenido del FXML
+            // sizeToScene calcula el ancho mínimo requerido por el layout del FXML.
+            newStage.sizeToScene();
 
+            // 5. Configurar el modo (modal) y mostrar
+            newStage.setTitle("Registro de Nuevo Producto");
+            newStage.initModality(Modality.APPLICATION_MODAL);
+            newStage.initOwner(((Node) event.getSource()).getScene().getWindow());
+
+            // Opcional: Centrar en pantalla
+            newStage.centerOnScreen();
+
+            // Se elimina setResizable(false) para permitir que el alto se ajuste.
+            // newStage.setResizable(false);
+
+            // Mostrar la nueva ventana y esperar a que se cierre (modal)
+            newStage.showAndWait();
+
+            // 6. Recargar la tabla al volver
             loadProductos();
 
         } catch (IOException e) {
@@ -368,25 +385,32 @@ public class ProductoMenuController {
             e.printStackTrace();
         }
     }
-
+    /**
+     * LÓGICA CORREGIDA: Solo intenta modificar el producto seleccionado.
+     */
     @FXML
     private void handleModificarProductoButton(ActionEvent event) {
-        boolean allSuccess = true;
-        for (Producto producto : masterData) {
-            // Se asume que el método applyChangeToModel no llama al DAO, sino que
-            // la actualización masiva se hace aquí al presionar "Modificar Producto"
-            if (!productoDAO.updateProducto(producto)) {
-                allSuccess = false;
-                System.err.println("Fallo al actualizar producto con ID: " + producto.getIdProducto());
-            }
+        // 1. Obtener el producto seleccionado
+        Producto selectedProducto = productosTableView.getSelectionModel().getSelectedItem();
+
+        if (selectedProducto == null) {
+            // Muestra la advertencia solicitada por el usuario
+            showAlert(Alert.AlertType.WARNING, "Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.");
+            return;
         }
 
-        if (allSuccess) {
-            showAlert(Alert.AlertType.INFORMATION, "Éxito", "¡Productos modificados correctamente en la base de datos!");
+        // 2. Intentar actualizar el producto en la BD (el DAO retorna true solo si hubo cambios)
+        boolean exito = productoDAO.updateProducto(selectedProducto);
+
+        if (exito) {
+            showAlert(Alert.AlertType.INFORMATION, "Éxito", "Producto modificado exitosamente.");
         } else {
-            showAlert(Alert.AlertType.WARNING, "Advertencia", "Algunos productos no pudieron ser modificados en la base de datos.");
+            // Esto ocurre si el usuario seleccionó una fila, no hizo cambios reales
+            // o los datos eran idénticos a los de la BD.
+            showAlert(Alert.AlertType.WARNING, "Sin Cambios Detectados", "El producto seleccionado no ha sido modificado o los datos son idénticos a los actuales.");
         }
 
+        // 3. Recargar la tabla para asegurar la sincronización y refrescar la vista
         loadProductos();
     }
 
@@ -401,16 +425,13 @@ public class ProductoMenuController {
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/menuAbmStock.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú de Stock y ABMs");
-            stage.setMaximized(true);
-            stage.show();
-
+            // Se utiliza el método estático unificado para asegurar la navegación
+            // y que la nueva vista ocupe toda la ventana maximizada.
+            MenuController.loadScene(
+                    (Node) event.getSource(),
+                    "/menuAbmStock.fxml",
+                    "Menú ABMs de Stock"
+            );
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Error de Navegación", "No se pudo cargar la vista de Menu Abm Stock.");
             e.printStackTrace();
