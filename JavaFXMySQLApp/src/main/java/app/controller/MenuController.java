@@ -130,7 +130,7 @@ public class MenuController {
     public void handleCrearProducto(ActionEvent event) {
         try {
             // Este método NO estaba en el controlador anterior, se incluye con la nueva lógica.
-            loadFixedSizeScene((Node) event.getSource(), "/ProductoAbmView.fxml", "Creación/Edición de Producto");
+            loadFixedSizeScene((Node) event.getSource(), "/menuProducto.fxml", "Creación/Edición de Producto");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -34,7 +34,7 @@
             <Button styleClass="button" onAction="#handleProveedor" prefWidth="200.0" text="Proveedores" />
             <Button styleClass="button" onAction="#handleStock" prefWidth="200.0" text="Stock (Vista General)" />
             <!-- ESTE ES EL NUEVO BOTÓN PARA CREAR PRODUCTOS -->
-            <Button styleClass="button" onAction="#handleCrearProducto" prefWidth="200.0" text="Crear Producto" />
+            <Button styleClass="button" onAction="#handleCrearProducto" prefWidth="200.0" text="Productos" />
         </VBox>
 
         <padding>

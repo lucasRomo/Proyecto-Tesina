@@ -2,49 +2,55 @@ package app.model;
 
 import javafx.beans.property.*;
 
-/**
- * Clase de modelo para la entidad Categoria.
- */
 public class Categoria {
     private final IntegerProperty idCategoria;
     private final StringProperty nombre;
     private final StringProperty descripcion;
 
+    // Constructor completo
     public Categoria(int idCategoria, String nombre, String descripcion) {
         this.idCategoria = new SimpleIntegerProperty(idCategoria);
         this.nombre = new SimpleStringProperty(nombre);
-        this.descripcion = new SimpleStringProperty(descripcion);
+        // Manejar el caso de que la descripción sea null (como en el constructor Sin Categoría)
+        this.descripcion = new SimpleStringProperty(descripcion != null ? descripcion : "");
     }
 
-    // --- Getters para Properties ---
-    public IntegerProperty idCategoriaProperty() {
-        return idCategoria;
+    // Constructor para ChoiceBox/ComboBox (solo ID y nombre)
+    public Categoria(int idCategoria, String nombre) {
+        this(idCategoria, nombre, null);
     }
 
-    public StringProperty nombreProperty() {
-        return nombre;
+    // Constructor para manejar la opción "Sin Categoría"
+    public Categoria() {
+        this(0, "-- Sin Categoría --", null); // Nombre ajustado para el ComboBox
     }
 
-    public StringProperty descripcionProperty() {
-        return descripcion;
-    }
+    // --- Getters y Setters necesarios para el DAO y UI ---
 
-    // --- Getters para valores primitivos ---
     public int getIdCategoria() {
         return idCategoria.get();
+    }
+
+    // CORREGIDO: Setter para actualizar el ID después de guardar
+    public void setIdCategoria(int idCategoria) {
+        this.idCategoria.set(idCategoria);
     }
 
     public String getNombre() {
         return nombre.get();
     }
 
+    // CORREGIDO: Getter necesario para CategoriaDAO.saveCategoria()
     public String getDescripcion() {
         return descripcion.get();
     }
 
-    // Sobreescribir toString para mostrar el nombre en ComboBoxes
+    public StringProperty nombreProperty() {
+        return nombre;
+    }
+
     @Override
     public String toString() {
-        return getNombre();
+        return nombre.get();
     }
 }

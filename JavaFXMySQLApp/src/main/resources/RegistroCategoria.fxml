@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="300.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.RegistroCategoriaController">
+    <stylesheets>
+        <URL value="@styleRegistro.css" />
+    </stylesheets>
+
+    <VBox alignment="CENTER" spacing="15"
+          AnchorPane.topAnchor="20.0" AnchorPane.bottomAnchor="20.0"
+          AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
+
+        <padding>
+            <Insets bottom="10" left="10" right="10" top="10" />
+        </padding>
+
+        <Label styleClass="titulo-principal" text="Registrar Nueva Categoría">
+            <font>
+                <Font name="System Bold" size="18.0" />
+            </font>
+        </Label>
+
+        <Label text="Nombre de la Categoría (*):" />
+        <TextField fx:id="txtNombre" promptText="Ej: Tarjetas Personales, Folletos, Lonas..." />
+
+        <Label text="Descripción (opcional):" />
+        <TextField fx:id="txtDescripcion" promptText="Descripción detallada de la categoría" />
+
+        <Separator />
+
+        <Label fx:id="lblMensajeError" text="" styleClass="label-error" wrapText="true" minHeight="30.0" />
+
+        <HBox alignment="CENTER" spacing="20">
+            <Button onAction="#handleRegistrar" prefHeight="32.0" prefWidth="101.0" text="Guardar" styleClass="button-success" />
+            <Button onAction="#handleCancelar" styleClass="cancel-button" text="Cancelar" />
+        </HBox>
+    </VBox>
+</AnchorPane>

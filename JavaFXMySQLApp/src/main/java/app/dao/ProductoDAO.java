@@ -119,7 +119,15 @@ public class ProductoDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, producto.getNombreProducto());
-            pstmt.setString(2, producto.getDescripcion());
+
+            // La descripción puede ser nula/vacía
+            String descripcion = producto.getDescripcion();
+            if (descripcion == null || descripcion.trim().isEmpty()) {
+                pstmt.setNull(2, java.sql.Types.VARCHAR);
+            } else {
+                pstmt.setString(2, descripcion);
+            }
+
             pstmt.setDouble(3, producto.getPrecio());
             pstmt.setInt(4, producto.getStock());
 
@@ -168,7 +176,15 @@ public class ProductoDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, producto.getNombreProducto());
-            pstmt.setString(2, producto.getDescripcion());
+
+            // La descripción puede ser nula/vacía
+            String descripcion = producto.getDescripcion();
+            if (descripcion == null || descripcion.trim().isEmpty()) {
+                pstmt.setNull(2, java.sql.Types.VARCHAR);
+            } else {
+                pstmt.setString(2, descripcion);
+            }
+
             pstmt.setDouble(3, producto.getPrecio());
             pstmt.setInt(4, producto.getStock());
 
@@ -191,6 +207,37 @@ public class ProductoDAO {
         }
         return false;
     }
+
+    /**
+     * Verifica si un nombre de producto ya existe, excluyendo opcionalmente el producto actual.
+     * Esto es crucial para la validación de unicidad en registro y edición.
+     * @param nombre El nombre a verificar.
+     * @param idProductoToExclude El ID del producto que se está editando (0 si es un nuevo registro).
+     * @return true si el nombre ya está en uso por otro producto, false si es único.
+     */
+    public boolean isNombreProductoDuplicated(String nombre, int idProductoToExclude) {
+        // Busca si existe un producto con el mismo nombre y cuyo ID no sea el que estamos editando
+        // Si idProductoToExclude es 0, busca duplicados con cualquier ID
+        String sql = "SELECT COUNT(*) FROM " + TABLE_NAME +
+                " WHERE " + COL_NOMBRE + " = ? AND " + COL_ID + " != ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, nombre);
+            pstmt.setInt(2, idProductoToExclude);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al verificar duplicidad de nombre de producto: " + e.getMessage());
+        }
+        return false; // Asumir que no hay duplicado si hay error en la DB (aunque lo ideal sería lanzar excepción)
+    }
+
 
     /**
      * Elimina un producto de la base de datos por su ID.

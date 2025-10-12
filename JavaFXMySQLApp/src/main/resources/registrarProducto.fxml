@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="820.0" prefWidth="476.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.ProductoController">
+    <stylesheets>
+        <URL value="@styleRegistro.css" />
+    </stylesheets>
+
+    <VBox layoutX="25.0" layoutY="25.0" prefHeight="782.0" prefWidth="424.0" spacing="15"
+          AnchorPane.topAnchor="20.0" AnchorPane.bottomAnchor="20.0"
+          AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
+
+        <padding>
+            <Insets bottom="10" left="10" right="10" top="10" />
+        </padding>
+
+        <Label prefHeight="47.0" prefWidth="418.0" styleClass="titulo-principal" text="Registro de Producto">
+            <font>
+                <Font name="System Bold" size="20.0" />
+            </font>
+        </Label>
+
+        <Label text="Nombre del Producto (*):" />
+        <TextField fx:id="txtNombre" promptText="Nombre del Producto" />
+
+        <Label text="Precio (*):" />
+        <TextField fx:id="txtPrecio" promptText="Solo números y punto decimal (ej: 12.50)" />
+
+        <Label text="Stock (Cantidad):" />
+        <TextField fx:id="txtStock" promptText="Solo números enteros. Si se deja vacío, es 0." />
+
+        <Separator />
+
+        <Label text="Categoría (Opcional):">
+            <font>
+                <Font name="System Bold" size="16.0" />
+            </font>
+        </Label>
+
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <ComboBox fx:id="cmbCategoria" HBox.hgrow="ALWAYS" promptText="Seleccione una categoría" />
+            <Button onAction="#handleRegistrarNuevaCategoriaButton" text="Nueva Categoría" />
+        </HBox>
+
+        <Label text="Descripción:" />
+        <TextArea fx:id="txtDescripcion" prefHeight="80.0" wrapText="true" />
+
+        <VBox.margin>
+            <Insets top="10.0" />
+        </VBox.margin>
+
+        <Label fx:id="lblMensajeError" text="" styleClass="label-error" wrapText="true" minHeight="30.0" />
+
+        <HBox alignment="CENTER_RIGHT" spacing="10">
+            <Button onAction="#handleGuardarProducto" prefHeight="45.0" prefWidth="120.0" styleClass="button-success" text="Guardar" />
+            <Button onAction="#handleVolver" prefHeight="45.0" prefWidth="120.0" styleClass="cancel-button" text="Cancelar" />
+        </HBox>
+    </VBox>
+</AnchorPane>
