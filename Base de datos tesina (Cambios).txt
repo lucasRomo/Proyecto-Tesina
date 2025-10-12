@@ -211,6 +211,19 @@ CREATE TABLE IF NOT EXISTS ComprobantePago (
   PRIMARY KEY (id_comprobante)
 );
 
+-- Tabla RegistroActividad
+CREATE TABLE IF NOT EXISTS RegistroActividad (
+  id_RegAct INT NOT NULL AUTO_INCREMENT,
+  fecha_modificacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  id_usuario_responsable INT NOT NULL,
+  tabla_afectada VARCHAR(100) NOT NULL,
+  columna_afectada VARCHAR(100) NULL,
+  id_registro_modificado INT NULL,
+  dato_previo_modificacion TEXT NULL,
+  dato_modificado TEXT NULL,
+  PRIMARY KEY (id_RegAct)
+);
+
 -- -----------------------------------------------------
 -- Claves Foráneas (FK)
 -- -----------------------------------------------------
@@ -274,6 +287,9 @@ ALTER TABLE ComprobantePago ADD CONSTRAINT fk_ComprobantePago_Cliente
   FOREIGN KEY (id_cliente) REFERENCES Cliente (id_cliente);
 ALTER TABLE ComprobantePago ADD CONSTRAINT fk_ComprobantePago_Pedido
   FOREIGN KEY (id_pedido) REFERENCES Pedido (id_pedido);
+
+ALTER TABLE RegistroActividad ADD CONSTRAINT fk_RegistroActividad_Usuario
+  FOREIGN KEY (id_usuario_responsable) REFERENCES Usuario (id_usuario);
   
 -- -----------------------------------------------------
 -- Datos iniciales (sembrado)
@@ -286,6 +302,8 @@ INSERT INTO TipoDocumento (nombre_tipo) VALUES ('Pasaporte');
 
 INSERT INTO TipoPersona (nombre_tipo) VALUES ('Cliente');
 INSERT INTO TipoPersona (nombre_tipo) VALUES ('Empleado');
+INSERT INTO TipoPersona (nombre_tipo) Values ('Proveedor');
+INSERT INTO TipoPersona (nombre_tipo) Values ('Administrador');
 
 INSERT INTO TipoProveedor (descripcion) VALUES ('Papel');
 INSERT INTO TipoProveedor (descripcion) VALUES ('Tinta');
