@@ -155,6 +155,7 @@ public class MenuController {
         }
     }
 
+    // Método de Pedidos del segundo fragmento
     @FXML
     public void handlePedidosButton(ActionEvent event) {
         try {
@@ -233,6 +234,25 @@ public class MenuController {
     public void handleComprobantes(ActionEvent event) {
         try {
             loadFixedSizeScene((Node) event.getSource(), "/ComprobantesAdmin.fxml", "Menu de Comprobantes");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void handleHistorialActividadButton(ActionEvent event) {
+        try {
+            // Carga el FXML de la tabla de usuarios
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/historialActividad.fxml"));
+            Parent root = loader.load();
+
+            // Carga la nueva escena
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Historial de Actividad");
+            stage.show();
+
         } catch (IOException e) {
             e.printStackTrace();
         }

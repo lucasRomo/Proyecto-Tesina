@@ -2,6 +2,7 @@ app\controller\ClienteController.class
 app\controller\DetallePedidoController$2.class
 app\controller\VerHistorialPedidosController$3.class
 app\controller\RegistroController.class
+app\dao\HistorialActividadDAO.class
 app\controller\IniciodeSesionController.class
 app\controller\CrearPedidoController.class
 app\controller\AsignarPedidoController.class
@@ -21,8 +22,10 @@ app\util\TicketPDFUtil.class
 app\controller\VerPedidosController.class
 app\controller\CrearPedidoController$4.class
 app\controller\MenuController.class
+app\controller\HistorialActividadController$1.class
 app\controller\ComprobantesController$1.class
 app\dao\FacturaDAO.class
+app\controller\HistorialActividadController.class
 app\controller\FacturasAdminTableView.class
 app\controller\ComprobantesAdminTableView.class
 app\controller\VerPedidosController$2$1.class
@@ -39,6 +42,8 @@ app\controller\RegistroEmpleadoController.class
 app\controller\FacturasController.class
 app\controller\UsuariosEmpleadoController$2.class
 app\controller\UsuariosEmpleadoController.class
+app\controller\CrearPedidoController$2.class
+app\controller\HistorialActividadTableView.class
 app\model\Producto.class
 app\model\Categoria.class
 app\controller\AsignarPedidoController.class
@@ -55,7 +60,3 @@ app\controller\VerHistorialPedidosController$5.class
 app\controller\DetallePedidoController.class
 app\controller\VerHistorialPedidosController$4.class
 app\model\Persona.class
-app\model\DetallePedido.class
-app\dao\CategoriaDAO.class
-app\controller\VerPedidosController$FormattedDateTableCell.class
-app\controller\VerHistorialPedidosController$1$1.class

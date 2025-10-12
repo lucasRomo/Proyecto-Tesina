@@ -37,6 +37,10 @@ public class Empleado {
         this.idPersona = idPersona;
     }
 
+    public Empleado(int idPersona, double salario) {
+        this.idPersona = idPersona;
+        this.salario = salario;
+    }
 
 
     @Override

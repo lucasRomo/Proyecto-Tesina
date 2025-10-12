@@ -17,6 +17,7 @@ public class UsuarioEmpleadoTableView {
     private final StringProperty estado;
     private final IntegerProperty idPersona;
     private final IntegerProperty idDireccion;
+    private StringProperty numeroDocumento;
 
     public UsuarioEmpleadoTableView(int idUsuario, String usuario, String contrasena, String nombre, String apellido, double salario, String estado, int idPersona, int idDireccion) {
         this.idUsuario = new SimpleIntegerProperty(idUsuario);
@@ -28,6 +29,21 @@ public class UsuarioEmpleadoTableView {
         this.estado = new SimpleStringProperty(estado);
         this.idPersona = new SimpleIntegerProperty(idPersona);
         this.idDireccion = new SimpleIntegerProperty(idDireccion);
+    }
+
+    public UsuarioEmpleadoTableView(int idUsuario, String usuario, String contrasena, String nombre, String apellido,
+                                    String numeroDocumento, double salario, String estado, int idPersona, int idDireccion) {
+        // ... inicialización de campos existentes
+        this.idUsuario = new SimpleIntegerProperty(idUsuario);
+        this.usuario = new SimpleStringProperty(usuario);
+        this.contrasena = new SimpleStringProperty(contrasena);
+        this.nombre = new SimpleStringProperty(nombre);
+        this.apellido = new SimpleStringProperty(apellido);
+        this.salario = new SimpleDoubleProperty(salario);
+        this.estado = new SimpleStringProperty(estado);
+        this.idPersona = new SimpleIntegerProperty(idPersona);
+        this.idDireccion = new SimpleIntegerProperty(idDireccion);
+        this.numeroDocumento = new SimpleStringProperty(numeroDocumento); // Inicializa el nuevo campo
     }
 
     public int getIdUsuario() {
@@ -89,6 +105,10 @@ public class UsuarioEmpleadoTableView {
     }
 
     public void setIdDireccion (int idDireccion) {this.idDireccion.set(idDireccion);}
+
+    public String getNumeroDocumento() { return numeroDocumento.get(); }
+
+    public StringProperty numeroDocumentoProperty() { return numeroDocumento; }
 
     public IntegerProperty idUsuarioProperty() {
         return this.idUsuario;
