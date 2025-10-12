@@ -24,8 +24,11 @@ import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser; // Importado para selección de archivo
 import javafx.util.converter.DoubleStringConverter;
+import javafx.util.Callback; // Importado para configurar la celda del botón
 
+import java.io.File; // Importado para manejo de archivos
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -33,6 +36,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import java.awt.Desktop; // Importado para abrir el archivo (funcionalidad de escritorio)
 
 // IMPORTACIÓN AÑADIDA
 import app.controller.DetallePedidoController;
@@ -65,9 +69,13 @@ public class VerPedidosController implements Initializable {
     @FXML
     private TableColumn<Pedido, String> instruccionesColumn;
 
-    // Columna para el botón de Ticket/Factura (IMPORTANTE: Tipo Void para la celda con botón)
+    // Columna para el botón de Ticket/Factura
     @FXML
     private TableColumn<Pedido, Void> ticketColumn;
+
+    // NUEVA COLUMNA para el comprobante de pago
+    @FXML
+    private TableColumn<Pedido, Void> comprobantePagoColumn;
 
     // ComboBox para filtrar por empleado
     @FXML
@@ -134,7 +142,10 @@ public class VerPedidosController implements Initializable {
         // --- 2. Columna Ticket/Factura (Botón) ---
         configurarColumnaTicket();
 
-        // --- 3 & 4. Columnas NUMÉRICAS (Double) ---
+        // --- 3. Columna Comprobante Pago (Botón) ---
+        configurarColumnaComprobante(); // NUEVA CONFIGURACIÓN
+
+        // --- 4 & 5. Columnas NUMÉRICAS (Double) ---
         montoTotalColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
         montoTotalColumn.setOnEditCommit(event -> {
             if (event.getNewValue() != null && event.getNewValue() >= 0) {
@@ -157,21 +168,21 @@ public class VerPedidosController implements Initializable {
             }
         });
 
-        // --- 5. Columna INSTRUCCIONES (TextFieldTableCell) ---
+        // --- 6. Columna INSTRUCCIONES (TextFieldTableCell) ---
         instruccionesColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         instruccionesColumn.setOnEditCommit(event -> {
             event.getRowValue().setInstrucciones(event.getNewValue());
             guardarCambiosEnBD(event.getRowValue(), "Instrucciones");
         });
 
-        // --- 6. Configuración del Filtro de Empleado ---
+        // --- 7. Configuración del Filtro de Empleado ---
         cargarEmpleadosEnFiltro();
         empleadoFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
             idEmpleadoFiltro = extractIdFromComboBox(newVal);
             cargarPedidos(); // Recarga los pedidos con el nuevo filtro
         });
 
-        // --- 7. Configuración de Filtros Adicionales ---
+        // --- 8. Configuración de Filtros Adicionales ---
         // Se asume que estos ComboBox existen en el FXML, por lo que los configuramos.
         if (estadoFilterComboBox != null) {
             estadoFilterComboBox.setItems(FXCollections.observableArrayList(estados));
@@ -181,7 +192,7 @@ public class VerPedidosController implements Initializable {
         }
 
         if (metodoPagoFilterComboBox != null) {
-            // Asumiendo que PedidoDAO.getTiposPago() existe y retorna una List<String>
+            // Se asume que PedidoDAO.getTiposPago() existe y retorna una List<String>
             List<String> tiposPago = pedidoDAO.getTiposPago();
             tiposPago.add(0, "Todos los Métodos");
             metodoPagoFilterComboBox.setItems(FXCollections.observableArrayList(tiposPago));
@@ -229,7 +240,6 @@ public class VerPedidosController implements Initializable {
         }
     }
 
-
     /**
      * Configura la columna para incluir un botón "Detallar/Ticket".
      */
@@ -262,6 +272,106 @@ public class VerPedidosController implements Initializable {
             }
         });
     }
+
+    /**
+     * Configura la columna para incluir un botón de "Subir/Ver Comprobante".
+     */
+    private void configurarColumnaComprobante() {
+        Callback<TableColumn<Pedido, Void>, TableCell<Pedido, Void>> cellFactory = new Callback<>() {
+            @Override
+            public TableCell<Pedido, Void> call(final TableColumn<Pedido, Void> param) {
+                final TableCell<Pedido, Void> cell = new TableCell<>() {
+
+                    private final Button btn = new Button();
+                    private final HBox pane = new HBox(btn);
+
+                    {
+                        btn.setMinWidth(110);
+                        pane.setAlignment(Pos.CENTER);
+
+                        btn.setOnAction(event -> {
+                            Pedido pedido = getTableView().getItems().get(getIndex());
+                            handleSubirComprobante(pedido);
+                        });
+                    }
+
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            Pedido pedido = getTableView().getItems().get(getIndex());
+                            String ruta = pedido.getRutaComprobante(); // Se asume que este getter existe
+
+                            // Cambia el texto y estilo del botón basado en si ya hay un comprobante
+                            if (ruta != null && !ruta.isEmpty()) {
+                                btn.setText("VER/Cambiar PDF");
+                                btn.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-cursor: hand;"); // Azul
+                            } else {
+                                btn.setText("Subir Comprobante");
+                                btn.setStyle("-fx-background-color: #28a745; -fx-text-fill: white; -fx-cursor: hand;"); // Verde
+                            }
+                            setGraphic(pane);
+                        }
+                    }
+                };
+                return cell;
+            }
+        };
+
+        comprobantePagoColumn.setCellFactory(cellFactory);
+    }
+
+    /**
+     * Lógica para subir un archivo PDF de comprobante y guardar la ruta en el pedido.
+     */
+    private void handleSubirComprobante(Pedido pedido) {
+        // Determinar la ventana principal (Stage)
+        Stage stage = (Stage) pedidosTable.getScene().getWindow();
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar Comprobante de Pago (PDF)");
+        // Filtro para solo mostrar archivos PDF
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Archivos PDF (*.pdf)", "*.pdf");
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        // Si ya existe una ruta, intenta abrir el archivo o pide confirmación para reemplazar
+        if (pedido.getRutaComprobante() != null && !pedido.getRutaComprobante().isEmpty()) {
+            File existingFile = new File(pedido.getRutaComprobante());
+            if (existingFile.exists()) {
+                // Si el archivo existe, primero lo abre (comportamiento de "Ver")
+                try {
+                    Desktop.getDesktop().open(existingFile);
+                    System.out.println("Abriendo comprobante existente: " + pedido.getRutaComprobante());
+                    // Luego, preguntar si desea cambiarlo
+                    // Opcionalmente, puedes añadir una alerta de confirmación aquí si quieres que el "VER" sea un botón separado.
+                } catch (IOException e) {
+                    mostrarAlerta("Error al Abrir", "No se pudo abrir el archivo PDF. Ruta: " + pedido.getRutaComprobante(), Alert.AlertType.ERROR);
+                }
+            } else {
+                mostrarAlerta("Advertencia", "La ruta guardada ya no contiene el archivo PDF. Proceda a subir uno nuevo.", Alert.AlertType.WARNING);
+            }
+        }
+
+        // Mostrar el diálogo de selección de archivo (siempre disponible para cambiar/subir)
+        File file = fileChooser.showOpenDialog(stage);
+
+        if (file != null) {
+            String newPath = file.getAbsolutePath();
+
+            // 1. Guardar la nueva ruta en el objeto Pedido
+            pedido.setRutaComprobante(newPath); // Se asume que este setter existe
+            System.out.println("Comprobante subido para Pedido " + pedido.getIdPedido() + ". Ruta: " + newPath);
+
+            // 2. Persistir esta nueva ruta en la base de datos
+            guardarCambiosEnBD(pedido, "Ruta Comprobante");
+
+            // 3. Refrescar la tabla para que cambie el texto del botón
+            pedidosTable.refresh();
+        }
+    }
+
 
     /**
      * Manejador del evento de clic en el botón Detallar/Ticket.
@@ -306,13 +416,14 @@ public class VerPedidosController implements Initializable {
      * @param campoEditado El nombre del campo que fue modificado.
      */
     private void guardarCambiosEnBD(Pedido pedido, String campoEditado) {
+        // IMPORTANTE: Aquí se asume que PedidoDAO.modificarPedido puede manejar la actualización del campo rutaComprobante
         boolean exito = pedidoDAO.modificarPedido(pedido);
 
         if (exito) {
             System.out.println("Pedido ID " + pedido.getIdPedido() + " actualizado. Campo modificado: " + campoEditado);
 
             // Si el estado es "Retirado", recargar la lista para que desaparezca
-            if ("Retirado".equalsIgnoreCase(pedido.getEstado())) {
+            if ("Retirado".equalsIgnoreCase(pedido.getEstado()) && !campoEditado.equalsIgnoreCase("Ruta Comprobante")) {
                 cargarPedidos();
             } else {
                 pedidosTable.refresh();

@@ -13,14 +13,16 @@ public class Pedido {
     private LocalDateTime fechaEntregaEstimada;
     private LocalDateTime fechaFinalizacion;
     private String estado;
-    // La columna 'metodo_pago' ha sido eliminada de la base de datos (se usa 'tipoPago' de ComprobantePago)
-    private String tipoPago; // <-- Viene de ComprobantePago, usado solo para mostrar en la UI
+    private String tipoPago; // Viene de ComprobantePago
     private String instrucciones;
     private double montoTotal;
     private double montoEntregado;
 
+    // Campo añadido para la ruta del archivo PDF del comprobante
+    private String rutaComprobante;
+
     /**
-     * Constructor para crear un NUEVO Pedido. No maneja información de pago.
+     * Constructor para crear un NUEVO Pedido. No maneja información de pago o ruta.
      */
     public Pedido(int idCliente, int idEmpleado, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada,
                   LocalDateTime fechaFinalizacion, String estado, String instrucciones,
@@ -34,32 +36,36 @@ public class Pedido {
         this.instrucciones = instrucciones;
         this.montoTotal = montoTotal;
         this.montoEntregado = montoEntregado;
-        this.tipoPago = "N/A"; // Inicializado para evitar NullPointer en la UI antes de la consulta
+        this.tipoPago = "N/A"; // Inicializado
+        this.rutaComprobante = null; // Inicializado
     }
 
     /**
-     * Constructor COMPLETO para cuando se recuperan Pedidos del DAO.
-     * Incluye 'tipoPago' recuperado del JOIN a ComprobantePago.
+     * Constructor COMPLETO para cuando se recuperan Pedidos del DAO (Historial).
+     * Incluye 'tipoPago' y 'rutaComprobante'.
      */
     public Pedido(int idPedido, int idCliente, String nombreCliente, int idEmpleado, String nombreEmpleado,
                   String estado, String tipoPago, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada,
-                  LocalDateTime fechaFinalizacion, String instrucciones, double montoTotal, double montoEntregado) {
+                  LocalDateTime fechaFinalizacion, String instrucciones, double montoTotal,
+                  double montoEntregado, String rutaComprobante) {
         this.idPedido = idPedido;
         this.idCliente = idCliente;
         this.nombreCliente = nombreCliente;
         this.idEmpleado = idEmpleado;
         this.nombreEmpleado = nombreEmpleado;
         this.estado = estado;
-        this.tipoPago = tipoPago; // <-- Asignado desde el DAO (ComprobantePago)
+        this.tipoPago = tipoPago;
         this.fechaCreacion = fechaCreacion;
         this.fechaEntregaEstimada = fechaEntregaEstimada;
         this.fechaFinalizacion = fechaFinalizacion;
         this.instrucciones = instrucciones;
         this.montoTotal = montoTotal;
         this.montoEntregado = montoEntregado;
+        this.rutaComprobante = rutaComprobante;
     }
 
     // Getters y Setters
+
     public int getIdPedido() { return idPedido; }
     public void setIdPedido(int idPedido) { this.idPedido = idPedido; }
 
@@ -87,7 +93,6 @@ public class Pedido {
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
 
-    // GETTER/SETTER para el tipo de pago (proveniente de ComprobantePago)
     public String getTipoPago() { return tipoPago; }
     public void setTipoPago(String tipoPago) { this.tipoPago = tipoPago; }
 
@@ -99,4 +104,13 @@ public class Pedido {
 
     public double getMontoEntregado() { return montoEntregado; }
     public void setMontoEntregado(double montoEntregado) { this.montoEntregado = montoEntregado; }
+
+    // GETTER Y SETTER para la nueva propiedad rutaComprobante
+    public String getRutaComprobante() {
+        return rutaComprobante;
+    }
+
+    public void setRutaComprobante(String rutaComprobante) {
+        this.rutaComprobante = rutaComprobante;
+    }
 }

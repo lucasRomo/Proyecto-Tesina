@@ -5,6 +5,7 @@ app\controller\RegistroController.class
 app\controller\IniciodeSesionController.class
 app\controller\CrearPedidoController.class
 app\model\Pedido.class
+app\controller\VerPedidosController$2.class
 app\controller\EmpleadoController.class
 app\dao\DetallePedidoDAO.class
 app\model\TipoDocumento.class
@@ -13,6 +14,7 @@ app\model\Empleado.class
 app\util\TicketPDFUtil.class
 app\controller\VerPedidosController.class
 app\controller\MenuController.class
+app\controller\VerPedidosController$2$1.class
 app\controller\PedidosPrimerMenuController.class
 app\controller\VerHistorialPedidosController$1.class
 app\controller\DetallePedidoController$CurrencyTableCell.class
@@ -32,9 +34,11 @@ app\dao\ProductoDAO.class
 app\controller\VerHistorialPedidosController$FormattedDateTableCell.class
 app\controller\VerHistorialPedidosController$2.class
 app\controller\VerPedidosController$1.class
+app\controller\VerHistorialPedidosController$5.class
 app\controller\DetallePedidoController.class
 app\controller\VerHistorialPedidosController$4.class
 app\model\Persona.class
 app\model\DetallePedido.class
 app\dao\CategoriaDAO.class
 app\controller\VerPedidosController$FormattedDateTableCell.class
+app\controller\VerHistorialPedidosController$1$1.class

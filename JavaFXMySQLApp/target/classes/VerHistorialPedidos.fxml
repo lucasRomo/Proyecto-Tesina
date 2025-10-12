@@ -5,46 +5,59 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="TOP_CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.HistorialPedidosController">
+<!-- Controlador corregido para coincidir con la clase Java: VerHistorialPedidosController -->
+<VBox alignment="TOP_CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerHistorialPedidosController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label text="Historial de Pedidos" style="-fx-font-weight: bold;">
+    <Label text="Historial de Pedidos Retirados" style="-fx-font-weight: bold;">
         <font>
             <Font size="24.0" />
         </font>
     </Label>
 
-    <!-- Barra de Búsqueda y Botones -->
-    <HBox alignment="CENTER_LEFT" spacing="10.0" maxWidth="Infinity">
-        <TextField fx:id="txtBusqueda" promptText="Buscar por ID, Cliente o Empleado..." HBox.hgrow="ALWAYS" />
-        <Button text="Refrescar" onAction="#handleRefrescar" style="-fx-background-color: #007bff; -fx-text-fill: white;" />
+    <!-- Área de Filtros -->
+    <HBox alignment="CENTER_LEFT" spacing="10.0" maxWidth="Infinity" style="-fx-padding: 10px; -fx-border-color: #ddd; -fx-border-radius: 5; -fx-background-color: #f9f9f9;">
+        <Label text="Filtrar por:" style="-fx-font-weight: bold;" />
+        <!-- fx:id coinciden con los campos del controlador Java -->
+        <ComboBox fx:id="clienteFilterComboBox" promptText="Seleccionar Cliente" HBox.hgrow="ALWAYS" />
+        <ComboBox fx:id="empleadoFilterComboBox" promptText="Seleccionar Empleado" HBox.hgrow="ALWAYS" />
+        <ComboBox fx:id="tipoPagoFilterComboBox" promptText="Seleccionar Tipo de Pago" HBox.hgrow="ALWAYS" />
+        <!-- Manejador de acción para limpiar los filtros -->
+        <Button text="Limpiar Filtros" onAction="#handleLimpiarFiltros" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-cursor: hand;" />
     </HBox>
 
     <!-- Tabla de Pedidos -->
     <TableView fx:id="pedidosTable" VBox.vgrow="ALWAYS" prefHeight="500.0">
         <columns>
-            <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID" />
+            <!-- fx:id de Columnas corregidos para coincidir con el controlador -->
+            <TableColumn fx:id="idPedidoColumn" prefWidth="75.0" text="ID" />
             <TableColumn fx:id="clienteColumn" prefWidth="150.0" text="Cliente" />
             <TableColumn fx:id="empleadoColumn" prefWidth="150.0" text="Empleado" />
-            <TableColumn fx:id="montoColumn" prefWidth="100.0" text="Monto Total" />
             <TableColumn fx:id="estadoColumn" prefWidth="100.0" text="Estado" />
-            <TableColumn fx:id="fechaCreacionColumn" prefWidth="150.0" text="F. Creación" />
-            <TableColumn fx:id="fechaFinalizacionColumn" prefWidth="150.0" text="F. Finalización" />
+            <TableColumn fx:id="tipoPagoColumn" prefWidth="100.0" text="Tipo de Pago" />
+            <TableColumn fx:id="montoTotalColumn" prefWidth="100.0" text="Monto Total" />
+            <TableColumn fx:id="montoEntregadoColumn" prefWidth="120.0" text="Monto Entregado" />
+            <!-- Mapea a fechaFinalizacion en el controlador -->
+            <TableColumn fx:id="fechaEntregaEstimadaColumn" prefWidth="150.0" text="F. Finalización" />
+            <TableColumn fx:id="instruccionesColumn" prefWidth="180.0" text="Instrucciones" />
 
-            <!-- NUEVA COLUMNA PARA LA ACCIÓN DE DESCARGA -->
-            <TableColumn fx:id="descargaColumn" prefWidth="100.0" text="Ticket" />
+            <!-- NUEVA COLUMNA para el comprobante de pago (solo ver) -->
+            <TableColumn fx:id="comprobantePagoColumn" prefWidth="130.0" text="Comprobante Pago" />
+
+            <!-- Columna para el botón Ticket, su contenido se genera en Java -->
+            <TableColumn fx:id="accionesColumn" prefWidth="100.0" text="Ticket" />
         </columns>
     </TableView>
 
-    <!-- Pie de página o Controles Adicionales -->
-    <HBox alignment="CENTER_LEFT" spacing="10.0" maxWidth="Infinity">
-        <Label fx:id="lblConteo" text="Total de pedidos: 0" style="-fx-font-weight: bold;" />
+    <!-- Botón Volver -->
+    <HBox alignment="CENTER_RIGHT" maxWidth="Infinity">
+        <Button text="Volver al Menú" onAction="#handleVolver" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-cursor: hand;" />
     </HBox>
 </VBox>
