@@ -32,7 +32,7 @@
         </columnConstraints>
 
         <Label text="Razón Social:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <TextField fx:id="razonSocialField" promptText="Razón Social (opcional)" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <TextField fx:id="razonSocialField" promptText="Razón Social" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
         <Label text="Persona de Contacto:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
         <TextField fx:id="personaContactoField" promptText="Nombre de contacto" GridPane.rowIndex="1" GridPane.columnIndex="1"/>

@@ -82,6 +82,7 @@ public class RegistroController {
                 return;
             }
 
+            // Validación de longitud de Código Postal (ya validado el formato numérico en validarCamposDireccion)
             if (codigoPostalField.getText().trim().length() != 4) {
                 mostrarAlerta("Advertencia", "El código postal debe tener exactamente 4 caracteres.");
                 return;
@@ -136,13 +137,6 @@ public class RegistroController {
                     stage.initModality(Modality.APPLICATION_MODAL);
                     stage.showAndWait();
 
-                    // Cerrar la ventana de registro actual SOLO si la siguiente ventana no la cerró.
-                    // Ya que la ventana de Datos Específicos se encarga de cerrar ambas al guardar,
-                    // aquí ya no es necesario cerrarla, pero la dejo comentada como referencia de tu código original.
-                    /* Stage currentStage = (Stage) ((Button) event.getSource()).getScene().getWindow();
-                    currentStage.close();
-                    */
-
                 } else {
                     mostrarAlerta("Error", "No se pudo registrar la dirección. Intente de nuevo.");
                 }
@@ -191,6 +185,16 @@ public class RegistroController {
             this.mostrarAlerta("Advertencia", "El número de calle solo puede contener números.");
             return false;
         }
+
+        // ====================================================================
+        // === VALIDACIÓN AGREGADA: CÓDIGO POSTAL SOLO NÚMEROS ===
+        // ====================================================================
+        if (!this.validarSoloNumeros(this.codigoPostalField.getText())) {
+            this.mostrarAlerta("Advertencia", "El Código Postal solo puede contener números.");
+            return false;
+        }
+        // ====================================================================
+
         return true;
     }
 
