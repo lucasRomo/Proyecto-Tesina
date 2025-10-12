@@ -8,6 +8,7 @@ app\controller\AsignarPedidoController.class
 app\model\Pedido.class
 app\controller\FacturasController$1.class
 app\MainApp.class
+app\controller\VerPedidosController$2.class
 app\controller\EmpleadoController.class
 app\controller\CrearPedidoController$1.class
 app\controller\ComprobantesController.class
@@ -24,6 +25,7 @@ app\controller\ComprobantesController$1.class
 app\dao\FacturaDAO.class
 app\controller\FacturasAdminTableView.class
 app\controller\ComprobantesAdminTableView.class
+app\controller\VerPedidosController$2$1.class
 app\controller\PedidosPrimerMenuController.class
 app\controller\VerHistorialPedidosController$1.class
 app\controller\DetallePedidoController$CurrencyTableCell.class
@@ -49,9 +51,11 @@ app\dao\ProductoDAO.class
 app\controller\VerHistorialPedidosController$FormattedDateTableCell.class
 app\controller\VerHistorialPedidosController$2.class
 app\controller\VerPedidosController$1.class
+app\controller\VerHistorialPedidosController$5.class
 app\controller\DetallePedidoController.class
 app\controller\VerHistorialPedidosController$4.class
 app\model\Persona.class
 app\model\DetallePedido.class
 app\dao\CategoriaDAO.class
 app\controller\VerPedidosController$FormattedDateTableCell.class
+app\controller\VerHistorialPedidosController$1$1.class

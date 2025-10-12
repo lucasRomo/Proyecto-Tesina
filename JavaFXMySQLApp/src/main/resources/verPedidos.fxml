@@ -32,9 +32,9 @@
         <Label text="Estado:" textFill="#fff8f8" />
         <ComboBox fx:id="estadoFilterComboBox" prefWidth="150.0" promptText="Todos los Estados" />
 
-        <!-- CAMBIO: Label y fx:id de Método Pago a Tipo Pago -->
         <Label text="Tipo Pago:" textFill="#fff8f8" />
-        <ComboBox fx:id="tipoPagoFilterComboBox" prefWidth="150.0" promptText="Todos los Tipos" />
+        <!-- Nota: El fx:id debe ser 'metodoPagoFilterComboBox' para coincidir con el Controller -->
+        <ComboBox fx:id="metodoPagoFilterComboBox" prefWidth="150.0" promptText="Todos los Tipos" />
     </HBox>
 
     <TableView fx:id="pedidosTable" editable="true" VBox.vgrow="ALWAYS">
@@ -59,14 +59,12 @@
                     <PropertyValueFactory property="estado" />
                 </cellValueFactory>
             </TableColumn>
-            <!-- NUEVO: Columna para Tipo de Pago con property="tipoPago" -->
             <TableColumn fx:id="tipoPagoColumn" prefWidth="100.0" text="Tipo Pago">
                 <cellValueFactory>
                     <PropertyValueFactory property="tipoPago" />
                 </cellValueFactory>
             </TableColumn>
 
-            <!-- Nota: montoTotal y montoEntregado deben ser Double en el FXML -->
             <TableColumn fx:id="montoTotalColumn" prefWidth="100.0" text="Monto Total">
                 <cellValueFactory>
                     <PropertyValueFactory property="montoTotal" />
@@ -77,19 +75,23 @@
                     <PropertyValueFactory property="montoEntregado" />
                 </cellValueFactory>
             </TableColumn>
-            <!-- COLUMNA MODIFICADA: Muestra fecha de Creación -->
             <TableColumn fx:id="fechaCreacionColumn" prefWidth="150.0" text="Fecha de Creación">
                 <cellValueFactory>
                     <PropertyValueFactory property="fechaCreacion" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="instruccionesColumn" prefWidth="250.0" text="Instrucciones">
+            <TableColumn fx:id="instruccionesColumn" prefWidth="200.0" text="Instrucciones">
                 <cellValueFactory>
                     <PropertyValueFactory property="instrucciones" />
                 </cellValueFactory>
             </TableColumn>
-            <!-- COLUMNA DE BOTÓN (Importante: sin PropertyValueFactory) -->
-            <TableColumn fx:id="ticketColumn" prefWidth="120.0" text="Ticket/Factura" />
+
+            <!-- NUEVA COLUMNA para el Comprobante de Pago -->
+            <!-- Esta columna no lleva cellValueFactory porque se maneja con un botón -->
+            <TableColumn fx:id="comprobantePagoColumn" prefWidth="130.0" text="Comprobante Pago" />
+
+            <!-- COLUMNA DE BOTÓN TICKET -->
+            <TableColumn fx:id="ticketColumn" prefWidth="120.0" text="Detallar/Ticket" />
         </columns>
     </TableView>
 

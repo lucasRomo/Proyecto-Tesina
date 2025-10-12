@@ -10,7 +10,7 @@ import app.dao.ClienteDAO;
 import app.dao.EmpleadoDAO;
 import app.dao.ComprobantePagoDAO;
 import app.dao.DetallePedidoDAO;
-import app.util.TicketPDFUtil;
+import app.util.TicketPDFUtil; // Clase de utilidad para generar PDF
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -27,11 +27,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TableCell; // Importación para TableCell
+import javafx.scene.control.TableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.stage.FileChooser;
+import javafx.util.Callback;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,9 +43,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.awt.Desktop; // Importado para abrir el archivo
 
 /**
  * Controlador para la vista del historial de pedidos (solo estado "Retirado").
+ * Incluye filtros, la visualización de la tabla y la funcionalidad de generar el Ticket PDF.
  */
 public class VerHistorialPedidosController implements Initializable {
 
@@ -75,15 +80,20 @@ public class VerHistorialPedidosController implements Initializable {
     @FXML
     private TableColumn<Pedido, Double> montoTotalColumn;
     @FXML
+    @SuppressWarnings("unused")
     private TableColumn<Pedido, Double> montoEntregadoColumn;
 
     @FXML
-    private TableColumn<Pedido, LocalDateTime> fechaEntregaEstimadaColumn; // Se usa para mostrar fechaFinalizacion
+    private TableColumn<Pedido, LocalDateTime> fechaEntregaEstimadaColumn;
 
     @FXML
     private TableColumn<Pedido, String> instruccionesColumn;
 
-    // Columna para el botón de Ticket
+    // NUEVA Columna para el botón de Ver Comprobante
+    @FXML
+    private TableColumn<Pedido, Void> comprobantePagoColumn;
+
+    // Columna para el botón de Ticket (la columna a la que mapea el FXML)
     @FXML
     private TableColumn<Pedido, Void> accionesColumn;
 
@@ -91,6 +101,7 @@ public class VerHistorialPedidosController implements Initializable {
     private PedidoDAO pedidoDAO;
     private ClienteDAO clienteDAO;
     private EmpleadoDAO empleadoDAO;
+    @SuppressWarnings("unused")
     private ComprobantePagoDAO comprobantePagoDAO;
     private DetallePedidoDAO detallePedidoDAO;
 
@@ -141,7 +152,96 @@ public class VerHistorialPedidosController implements Initializable {
 
         // Configurar la columna de Acciones para el botón Ticket
         agregarBotonTicketATabla();
+
+        // NUEVA CONFIGURACIÓN: Columna para el botón Ver Comprobante
+        configurarColumnaComprobanteView();
     }
+
+    /**
+     * Configura la columna para incluir un botón de "Ver Comprobante" (solo vista).
+     */
+    private void configurarColumnaComprobanteView() {
+        Callback<TableColumn<Pedido, Void>, TableCell<Pedido, Void>> cellFactory = new Callback<>() {
+            @Override
+            public TableCell<Pedido, Void> call(final TableColumn<Pedido, Void> param) {
+                final TableCell<Pedido, Void> cell = new TableCell<>() {
+
+                    private final Button btn = new Button();
+                    private final HBox pane = new HBox(btn);
+
+                    {
+                        btn.setMinWidth(110);
+                        pane.setAlignment(Pos.CENTER);
+
+                        btn.setOnAction(event -> {
+                            Pedido pedido = getTableView().getItems().get(getIndex());
+                            handleVerComprobante(pedido);
+                        });
+                    }
+
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            Pedido pedido = getTableView().getItems().get(getIndex());
+
+                            // *** Importante: asume que la clase Pedido tiene un método getRutaComprobante() ***
+                            String ruta = pedido.getRutaComprobante();
+
+                            // Cambia el texto y estilo del botón basado en si ya hay un comprobante
+                            if (ruta != null && !ruta.isEmpty()) {
+                                btn.setText("Ver PDF");
+                                btn.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-cursor: hand;"); // Azul
+                                btn.setDisable(false); // Habilitado para ver
+                            } else {
+                                btn.setText("No Disponible");
+                                btn.setStyle("-fx-background-color: #6c757d; -fx-text-fill: white;"); // Gris
+                                btn.setDisable(true); // Deshabilitado si no hay ruta
+                            }
+                            setGraphic(pane);
+                        }
+                    }
+                };
+                return cell;
+            }
+        };
+
+        comprobantePagoColumn.setCellFactory(cellFactory);
+    }
+
+    /**
+     * Lógica para abrir el archivo PDF del comprobante de pago.
+     */
+    private void handleVerComprobante(Pedido pedido) {
+        String ruta = pedido.getRutaComprobante();
+
+        if (ruta == null || ruta.isEmpty()) {
+            mostrarAlerta("Información", "Este pedido no tiene un comprobante de pago registrado.", Alert.AlertType.INFORMATION);
+            return;
+        }
+
+        File comprobanteFile = new File(ruta);
+
+        if (comprobanteFile.exists()) {
+            try {
+                // Abrir el PDF con el visor predeterminado del sistema operativo
+                // Requiere la importación de java.awt.Desktop
+                if (Desktop.isDesktopSupported()) {
+                    Desktop.getDesktop().open(comprobanteFile);
+                } else {
+                    mostrarAlerta("Advertencia", "La funcionalidad para abrir archivos no es compatible con su sistema operativo.", Alert.AlertType.WARNING);
+                }
+            } catch (IOException e) {
+                mostrarAlerta("Error al Abrir", "No se pudo abrir el archivo PDF. Ruta: " + ruta + "\nError: " + e.getMessage(), Alert.AlertType.ERROR);
+                e.printStackTrace();
+            }
+        } else {
+            mostrarAlerta("Archivo No Encontrado", "El archivo de comprobante no se encuentra en la ruta guardada:\n" + ruta, Alert.AlertType.ERROR);
+        }
+    }
+
 
     /**
      * Configura la columna de acciones para mostrar un botón "Ticket" en cada fila.
@@ -226,7 +326,7 @@ public class VerHistorialPedidosController implements Initializable {
         }
     }
 
-    // --- Clase auxiliar FormattedDateTableCell (sin cambios, ya era correcta) ---
+    // --- Clase auxiliar FormattedDateTableCell (sin cambios) ---
     /**
      * Clase auxiliar para formatear columnas de tipo LocalDateTime a String.
      */
@@ -303,6 +403,7 @@ public class VerHistorialPedidosController implements Initializable {
         tiposPago.add(null); // Opción para limpiar filtro (Mostrar Todos)
 
         // El DAO debe obtener los Tipos de Pago únicos de los pedidos
+        // (Asegúrate de que este método exista y funcione en tu PedidoDAO)
         tiposPago.addAll(pedidoDAO.getTiposPago());
 
         tipoPagoFilterComboBox.setItems(tiposPago);
@@ -395,11 +496,13 @@ public class VerHistorialPedidosController implements Initializable {
     @FXML
     private void handleVolver(ActionEvent event) {
         try {
+            // Asegúrate que esta ruta coincida con el nombre del FXML del menú principal de pedidos
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/PedidosPrimerMenu.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
-            stage.setScene(new Scene(root, 1800, 1000));
+            // Usamos las dimensiones estándar que usaste en otros controladores
+            stage.setScene(new Scene(root, 1366, 768));
             stage.setTitle("Menú de Pedidos");
             stage.centerOnScreen();
             stage.show();
