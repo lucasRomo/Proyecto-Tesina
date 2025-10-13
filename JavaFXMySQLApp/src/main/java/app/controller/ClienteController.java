@@ -140,7 +140,7 @@ public class ClienteController {
             if (validarSoloNumeros(nuevoTelefono) && validarLongitudTelefono(nuevoTelefono)) {
                 event.getRowValue().setTelefono(nuevoTelefono);
             } else {
-                mostrarAlerta("Advertencia", "El teléfono solo puede contener de 7 a 11 dígitos.", Alert.AlertType.WARNING);
+                mostrarAlerta("Advertencia", "El teléfono solo puede contener de 7 a 11 dígitos numericos.", Alert.AlertType.WARNING);
                 clientesTableView.refresh();
             }
         });
