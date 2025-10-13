@@ -1,7 +1,7 @@
 package app.controller;
 
 import app.dao.DireccionDAO;
-import app.dao.PersonaDAO;
+import app.dao.PersonaDAO; // No se usa para proveedor, pero se mantiene si se necesita en otro contexto
 import app.dao.ProveedorDAO;
 import app.dao.TipoProveedorDAO;
 import app.model.Direccion;
@@ -44,7 +44,6 @@ public class RegistroProveedorController {
     private ProveedorController proveedorController;
     private DireccionDAO direccionDAO = new DireccionDAO();
     private ProveedorDAO proveedorDAO = new ProveedorDAO();
-    PersonaDAO personaDAO = new PersonaDAO();
     private TipoProveedorDAO tipoProveedorDAO = new TipoProveedorDAO();
 
 
@@ -57,7 +56,6 @@ public class RegistroProveedorController {
         cargarTiposDeProveedor();
     }
 
-    // Nuevo método para cargar los tipos de proveedor
     private void cargarTiposDeProveedor() {
         try {
             tipoProveedorChoiceBox.setItems(tipoProveedorDAO.getAllTipoProveedores());
@@ -79,7 +77,6 @@ public class RegistroProveedorController {
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
 
-            // Asigna un listener para recargar el ChoiceBox al cerrar la ventana
             stage.setOnHidden(e -> cargarTiposDeProveedor());
             stage.show();
 
@@ -170,30 +167,38 @@ public class RegistroProveedorController {
         }
     }
 
-    // APLICANDO LAS VALIDACIONES QUE ME DISTE DEL REGISTRO DE CLIENTE
+    /**
+     * Valida los campos del proveedor, incluyendo la unicidad del correo.
+     */
     private boolean validarCamposProveedores() {
         String email = mailField.getText().trim();
+
+        // 1. Validación de campos obligatorios
         if (nombreField.getText().isEmpty() || contactoField.getText().isEmpty() ||
                 mailField.getText().isEmpty() || tipoProveedorChoiceBox.getValue() == null) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos obligatorios.");
             return false;
         }
-        if (personaDAO.verificarSiMailExiste(email)) {
-            mostrarAlerta("Error de Registro", "El email que ingresó ya se encuentra registrado.");
-            return false;
-        }
-        if (!mailField.getText().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+
+        // 2. Validación de formato de email
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
             mostrarAlerta("Advertencia", "El formato del correo electrónico no es válido.");
             return false;
         }
+
+        // 3. Validación de unicidad de email (USANDO PROVEEDORDAO)
+        if (proveedorDAO.verificarSiMailExiste(email)) {
+            mostrarAlerta("Error de Registro", "El correo electrónico ingresado ya se encuentra registrado para otro proveedor.", Alert.AlertType.ERROR);
+            return false;
+        }
+
         return true;
     }
 
     private boolean validarCamposDireccion() {
         String regexNumeros = "\\d+";
         if (calleField.getText().isEmpty() || numeroField.getText().isEmpty() ||
-                codigoPostalField.getText().isEmpty() || ciudadField.getText().isEmpty() ||
-                provinciaField.getText().isEmpty()) {
+                ciudadField.getText().isEmpty() || provinciaField.getText().isEmpty()) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos de dirección obligatorios.");
             return false;
         }
@@ -201,10 +206,13 @@ public class RegistroProveedorController {
             mostrarAlerta("Advertencia", "El campo 'Número' debe contener solo números.", Alert.AlertType.WARNING);
             return false;
         }
-        if (codigoPostalField.getText().trim().length() != 4) {
+
+        // Validación de CP: debe tener 4 caracteres si no está vacío
+        if (!codigoPostalField.getText().trim().isEmpty() && codigoPostalField.getText().trim().length() != 4) {
             mostrarAlerta("Advertencia", "El código postal debe tener exactamente 4 caracteres.");
             return false;
         }
+
         return true;
     }
 
@@ -222,6 +230,7 @@ public class RegistroProveedorController {
         alert.showAndWait();
     }
     private void mostrarAlerta(String titulo, String mensaje) {
+        // Usa ERROR en lugar de WARNING para errores de unicidad/registro si es un error fatal para la operación.
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(titulo);
         alert.setHeaderText(null);

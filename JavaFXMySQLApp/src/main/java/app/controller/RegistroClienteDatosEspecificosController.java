@@ -4,11 +4,14 @@ import app.model.Cliente;
 import app.model.Persona;
 import app.dao.ClienteDAO;
 import app.dao.PersonaDAO;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox; // CLAVE: Importar ChoiceBox
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -19,7 +22,10 @@ import java.sql.SQLException;
 public class RegistroClienteDatosEspecificosController {
 
     @FXML private Label nombrePersonaLabel;
-    @FXML private TextField razonSocialField;
+
+    // CLAVE: Reemplazamos TextField por ChoiceBox
+    @FXML private ChoiceBox<String> razonSocialChoiceBox;
+
     @FXML private TextField personaContactoField;
     @FXML private TextField condicionesPagoField;
 
@@ -31,10 +37,7 @@ public class RegistroClienteDatosEspecificosController {
     private ClienteDAO clienteDAO;
     private Persona personaData;
 
-    // Referencia al controlador de la ventana principal (Menú Cliente)
     private ClienteController clienteController;
-
-    // Referencia al controlador de la ventana anterior (Registro Común)
     private RegistroController registroController;
 
     public RegistroClienteDatosEspecificosController() {
@@ -42,15 +45,22 @@ public class RegistroClienteDatosEspecificosController {
         this.clienteDAO = new ClienteDAO();
     }
 
-    // Método setter para recibir la referencia del controlador del Menú Cliente
+    // CLAVE: Método para inicializar el ChoiceBox
+    @FXML
+    public void initialize() {
+        ObservableList<String> opcionesRazonSocial = FXCollections.observableArrayList(
+                "Responsable Inscripto", "Monotributista", "Persona"
+        );
+        razonSocialChoiceBox.setItems(opcionesRazonSocial);
+        // Opcional: Establecer un valor por defecto
+        // razonSocialChoiceBox.getSelectionModel().selectFirst();
+    }
+
+    // Métodos setter (sin cambios)
     public void setClienteController(ClienteController controller) {
         this.clienteController = controller;
     }
 
-    /**
-     * Método setter para recibir la referencia del controlador de la
-     * ventana de Registro Común.
-     */
     public void setRegistroController(RegistroController controller) {
         this.registroController = controller;
     }
@@ -68,6 +78,9 @@ public class RegistroClienteDatosEspecificosController {
             return;
         }
 
+        // Obtener el valor seleccionado del ChoiceBox
+        String razonSocialSeleccionada = razonSocialChoiceBox.getValue();
+
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -79,7 +92,10 @@ public class RegistroClienteDatosEspecificosController {
                 Cliente nuevoCliente = new Cliente(
                         personaData.getNombre(), personaData.getApellido(), personaData.getIdTipoDocumento(),
                         personaData.getNumeroDocumento(), personaData.getIdDireccion(), personaData.getTelefono(),
-                        personaData.getEmail(), razonSocialField.getText(), personaContactoField.getText(),
+                        personaData.getEmail(),
+                        // CLAVE: Usamos la razón social seleccionada
+                        razonSocialSeleccionada,
+                        personaContactoField.getText(),
                         condicionesPagoField.getText(), "Activo"
                 );
                 nuevoCliente.setIdPersona(idPersona);
@@ -88,16 +104,13 @@ public class RegistroClienteDatosEspecificosController {
                     conn.commit();
                     mostrarAlerta("Éxito", "Cliente registrado exitosamente.", Alert.AlertType.INFORMATION);
 
-                    // 1. Llama al método del controlador principal para refrescar la tabla
                     if (clienteController != null) {
                         clienteController.refreshClientesTable();
                     }
 
-                    // 2. Cierra la ventana actual (Datos Específicos)
                     Stage stageActual = (Stage)((Button)event.getSource()).getScene().getWindow();
                     stageActual.close();
 
-                    // 3. Cierra la ventana anterior (Registro Común)
                     if (registroController != null) {
                         registroController.cerrarVentana();
                     }
@@ -123,27 +136,25 @@ public class RegistroClienteDatosEspecificosController {
         }
     }
 
-    /**
-     * Cierra la ventana actual (Datos Específicos) y la ventana de Registro Común
-     * sin mostrar ninguna alerta.
-     */
     @FXML
     public void handleCancelarRegistro(ActionEvent event) {
-        // 1. Cerrar la ventana actual (Datos Específicos)
         Stage stageActual = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stageActual.close();
 
-        // 2. Cerrar la ventana anterior (Registro Común)
         if (registroController != null) {
             registroController.cerrarVentana();
         }
-
-        // ¡Se elimina la línea de la alerta para evitar el cuadrado blanco!
     }
 
     private boolean validarCamposCliente() {
-        if (razonSocialField.getText().isEmpty() || personaContactoField.getText().isEmpty() ||
-                condicionesPagoField.getText().isEmpty()) {
+        // CLAVE: Validar que se haya seleccionado una Razón Social
+        if (razonSocialChoiceBox.getValue() == null) {
+            mostrarAlerta("Advertencia", "Por favor, seleccione una Razón Social.", Alert.AlertType.WARNING);
+            return false;
+        }
+
+        // Validar otros campos
+        if (personaContactoField.getText().isEmpty() || condicionesPagoField.getText().isEmpty()) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos obligatorios del cliente.", Alert.AlertType.WARNING);
             return false;
         }

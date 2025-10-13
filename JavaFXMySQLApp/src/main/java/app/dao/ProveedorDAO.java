@@ -12,6 +12,37 @@ public class ProveedorDAO {
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
+    // ===============================================
+    // CLAVE: MÉTODO DE VALIDACIÓN DE MAIL DUPLICADO (PARA REGISTRO NUEVO)
+    // ===============================================
+    /**
+     * Verifica si el correo electrónico ya está registrado en la tabla Proveedor.
+     * Este método se usa para el REGISTRO de nuevos proveedores.
+     * @param email El correo electrónico a verificar.
+     * @return true si el email ya existe, false si no existe.
+     */
+    public boolean verificarSiMailExiste(String email) {
+        String query = "SELECT COUNT(*) FROM Proveedor WHERE mail = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    // Si el conteo es mayor que 0, el email ya existe.
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al verificar la existencia del email del proveedor: " + e.getMessage());
+            // En caso de error de DB, retornamos false, pero idealmente se maneja la excepción.
+            return false;
+        }
+        return false;
+    }
+
+
     public ObservableList<Proveedor> getAllProveedores() {
         ObservableList<Proveedor> proveedores = FXCollections.observableArrayList();
         String sql = "SELECT p.*, tp.descripcion AS tipo_descripcion FROM Proveedor p JOIN TipoProveedor tp ON p.id_tipo_proveedor = tp.id_tipo_proveedor";
@@ -27,7 +58,7 @@ public class ProveedorDAO {
                         rs.getString("estado"),
                         rs.getInt("id_direccion"),
                         rs.getInt("id_tipo_proveedor"),
-                        rs.getString("tipo_descripcion") // <-- ¡Agregamos esto!
+                        rs.getString("tipo_descripcion")
                 ));
             }
         } catch (SQLException e) {
@@ -35,6 +66,7 @@ public class ProveedorDAO {
         }
         return proveedores;
     }
+
     // Nuevo método para obtener proveedores por tipo de proveedor
     public ObservableList<Proveedor> getProveedoresByTipo(int idTipoProveedor) {
         ObservableList<Proveedor> proveedores = FXCollections.observableArrayList();

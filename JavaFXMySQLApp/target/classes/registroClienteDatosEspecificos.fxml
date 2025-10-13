@@ -8,7 +8,10 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.layout.HBox?> <?import java.net.URL?>
+<?import javafx.scene.layout.HBox?>
+<?import java.net.URL?>
+<?import javafx.scene.control.ChoiceBox?>
+
 <VBox alignment="TOP_CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17" fx:controller="app.controller.RegistroClienteDatosEspecificosController">
     <stylesheets>
         <URL value="@styleRegistro.css" />
@@ -32,7 +35,7 @@
         </columnConstraints>
 
         <Label text="Razón Social:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <TextField fx:id="razonSocialField" promptText="Razón Social (opcional)" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <ChoiceBox fx:id="razonSocialChoiceBox" prefWidth="200.0" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
         <Label text="Persona de Contacto:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
         <TextField fx:id="personaContactoField" promptText="Nombre de contacto" GridPane.rowIndex="1" GridPane.columnIndex="1"/>

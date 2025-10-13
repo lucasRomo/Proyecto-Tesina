@@ -10,7 +10,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/menuAbms.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/menuInicial.fxml"));
         Parent root = fxmlLoader.load();
 
         Scene scene = new Scene(root);
@@ -24,7 +24,7 @@ public class MainApp extends Application {
 
         // Permite al usuario redimensionar la ventana (para poder restaurarla si desmaximiza).
         // Si lo pones en 'false', el botón de restaurar/maximizar puede desaparecer o no funcionar como se espera.
-        stage.setResizable(true);
+        stage.setResizable(false);
 
         // No es necesario stage.centerOnScreen() para ventanas maximizadas.
         stage.show();
