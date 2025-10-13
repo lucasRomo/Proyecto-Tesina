@@ -6,9 +6,9 @@
 /* Estilo para los títulos principales, usando la clase del FXML */
 .titulo-principal {
     -fx-text-fill: #FFFFFF; /* Texto blanco */
-    -fx-font-size: 28px;
+    -fx-font-size: 38px; /* Ajustado al tamaño final */
     -fx-font-weight: bold;
-    -fx-padding: 10px 0 0 0; /* Padding superior para el título */
+    -fx-padding: 10px 0 0 0;
 }
 
 /* Estilo para todas las etiquetas Label */
@@ -17,13 +17,14 @@
     -fx-size: 14px;
 }
 
-/* Estilo para los campos de texto TextField y el nuevo campo TextArea */
+/* Estilo para los campos de texto TextField y PasswordField */
 .text-field,
+.password-field,
 .text-area {
-    -fx-background-color: #555555; /* Fondo gris un poco más claro */
-    -fx-text-fill: #FFFFFF; /* Texto blanco */
-    -fx-prompt-text-fill: #AAAAAA; /* Texto de ayuda gris claro */
-    -fx-border-color: #777777; /* Borde gris */
+    -fx-background-color: #555555;
+    -fx-text-fill: #FFFFFF;
+    -fx-prompt-text-fill: #AAAAAA;
+    -fx-border-color: #777777;
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
     -fx-padding: 5px;
@@ -34,7 +35,85 @@
     -fx-background-color: #555555;
 }
 
-/* Estilo para el ComboBox y ChoiceBox */
+/* ================================================================= */
+/* === ESTILOS DATE PICKER (CORRECCIÓN CLAVE PARA COLOR BLANCO) === */
+/* ================================================================= */
+
+/* Estilo para el campo de texto del DatePicker (igual que TextField) */
+.date-picker .text-field {
+    -fx-background-color: #555555;
+    -fx-text-fill: #FFFFFF;
+    -fx-prompt-text-fill: #AAAAAA;
+}
+
+/* Estilo para el botón desplegable del DatePicker */
+.date-picker .arrow-button {
+    -fx-background-color: #444444; /* Fondo del botón oscuro */
+    -fx-background-radius: 0 5 5 0;
+}
+.date-picker .arrow-button:hover {
+    -fx-background-color: #0078D7; /* Azul al pasar el ratón */
+}
+.date-picker .arrow-button .arrow {
+    -fx-background-color: #FFFFFF; /* Flecha blanca */
+}
+
+/* Estilo del menú popup del calendario (DatePicker's CalendarView) */
+.date-picker-popup {
+    -fx-background-color: #333333; /* Fondo oscuro */
+    -fx-border-color: #777777;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.8) , 5, 0.0 , 0 , 5 );
+}
+
+/* Estilo para los días del calendario (texto blanco) */
+.date-picker-popup > .calendar-grid .day-cell {
+    -fx-text-fill: #FFFFFF; /* Texto del día blanco */
+    -fx-background-color: #333333; /* Fondo de la celda oscuro */
+}
+/* Días no dentro del mes (gris claro) */
+.date-picker-popup > .calendar-grid .day-cell:not(.today):not(.selected) {
+    -fx-text-fill: #AAAAAA;
+}
+/* Día seleccionado (verde) */
+.date-picker-popup > .calendar-grid .day-cell.selected {
+    -fx-background-color: #4CAF50; /* Verde */
+    -fx-text-fill: #FFFFFF;
+}
+
+/* Navegación (mes/año) */
+.date-picker-popup > .header {
+    -fx-background-color: #222222; /* Encabezado más oscuro */
+}
+
+/* === CORRECCIÓN MÁS FUERTE AQUÍ PARA EL TEXTO DEL MES/AÑO === */
+/* Intenta esto: Selecciona las etiquetas dentro del spinner y fuerza el texto a blanco y el fondo a oscuro */
+.date-picker-popup > .header > .spinner > .label {
+    -fx-text-fill: #FFFFFF; /* Forzar texto blanco */
+    -fx-background-color: #222222; /* Fondo oscuro para asegurar contraste */
+    -fx-font-weight: bold;
+    -fx-padding: 0 5px; /* Pequeño padding para que no se pegue a los botones */
+}
+
+/* También, si el selector anterior no es suficiente, este podría serlo para el texto del mes/año */
+.date-picker-popup .spinner-label {
+    -fx-text-fill: #FFFFFF;
+    -fx-background-color: #222222;
+}
+
+.date-picker-popup > .header .spinner-button {
+    -fx-background-color: #0078D7; /* Azul para los botones de flecha, como en la imagen */
+    -fx-background-radius: 5px; /* Un poco de radio para que se vea como los botones en tu imagen */
+}
+.date-picker-popup > .header .spinner-button:hover {
+    -fx-background-color: #005A9E; /* Azul más oscuro al pasar el ratón */
+}
+.date-picker-popup > .header .spinner-button .left-arrow,
+.date-picker-popup > .header .spinner-button .right-arrow {
+    -fx-background-color: #FFFFFF; /* Flechas blancas */
+}
+
+
+/* Estilo para el ComboBox y ChoiceBox (MANTENIDOS) */
 .combo-box,
 .choice-box {
     -fx-background-color: #555555;
@@ -43,51 +122,41 @@
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
 }
-
-/* Estilo para el texto dentro del ChoiceBox cuando está cerrado */
 .choice-box .label {
-    -fx-text-fill: #FFFFFF; /* Letras Blancas para que se vean sobre el #555555 */
+    -fx-text-fill: #FFFFFF;
 }
-
-/* Estilo para el texto dentro del ComboBox */
 .combo-box .list-cell {
     -fx-background-color: #555555;
     -fx-text-fill: #FFFFFF;
 }
 
-/* 3. Estilo del Menú Desplegable (Context Menu) de ChoiceBox */
+/* Menú Desplegable (Context Menu) de ChoiceBox (MANTENIDOS) */
 .choice-box .context-menu {
-    -fx-background-color: #333333; /* Fondo negro/gris muy oscuro para el menú */
+    -fx-background-color: #333333;
     -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.8) , 5, 0.0 , 0 , 5 );
     -fx-padding: 0;
 }
-
-/* 4. Estilo de los Items individuales en la lista (List Cell) */
 .choice-box .menu-item .label,
 .choice-box .menu-item .text {
-    -fx-text-fill: #FFFFFF; /* Letras blancas para los ítems */
-}
-
-/* 5. Estilo de los Items al pasar el ratón (Hover) */
-.choice-box .menu-item:focused,
-.choice-box .menu-item:hover {
-    -fx-background-color: #0078D7; /* Azul vibrante al pasar el ratón */
     -fx-text-fill: #FFFFFF;
 }
-
-/* 6. Estilo del texto del Item al pasar el ratón (asegura el blanco) */
+.choice-box .menu-item:focused,
+.choice-box .menu-item:hover {
+    -fx-background-color: #0078D7;
+    -fx-text-fill: #FFFFFF;
+}
 .choice-box .menu-item:focused .label,
 .choice-box .menu-item:hover .label {
     -fx-text-fill: #FFFFFF;
 }
 
 /* -------------------------------------------------------------------------- */
-/* ESTILOS DE BOTONES: SOLUCIÓN DE ESPECIFICIDAD */
+/* ESTILOS DE BOTONES (MANTENIDOS) */
 /* -------------------------------------------------------------------------- */
 
 /* 1. Estilo VERDE (Guardar) */
 .save-button {
-    -fx-background-color: #4CAF50; /* Verde */
+    -fx-background-color: #4CAF50;
     -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
     -fx-font-size: 16px;
@@ -97,14 +166,13 @@
 }
 
 .save-button:hover {
-    -fx-background-color: #388E3C; /* Verde oscuro */
+    -fx-background-color: #388E3C;
 }
 
-/* 2. Estilo ROJO (CANCELAR/VOLVER) - Se aplica por styleClass="cancel-button" */
-/* Incluimos .button.cancel-button para asegurar que gane la especificidad contra el estilo base */
+/* 2. Estilo ROJO (CANCELAR/VOLVER) */
 .cancel-button,
 .button.cancel-button {
-    -fx-background-color: #f44336; /* Rojo */
+    -fx-background-color: #f44336;
     -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
     -fx-font-size: 16px;
@@ -115,13 +183,13 @@
 
 .cancel-button:hover,
 .button.cancel-button:hover {
-    -fx-background-color: #D32F2F; /* Rojo oscuro */
+    -fx-background-color: #D32F2F;
 }
 
-/* 3. Estilo AZUL (SIGUIENTE) - Aplicado por ID (#siguienteButton) para forzar la prioridad AZUL */
+/* 3. Estilo AZUL (SIGUIENTE) */
 #siguienteButton {
-    -fx-background-color: #0078D7; /* Un azul vibrante */
-    -fx-text-fill: #FFFFFF; /* Texto blanco */
+    -fx-background-color: #0078D7;
+    -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
     -fx-font-size: 16px;
     -fx-padding: 10px 20px;
@@ -130,14 +198,14 @@
 }
 
 #siguienteButton:hover {
-    -fx-background-color: #005A9E; /* Un azul un poco más oscuro */
+    -fx-background-color: #005A9E;
 }
 
 
-/* 4. Estilo para el botón general .button (Se usa como respaldo si no hay ID o clase específica) */
+/* 4. Estilo para el botón general .button (Respaldo) */
 .button {
-    -fx-background-color: #0078D7; /* Un azul vibrante */
-    -fx-text-fill: #FFFFFF; /* Texto blanco */
+    -fx-background-color: #0078D7;
+    -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
     -fx-font-size: 16px;
     -fx-padding: 10px 20px;
@@ -146,17 +214,11 @@
 }
 
 .button:hover {
-    -fx-background-color: #005A9E; /* Un azul un poco más oscuro */
+    -fx-background-color: #005A9E;
 }
 
-/* Estilo para los GridPane para que tengan un aspecto más limpio */
+/* Estilo para los GridPane (MANTENIDOS) */
 .grid-pane {
     -fx-background-color: transparent;
     -fx-padding: 10px;
-}
-
-.titulo-principal {
-    -fx-font-size: 38px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #fffffe;
 }

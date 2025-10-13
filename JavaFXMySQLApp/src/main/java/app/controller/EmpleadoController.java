@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class EmpleadoController {
@@ -75,7 +76,6 @@ public class EmpleadoController {
         nombrePersonaLabel.setText(nombre + " " + apellido);
     }
 
-    // --- handleGuardarEmpleado de Lucas, modificado para usar el constructor de Empleado con 'estado' ---
     @FXML
     public void handleGuardarEmpleado(ActionEvent event) {
         // Validaciones generales
@@ -121,12 +121,14 @@ public class EmpleadoController {
                         mostrarAlerta("Éxito", "Persona, Usuario y Empleado registrados exitosamente.", Alert.AlertType.INFORMATION);
                         limpiarCampos();
 
-                        // Redireccionar a la pantalla de inicio de sesión (de la versión Lucas)
+                        // Redireccionar a la pantalla de inicio de sesión
                         try {
-                            Parent root = FXMLLoader.load(getClass().getResource("/inicioSesion.fxml"));
+                            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/inicioSesion.fxml")));
                             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                             stage.setScene(new Scene(root));
                             stage.setTitle("Inicio de Sesión");
+                            // --- CAMBIO AQUÍ: Usamos setMaximized(true) en lugar de setFullScreen(true) ---
+                            stage.setMaximized(true); // Abre la ventana maximizada
                             stage.show();
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -169,25 +171,36 @@ public class EmpleadoController {
         }
     }
 
-    // Método para cancelar (MANTENIDO)
+    /**
+     * Se mantiene la lógica anterior para el botón Cancelar, asumiendo que debe
+     * volver al inicio de sesión también maximizado.
+     */
     @FXML
     private void handleCancelar(ActionEvent event) {
+        // Si está en modo diálogo, simplemente cerramos
         if (dialogStage != null) {
             dialogStage.close();
-        } else {
-            try {
-                // Asume que la pantalla anterior es la de registro de persona
-                Parent root = FXMLLoader.load(getClass().getResource("/registroEmpleado.fxml"));
-                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.setTitle("Registro de Persona");
-                stage.show();
-            } catch (IOException e) {
-                e.printStackTrace();
-                mostrarAlerta("Error", "No se pudo volver a la pantalla anterior.", Alert.AlertType.ERROR);
-            }
+            return;
+        }
+
+        try {
+            // Cerramos la ventana actual
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+            // Cargamos la pantalla de inicio de sesión
+            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/inicioSesion.fxml")));
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("Inicio de Sesión");
+            // --- CAMBIO AQUÍ: Usamos setMaximized(true) en lugar de setFullScreen(true) ---
+            stage.setMaximized(true); // También abrimos la pantalla de inicio de sesión maximizada al cancelar
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo volver a la pantalla de inicio de sesión. Verifique la ruta /inicioSesion.fxml", Alert.AlertType.ERROR);
         }
     }
+
 
     private boolean validarCampos() {
         if (usuarioField.getText().trim().isEmpty() || contraseniaField.getText().trim().isEmpty() ||
@@ -197,9 +210,7 @@ public class EmpleadoController {
             return false;
         }
 
-        // ====================================================================
-        // === VALIDACIÓN AGREGADA: CARGO SOLO LETRAS Y NO VACÍO ===
-        // ====================================================================
+        // VALIDACIÓN: CARGO SOLO LETRAS Y NO VACÍO
         String cargo = cargoField.getText().trim();
         if (cargo.isEmpty()) {
             mostrarAlerta("Advertencia", "El campo 'Cargo' no puede estar vacío.", Alert.AlertType.WARNING);
@@ -209,7 +220,6 @@ public class EmpleadoController {
             mostrarAlerta("Advertencia", "El campo 'Cargo' solo puede contener letras y espacios.", Alert.AlertType.WARNING);
             return false;
         }
-        // ====================================================================
 
         // Validación de Salario
         try {
@@ -226,13 +236,11 @@ public class EmpleadoController {
      * Valida si un texto contiene solo letras (incluyendo ñ, tildes y espacios).
      */
     private boolean validarSoloLetras(String texto) {
-        // Expresión regular que permite letras mayúsculas, minúsculas,
-        // tildes (áéíóúÁÉÍÓÚ), la letra ñ/Ñ y espacios en blanco.
         String regex = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$";
         return texto.matches(regex);
     }
 
-    // Método de alerta unificado (MANTENIDO)
+    // Método de alerta unificado
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);
         alert.setTitle(titulo);
@@ -241,7 +249,7 @@ public class EmpleadoController {
         alert.showAndWait();
     }
 
-    // Sobrecarga para mantener compatibilidad (MANTENIDO)
+    // Sobrecarga para mantener compatibilidad
     private void mostrarAlerta(String titulo, String mensaje) {
         mostrarAlerta(titulo, mensaje, Alert.AlertType.INFORMATION);
     }

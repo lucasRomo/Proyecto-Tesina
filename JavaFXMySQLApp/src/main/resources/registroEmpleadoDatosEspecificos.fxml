@@ -7,38 +7,59 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.DatePicker?>
-
+<?import javafx.scene.layout.AnchorPane?>
 <?import java.net.URL?>
-<VBox spacing="10" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml" fx:controller="app.controller.EmpleadoController">
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.PasswordField?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="550.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.EmpleadoController">
     <stylesheets>
         <URL value="@styleRegistro.css" />
     </stylesheets>
-    <children>
-        <Label text="Datos Específicos del Empleado" styleClass="titulo-principal">
-            <font>
-                <Font name="System Bold" size="24.0" />
-            </font>
-        </Label>
-        <Label text="Persona:"/>
-        <Label fx:id="nombrePersonaLabel"/>
+    <VBox spacing="10" alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <children>
+            <Label text="Datos Específicos del Empleado" styleClass="titulo-principal">
+                <font>
+                    <Font name="System Bold" size="20.0" />
+                </font>
+                <VBox.margin>
+                    <Insets bottom="10.0" />
+                </VBox.margin>
+            </Label>
 
-        <Label text="Usuario:"/>
-        <TextField fx:id="usuarioField" promptText="Ingrese un nombre de Usuario"/>
-        <Label text="Contraseña:"/>
-        <TextField fx:id="contraseniaField" promptText="Ingrese una Contraseña"/>
+            <Label text="Persona:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+            <HBox alignment="CENTER" spacing="5.0">
+                <Label fx:id="nombrePersonaLabel" style="-fx-font-size: 14px;"/>
+            </HBox>
 
-        <Label text="Fecha de Contratación:"/>
-        <DatePicker fx:id="fechaContratacionPicker" promptText="Seleccione la fecha"/>
+            <Label text="Usuario:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+            <TextField fx:id="usuarioField" promptText="Ingrese un nombre de Usuario" maxWidth="300.0"/>
 
-        <Label text="Cargo:"/>
-        <TextField fx:id="cargoField" promptText="Ingrese el cargo del empleado"/>
+            <Label text="Contraseña:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+            <PasswordField fx:id="contraseniaField" promptText="Ingrese una Contraseña" maxWidth="300.0"/>
 
-        <Label text="Salario:"/>
-        <TextField fx:id="salarioField" promptText="Ingrese el salario"/>
+            <Label text="Fecha de Contratación:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+            <DatePicker fx:id="fechaContratacionPicker" promptText="Seleccione la fecha" maxWidth="300.0"/>
 
-        <Button text="Guardar Empleado" onAction="#handleGuardarEmpleado"/>
-    </children>
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-    </padding>
-</VBox>
+            <Label text="Cargo:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+            <TextField fx:id="cargoField" promptText="Ingrese el cargo del empleado" maxWidth="300.0"/>
+
+            <Label text="Salario:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+            <TextField fx:id="salarioField" promptText="Ingrese el salario" maxWidth="300.0"/>
+
+            <HBox alignment="CENTER" spacing="10.0">
+                <VBox.margin>
+                    <Insets top="10.0"/>
+                </VBox.margin>
+                <children>
+                    <Button fx:id="cancelarButton" onAction="#handleCancelar" text="Cancelar" styleClass="cancel-button"/>
+                    <Button text="Guardar Empleado" onAction="#handleGuardarEmpleado" styleClass="save-button"/>
+                </children>
+            </HBox>
+
+        </children>
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        </padding>
+    </VBox>
+</AnchorPane>

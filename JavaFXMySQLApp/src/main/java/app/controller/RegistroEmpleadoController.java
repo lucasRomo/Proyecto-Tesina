@@ -95,9 +95,10 @@ public class RegistroEmpleadoController {
 
         // 4. Validaciones de longitud de datos obligatorios
 
-        // Validación de Código Postal - SOLO LONGITUD (el formato numérico ya se validó en validarCampos)
+        // Validación de Código Postal - SOLO LONGITUD (el formato numérico y 4 dígitos ya se validó en validarCampos)
+        // Esta validación es redundante con la de validarCampos, pero se deja por seguridad si se modifica validarCampos.
         if (codigoPostalField.getText().trim().length() != 4) {
-            mostrarAlerta("Advertencia", "El código postal debe tener exactamente 4 caracteres.");
+            // Este caso ya debería ser manejado por validarCampos, pero se deja como fallback
             return;
         }
 
@@ -140,8 +141,11 @@ public class RegistroEmpleadoController {
                 Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
                 Scene scene = new Scene(root);
                 stage.setScene(scene);
-                stage.setWidth(1800);
-                stage.setHeight(1000);
+                // =========================================================================
+                // === CORRECCIÓN CLAVE: ELIMINACIÓN DE TAMAÑO FIJO EN VENTANA NUEVA ===
+                // Eliminadas: stage.setWidth(1800); y stage.setHeight(1000);
+                // Se utiliza el tamaño preferido del AnchorPane en el FXML
+                // =========================================================================
                 stage.centerOnScreen();
                 stage.setTitle("Registro de Empleado");
                 stage.show();
@@ -185,40 +189,32 @@ public class RegistroEmpleadoController {
             return false;
         }
 
-        // ====================================================================
-        // === VALIDACIÓN AGREGADA: CALLE SOLO LETRAS ===
-        // ====================================================================
+        // 2. Validación de Calle (Solo letras y espacios)
         if (!validarSoloLetras(calleField.getText())) {
             mostrarAlerta("Advertencia", "El campo 'Calle' solo puede contener letras y espacios.");
             return false;
         }
-        // ====================================================================
 
-        // 2. Validación de Número de Calle (Solo números)
+        // 3. Validación de Número de Calle (Solo números)
         if (!numeroField.getText().matches(regexNumeros)) {
             mostrarAlerta("Advertencia", "El campo 'Número' (calle) debe contener solo números.");
             return false;
         }
 
-        // 3. Validación de Teléfono (Solo dígitos numéricos)
+        // 4. Validación de Teléfono (Solo dígitos numéricos)
         if (!telefonoField.getText().trim().matches(regexNumeros)) {
             mostrarAlerta("Advertencia", "El campo 'Teléfono' solo debe contener dígitos numéricos (sin guiones ni espacios).");
             return false;
         }
 
-        // ====================================================================
-        // === VALIDACIÓN AGREGADA: CÓDIGO POSTAL (Solo números Y 4 dígitos) ===
-        // Se combinan las validaciones de formato y longitud aquí.
-        // ====================================================================
+        // 5. Validación de Código Postal (Solo números Y 4 dígitos)
         String cp = codigoPostalField.getText().trim();
         if (!cp.matches("\\d{4}")) {
             mostrarAlerta("Advertencia", "El campo 'Código Postal' debe contener exactamente 4 dígitos numéricos.");
             return false;
         }
-        // NOTA: La validación de longitud se mantuvo en handleSiguienteButton por redundancia, pero esta es más estricta.
-        // ====================================================================
 
-        // 4. Validación de Correo Electrónico
+        // 6. Validación de Correo Electrónico
         String regexEmail = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
         Pattern pattern = Pattern.compile(regexEmail);
         Matcher matcher = pattern.matcher(emailField.getText());
