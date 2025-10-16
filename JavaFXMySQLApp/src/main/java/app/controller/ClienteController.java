@@ -38,7 +38,7 @@ public class ClienteController {
     @FXML private TableColumn<Cliente, String> telefonoColumn;
     @FXML private TableColumn<Cliente, String> emailColumn;
     @FXML private TableColumn<Cliente, Number> idClienteColumn;
-    @FXML private TableColumn<Cliente, String> razonSocialColumn; // Se modificará su CellFactory
+    @FXML private TableColumn<Cliente, String> razonSocialColumn;
     @FXML private TableColumn<Cliente, String> personaContactoColumn;
     @FXML private TableColumn<Cliente, String> condicionesPagoColumn;
     @FXML private TableColumn<Cliente, String> estadoColumn;
@@ -86,10 +86,140 @@ public class ClienteController {
         condicionesPagoColumn.setCellValueFactory(cellData -> cellData.getValue().condicionesPagoProperty());
         estadoColumn.setCellValueFactory(cellData -> cellData.getValue().estadoProperty());
 
-        // --- Configuración de Columnas Editables (Secciones anteriores omitidas por brevedad) ---
+        // =========================================================================================
+        // === NUEVAS CONFIGURACIONES DE EDICIÓN Y VALIDACIÓN PARA COLUMNAS PERSONALES =============
+        // =========================================================================================
+
+        // --- Columna Nombre (Editable con validación) ---
+        nombreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        nombreColumn.setOnEditCommit(event -> {
+            Cliente cliente = event.getRowValue();
+            String nuevoNombre = event.getNewValue().trim();
+            String nombreOriginal = event.getOldValue();
+
+            if (nuevoNombre.isEmpty()) {
+                mostrarAlerta("Advertencia", "El nombre no puede quedar vacío.", Alert.AlertType.WARNING);
+                clientesTableView.refresh();
+                return;
+            }
+            if (!validarSoloLetras(nuevoNombre)) {
+                mostrarAlerta("Advertencia", "El nombre solo puede contener letras y espacios.", Alert.AlertType.WARNING);
+                clientesTableView.refresh();
+                return;
+            }
+
+            cliente.setNombre(nuevoNombre);
+            if (!clienteDAO.modificarCliente(cliente)) {
+                mostrarAlerta("Error", "No se pudo modificar el Nombre en la base de datos.", Alert.AlertType.ERROR);
+                cliente.setNombre(nombreOriginal); // Revertir en el modelo
+            }
+            clientesTableView.refresh();
+        });
+
+        // --- Columna Apellido (Editable con validación) ---
+        apellidoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        apellidoColumn.setOnEditCommit(event -> {
+            Cliente cliente = event.getRowValue();
+            String nuevoApellido = event.getNewValue().trim();
+            String apellidoOriginal = event.getOldValue();
+
+            if (nuevoApellido.isEmpty()) {
+                mostrarAlerta("Advertencia", "El apellido no puede quedar vacío.", Alert.AlertType.WARNING);
+                clientesTableView.refresh();
+                return;
+            }
+            if (!validarSoloLetras(nuevoApellido)) {
+                mostrarAlerta("Advertencia", "El apellido solo puede contener letras y espacios.", Alert.AlertType.WARNING);
+                clientesTableView.refresh();
+                return;
+            }
+
+            cliente.setApellido(nuevoApellido);
+            if (!clienteDAO.modificarCliente(cliente)) {
+                mostrarAlerta("Error", "No se pudo modificar el Apellido en la base de datos.", Alert.AlertType.ERROR);
+                cliente.setApellido(apellidoOriginal); // Revertir en el modelo
+            }
+            clientesTableView.refresh();
+        });
+
+        // --- Columna Número Documento (Editable con validación) ---
+        numeroDocumentoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        numeroDocumentoColumn.setOnEditCommit(event -> {
+            Cliente cliente = event.getRowValue();
+            String nuevoNumDoc = event.getNewValue().trim();
+            String numDocOriginal = event.getOldValue();
+
+            if (nuevoNumDoc.isEmpty()) {
+                mostrarAlerta("Advertencia", "El número de documento no puede quedar vacío.", Alert.AlertType.WARNING);
+                clientesTableView.refresh();
+                return;
+            }
+            if (!validarSoloNumeros(nuevoNumDoc)) {
+                mostrarAlerta("Advertencia", "El número de documento solo puede contener dígitos.", Alert.AlertType.WARNING);
+                clientesTableView.refresh();
+                return;
+            }
+
+            // Validar longitud y si existe para otro
+            if (!validarNumeroDocumento(cliente.getIdTipoDocumento(), nuevoNumDoc, cliente.getIdPersona())) {
+                clientesTableView.refresh();
+                return;
+            }
+
+            cliente.setNumeroDocumento(nuevoNumDoc);
+            if (!clienteDAO.modificarCliente(cliente)) {
+                mostrarAlerta("Error", "No se pudo modificar el Nro. Documento en la base de datos.", Alert.AlertType.ERROR);
+                cliente.setNumeroDocumento(numDocOriginal); // Revertir en el modelo
+            }
+            clientesTableView.refresh();
+        });
+
+        // --- Columna Teléfono (Editable con validación) ---
+        telefonoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        telefonoColumn.setOnEditCommit(event -> {
+            Cliente cliente = event.getRowValue();
+            String nuevoTelefono = event.getNewValue().trim();
+            String telefonoOriginal = event.getOldValue();
+
+            // Teléfono puede ser NULL, pero si se ingresa, debe ser válido.
+            if (!nuevoTelefono.isEmpty()) {
+                if (!validarSoloNumeros(nuevoTelefono) || !validarLongitudTelefono(nuevoTelefono)) {
+                    mostrarAlerta("Advertencia", "El formato del teléfono es inválido o la longitud es incorrecta (7 a 11 dígitos).", Alert.AlertType.WARNING);
+                    clientesTableView.refresh();
+                    return;
+                }
+            }
+
+            cliente.setTelefono(nuevoTelefono.isEmpty() ? null : nuevoTelefono);
+            if (!clienteDAO.modificarCliente(cliente)) {
+                mostrarAlerta("Error", "No se pudo modificar el Teléfono en la base de datos.", Alert.AlertType.ERROR);
+                cliente.setTelefono(telefonoOriginal); // Revertir en el modelo
+            }
+            clientesTableView.refresh();
+        });
+
+        // --- Columna Email (Editable con validación) ---
+        emailColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        emailColumn.setOnEditCommit(event -> {
+            Cliente cliente = event.getRowValue();
+            String nuevoEmail = event.getNewValue();
+            String emailOriginal = event.getOldValue();
+
+            if (validarYGuardarEmail(cliente, nuevoEmail, emailOriginal)) {
+                // Si la validación es exitosa, el email ya fue actualizado en el modelo (cliente.setEmail())
+                if (!clienteDAO.modificarCliente(cliente)) {
+                    mostrarAlerta("Error", "No se pudo modificar el Email en la base de datos.", Alert.AlertType.ERROR);
+                    cliente.setEmail(emailOriginal); // Revertir si falla el guardado en DB
+                } else {
+                    mostrarAlerta("Éxito", "Email modificado y guardado correctamente.", Alert.AlertType.INFORMATION);
+                }
+            }
+            clientesTableView.refresh();
+        });
+
 
         // =========================================================================================
-        // === CLAVE: MODIFICACIÓN DE LA COLUMNA RAZÓN SOCIAL (CHOICEBOX) ==========================
+        // === COLUMNA RAZÓN SOCIAL (CHOICEBOX) ====================================================
         // =========================================================================================
         razonSocialColumn.setCellFactory(column -> new TableCell<Cliente, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>(RAZON_SOCIAL_OPCIONES);
@@ -154,7 +284,6 @@ public class ClienteController {
             cliente.setRazonSocial(nuevaRazonSocial);
 
             // 2. Intenta modificar el cliente completo en la DB
-            // (Asumo que modificarCliente() actualiza todos los campos)
             boolean exito = clienteDAO.modificarCliente(cliente);
 
             if (exito) {
@@ -168,29 +297,50 @@ public class ClienteController {
         });
         // =========================================================================================
 
+        // --- Columna Persona Contacto (Editable con validación) ---
         personaContactoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         personaContactoColumn.setOnEditCommit(event -> {
-            if (event.getNewValue() == null || event.getNewValue().trim().isEmpty()) {
+            Cliente cliente = event.getRowValue();
+            String nuevaPersonaContacto = event.getNewValue().trim();
+            String personaContactoOriginal = event.getOldValue();
+
+            if (nuevaPersonaContacto.isEmpty()) {
                 mostrarAlerta("Advertencia", "La persona de contacto no puede quedar vacía.", Alert.AlertType.WARNING);
                 clientesTableView.refresh();
                 return;
             }
-            event.getRowValue().setPersonaContacto(event.getNewValue());
+
+            cliente.setPersonaContacto(nuevaPersonaContacto);
+            if (!clienteDAO.modificarCliente(cliente)) {
+                mostrarAlerta("Error", "No se pudo modificar la Persona de Contacto en la base de datos.", Alert.AlertType.ERROR);
+                cliente.setPersonaContacto(personaContactoOriginal);
+            }
+            clientesTableView.refresh();
         });
 
+        // --- Columna Condiciones Pago (Editable con validación) ---
         condicionesPagoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         condicionesPagoColumn.setOnEditCommit(event -> {
-            if (event.getNewValue() == null || event.getNewValue().trim().isEmpty()) {
+            Cliente cliente = event.getRowValue();
+            String nuevasCondiciones = event.getNewValue().trim();
+            String condicionesOriginales = event.getOldValue();
+
+            if (nuevasCondiciones.isEmpty()) {
                 mostrarAlerta("Advertencia", "Las condiciones de pago no pueden quedar vacías.", Alert.AlertType.WARNING);
                 clientesTableView.refresh();
                 return;
             }
-            event.getRowValue().setCondicionesPago(event.getNewValue());
+
+            cliente.setCondicionesPago(nuevasCondiciones);
+            if (!clienteDAO.modificarCliente(cliente)) {
+                mostrarAlerta("Error", "No se pudo modificar las Condiciones de Pago en la base de datos.", Alert.AlertType.ERROR);
+                cliente.setCondicionesPago(condicionesOriginales);
+            }
+            clientesTableView.refresh();
         });
 
-        // Configuración de estadoColumn (se mantiene igual)
-        // ... (código para estadoColumn)
-
+        // --- Columna Estado (ChoiceBox, se mantiene igual) ---
+        // El código para estadoColumn es correcto y solo necesita el CellFactory y OnEditCommit.
         estadoColumn.setCellFactory(column -> new TableCell<Cliente, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
 
@@ -260,6 +410,7 @@ public class ClienteController {
         estadoColumn.setOnEditCommit(event -> {
             Cliente cliente = event.getRowValue();
             String nuevoEstado = event.getNewValue();
+            String estadoOriginal = event.getOldValue();
 
             cliente.setEstado(nuevoEstado);
 
@@ -269,15 +420,13 @@ public class ClienteController {
                 mostrarAlerta("Éxito", "Estado del cliente actualizado.", Alert.AlertType.INFORMATION);
             } else {
                 mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
-                cliente.setEstado(event.getOldValue());
+                cliente.setEstado(estadoOriginal); // Revertir en el modelo
             }
             clientesTableView.refresh();
         });
 
 
-        // Configuración de accionColumn (se mantiene igual)
-        // ... (código para accionColumn)
-
+        // --- Columna Accion (Se mantiene igual) ---
         accionColumn.setCellFactory(param -> new TableCell<Cliente, Void>() {
             private final Button btn = new Button("Direccion");
 
@@ -309,7 +458,8 @@ public class ClienteController {
 
     // --- Métodos de Lógica (refreshClientesTable, handleRegistrarClienteButton, etc.) ---
     // (Se mantienen iguales a tu código original)
-    // ...
+
+    // ... (rest of methods: mostrarDireccionCliente, refreshClientesTable, cargarClientesYConfigurarFiltros, updateFilteredList) ...
 
     private void mostrarDireccionCliente(int idDireccion) {
         Direccion direccion = direccionDAO.obtenerPorId(idDireccion);
@@ -440,8 +590,14 @@ public class ClienteController {
 
             String emailEnModelo = selectedCliente.getEmail();
 
+            // *******************************************************************
+            // NOTA: Esta validación y guardado general es redundante
+            // porque cada OnEditCommit ya valida y guarda el cambio individualmente.
+            // La dejamos por si hay otros cambios en el modelo no vinculados a celdas editables.
+            // *******************************************************************
+
             if (!validarFormatoEmail(emailEnModelo)) {
-                mostrarAlerta("Error de Modificación", "El formato del email ('" + emailEnModelo + "') es inválido.", Alert.AlertType.ERROR);
+                mostrarAlerta("Error de Modificación", "El formato del email ('" + emailEnModelo + "') es inválido. Por favor, edítelo en la tabla.", Alert.AlertType.ERROR);
                 clientesTableView.refresh();
                 return;
             }
@@ -454,9 +610,9 @@ public class ClienteController {
 
             boolean exito = clienteDAO.modificarCliente(selectedCliente);
             if (exito) {
-                mostrarAlerta("Éxito", "Cliente modificado exitosamente.", Alert.AlertType.INFORMATION);
+                mostrarAlerta("Éxito", "Cliente modificado exitosamente (Guardado general).", Alert.AlertType.INFORMATION);
             } else {
-                mostrarAlerta("Error", "No se pudo modificar el cliente en la base de datos.", Alert.AlertType.ERROR);
+                mostrarAlerta("Error", "No se pudo modificar el cliente en la base de datos (Guardado general).", Alert.AlertType.ERROR);
             }
         } else {
             mostrarAlerta("Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.", Alert.AlertType.WARNING);
@@ -501,7 +657,8 @@ public class ClienteController {
     }
 
     private boolean validarFormatoEmail(String email) {
-        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        // Regex mejorada para un formato de email más estricto
+        String regex = "^[A-Za-z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[A-Za-z0-9_!#$%&'*+/=?`{|}~^-]+)*@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
@@ -511,6 +668,11 @@ public class ClienteController {
     private boolean validarNumeroDocumento(int idTipoDocumento, String numeroDocumento, int idPersonaActual) {
         String tipoDocumento = obtenerNombreTipoDocumento(idTipoDocumento);
         int longitudDocumento = numeroDocumento.length();
+
+        if (!validarSoloNumeros(numeroDocumento)) {
+            mostrarAlerta("Advertencia", "El número de documento solo puede contener dígitos.", Alert.AlertType.WARNING);
+            return false;
+        }
 
         if ("DNI".equals(tipoDocumento) && longitudDocumento != 8) {
             mostrarAlerta("Advertencia", "El DNI debe tener 8 caracteres.", Alert.AlertType.WARNING);
@@ -524,7 +686,7 @@ public class ClienteController {
         }
 
         if (personaDAO.verificarSiDocumentoExiste(numeroDocumento, idPersonaActual)) {
-            mostrarAlerta("Error", "El número de documento ya existe.", Alert.AlertType.ERROR);
+            mostrarAlerta("Error", "El número de documento ya existe para otra persona.", Alert.AlertType.ERROR);
             return false;
         }
 
@@ -533,8 +695,8 @@ public class ClienteController {
 
     private String obtenerNombreTipoDocumento(int idTipoDocumento) {
         if (idTipoDocumento == 1) return "DNI";
-        if (idTipoDocumento == 2) return "CUIL";
-        if (idTipoDocumento == 3) return "CUIT";
+        if (idTipoDocumento == 2) return "CUIT";
+        if (idTipoDocumento == 3) return "CUIL";
         if (idTipoDocumento == 4) return "Pasaporte";
         return "";
     }

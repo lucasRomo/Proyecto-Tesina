@@ -16,6 +16,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.PasswordField; // Asegurarse de que esté importado
+import javafx.scene.control.ToggleButton; // Importar ToggleButton
+import javafx.scene.image.Image; // Importar Image
+import javafx.scene.image.ImageView; // Importar ImageView
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -28,87 +32,132 @@ import java.util.regex.Pattern;
 
 public class EmpleadoController {
 
-    // --- FXML Fields de la versión Lucas ---
-    @FXML private Label nombrePersonaLabel; // Para mostrar el nombre de la persona que se está creando
+    @FXML private Label nombrePersonaLabel;
     @FXML private TextField usuarioField;
-    @FXML private TextField contraseniaField;
+    @FXML private PasswordField contraseniaField; // PasswordField original
 
-    // --- FXML Fields de la versión Balles ---
+    // --- Nuevos campos FXML para el control de visibilidad de contraseña ---
+    @FXML private TextField contraseniaVisibleField; // TextField para mostrar la contraseña
+    @FXML private ToggleButton toggleVisibilityButton; // Botón "Ojito"
+    @FXML private ImageView eyeIconView; // Para cambiar el ícono del ojo
+
+    // Rutas de tus imágenes (asegúrate de que estas sean las correctas para este contexto)
+    // Según tu último pedido:
+    // EYE_OPEN_ICON usará 'ojo.png' (ojo sin raya)
+    // EYE_CLOSED_ICON usará 'ojo (1).png' (ojo con raya/cerrado)
+    private static final String EYE_OPEN_ICON = "/imagenes/ojo.png";
+    private static final String EYE_CLOSED_ICON = "/imagenes/ojo (1).png";
+    // --- Fin de nuevos campos FXML ---
+
     @FXML private DatePicker fechaContratacionPicker;
     @FXML private TextField cargoField;
     @FXML private TextField salarioField;
 
-    // --- Atributos de Conexión (si tus DAOs no los manejan internamente) ---
     private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
-    // DAOs
     private PersonaDAO personaDAO;
     private UsuarioDAO usuarioDAO;
     private EmpleadoDAO empleadoDAO;
 
-    private Persona personaData; // Datos de la persona recibidos del controlador anterior
-    private Stage dialogStage; // Si esta vista se usa como un diálogo (de la versión Balles)
+    private Persona personaData;
+    private Stage dialogStage;
 
-    // Constructor para inicializar los DAOs
     public EmpleadoController() {
         this.personaDAO = new PersonaDAO();
         this.usuarioDAO = new UsuarioDAO();
         this.empleadoDAO = new EmpleadoDAO();
     }
 
-    // Método para inicializar, se puede usar para configurar el dialogStage si se abre como tal
     @FXML
     private void initialize() {
-        // Inicializaciones si son necesarias.
+        // Sincronizar el texto entre el campo de contraseña y el campo visible
+        contraseniaVisibleField.textProperty().addListener((observable, oldValue, newValue) -> {
+            contraseniaField.setText(newValue);
+        });
+
+        contraseniaField.textProperty().addListener((observable, oldValue, newValue) -> {
+            contraseniaVisibleField.setText(newValue);
+        });
+
+        // Establecer el ícono inicial (ojo cerrado)
+        eyeIconView.setImage(new Image(getClass().getResource(EYE_CLOSED_ICON).toExternalForm()));
     }
 
-    // Método de la versión Balles para cerrar el diálogo
+    // Método para alternar la visibilidad de la contraseña
+    @FXML
+    private void togglePasswordVisibility(ActionEvent event) {
+        boolean isVisible = toggleVisibilityButton.isSelected();
+
+        if (isVisible) {
+            // Mostrar Contraseña: Ocultamos el PasswordField y mostramos el TextField
+            contraseniaField.setVisible(false);
+            contraseniaVisibleField.setVisible(true);
+            // Cargar imagen de ojo abierto
+            eyeIconView.setImage(new Image(getClass().getResource(EYE_OPEN_ICON).toExternalForm()));
+        } else {
+            // Ocultar Contraseña: Mostramos el PasswordField y ocultamos el TextField
+            contraseniaField.setVisible(true);
+            contraseniaVisibleField.setVisible(false);
+            // Cargar imagen de ojo cerrado
+            eyeIconView.setImage(new Image(getClass().getResource(EYE_CLOSED_ICON).toExternalForm()));
+        }
+
+        // Forzar el foco al campo actualmente visible
+        if (isVisible) {
+            contraseniaVisibleField.requestFocus();
+        } else {
+            contraseniaField.requestFocus();
+        }
+    }
+
+
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
     }
 
-    // Método para recibir los datos de la persona del controlador anterior (de Lucas)
     public void setDatosPersona(String nombre, String apellido, int idTipoDocumento, String numeroDocumento, int idDireccion, String telefono, String email) {
-        // Aseguramos que el id_tipo_persona sea 2 (Empleado) al crear la Persona
         this.personaData = new Persona(nombre, apellido, idTipoDocumento, numeroDocumento, idDireccion, telefono, email, 2); // '2' para id_tipo_persona de Empleado
         nombrePersonaLabel.setText(nombre + " " + apellido);
     }
 
     @FXML
     public void handleGuardarEmpleado(ActionEvent event) {
-        // Validaciones generales
         if (personaData == null) {
             mostrarAlerta("Error", "No se recibieron los datos de la persona.", Alert.AlertType.ERROR);
             return;
         }
         if (!validarCampos()) {
-            return; // validarCampos() ya mostrará su propia alerta
+            return;
         }
 
         String nuevoUsuarioStr = usuarioField.getText().trim();
-
         if (usuarioDAO.verificarSiUsuarioExiste(nuevoUsuarioStr)) {
             mostrarAlerta("Error de Registro", "El nombre de usuario ya está registrado. Por favor, elija otro.", Alert.AlertType.ERROR);
             return;
         }
 
+        // Obtener la contraseña desde el PasswordField (ya que está sincronizado)
+        String contrasenia = contraseniaField.getText();
+        if (contrasenia.isEmpty()) {
+            mostrarAlerta("Advertencia", "La contraseña no puede estar vacía.", Alert.AlertType.WARNING);
+            return;
+        }
+
+
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            conn.setAutoCommit(false); // Iniciar transacción
+            conn.setAutoCommit(false);
 
-            // 1. Insertar Persona
             int idPersona = personaDAO.insertarPersona(this.personaData, conn);
 
-            if (idPersona != -1) { // Si la persona se insertó correctamente
-                // 2. Insertar Usuario
-                Usuario nuevoUsuario = new Usuario(usuarioField.getText(), contraseniaField.getText());
-                nuevoUsuario.setIdPersona(idPersona); // Asignar el ID de la persona recién creada
+            if (idPersona != -1) {
+                Usuario nuevoUsuario = new Usuario(usuarioField.getText(), contrasenia); // Usar la contraseña sincronizada
+                nuevoUsuario.setIdPersona(idPersona);
 
                 if (usuarioDAO.insertar(nuevoUsuario, conn)) {
-                    // 3. Insertar Empleado
                     LocalDate fechaContratacion = fechaContratacionPicker.getValue();
                     String cargo = cargoField.getText();
                     double salario = Double.parseDouble(salarioField.getText());
@@ -117,36 +166,33 @@ public class EmpleadoController {
                     Empleado nuevoEmpleado = new Empleado(fechaContratacion, cargo, salario, estadoPorDefecto, idPersona);
 
                     if (empleadoDAO.insertarEmpleado(nuevoEmpleado, conn)) {
-                        conn.commit(); // Confirmar la transacción
+                        conn.commit();
                         mostrarAlerta("Éxito", "Persona, Usuario y Empleado registrados exitosamente.", Alert.AlertType.INFORMATION);
                         limpiarCampos();
 
-                        // Redireccionar a la pantalla de inicio de sesión
                         try {
                             Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/inicioSesion.fxml")));
                             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                             stage.setScene(new Scene(root));
                             stage.setTitle("Inicio de Sesión");
-                            // --- CAMBIO AQUÍ: Usamos setMaximized(true) en lugar de setFullScreen(true) ---
-                            stage.setMaximized(true); // Abre la ventana maximizada
+                            stage.setMaximized(true);
                             stage.show();
                         } catch (IOException e) {
                             e.printStackTrace();
                             mostrarAlerta("Error", "No se pudo cargar la pantalla de inicio de sesión.", Alert.AlertType.ERROR);
                         }
                     } else {
-                        conn.rollback(); // Rollback si falla la inserción del Empleado
+                        conn.rollback();
                         mostrarAlerta("Error", "Error al registrar los datos del empleado. La operación fue cancelada.", Alert.AlertType.ERROR);
                     }
                 } else {
-                    conn.rollback(); // Rollback si falla la inserción del Usuario
+                    conn.rollback();
                     mostrarAlerta("Error", "Error al registrar el usuario. La operación fue cancelada.", Alert.AlertType.ERROR);
                 }
             } else {
                 mostrarAlerta("Error", "Error al registrar la persona. La operación fue cancelada.", Alert.AlertType.ERROR);
             }
         } catch (SQLException | NumberFormatException e) {
-            // Rollback en caso de cualquier excepción SQL o formato de número
             if (conn != null) {
                 try {
                     conn.rollback();
@@ -171,29 +217,20 @@ public class EmpleadoController {
         }
     }
 
-    /**
-     * Se mantiene la lógica anterior para el botón Cancelar, asumiendo que debe
-     * volver al inicio de sesión también maximizado.
-     */
     @FXML
     private void handleCancelar(ActionEvent event) {
-        // Si está en modo diálogo, simplemente cerramos
         if (dialogStage != null) {
             dialogStage.close();
             return;
         }
 
         try {
-            // Cerramos la ventana actual
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            // Cargamos la pantalla de inicio de sesión
             Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/inicioSesion.fxml")));
             Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.setTitle("Inicio de Sesión");
-            // --- CAMBIO AQUÍ: Usamos setMaximized(true) en lugar de setFullScreen(true) ---
-            stage.setMaximized(true); // También abrimos la pantalla de inicio de sesión maximizada al cancelar
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
@@ -201,16 +238,16 @@ public class EmpleadoController {
         }
     }
 
-
     private boolean validarCampos() {
-        if (usuarioField.getText().trim().isEmpty() || contraseniaField.getText().trim().isEmpty() ||
+        // La validación de contraseniaField.getText().trim().isEmpty() se moverá a handleGuardarEmpleado
+        // para que se haga DENTRO del flujo de obtener la contraseña.
+        if (usuarioField.getText().trim().isEmpty() ||
                 fechaContratacionPicker.getValue() == null || cargoField.getText().trim().isEmpty() ||
                 salarioField.getText().trim().isEmpty()) {
             mostrarAlerta("Advertencia", "Por favor, complete todos los campos obligatorios del empleado y usuario.", Alert.AlertType.WARNING);
             return false;
         }
 
-        // VALIDACIÓN: CARGO SOLO LETRAS Y NO VACÍO
         String cargo = cargoField.getText().trim();
         if (cargo.isEmpty()) {
             mostrarAlerta("Advertencia", "El campo 'Cargo' no puede estar vacío.", Alert.AlertType.WARNING);
@@ -221,7 +258,6 @@ public class EmpleadoController {
             return false;
         }
 
-        // Validación de Salario
         try {
             Double.parseDouble(salarioField.getText());
         } catch (NumberFormatException e) {
@@ -232,15 +268,11 @@ public class EmpleadoController {
         return true;
     }
 
-    /**
-     * Valida si un texto contiene solo letras (incluyendo ñ, tildes y espacios).
-     */
     private boolean validarSoloLetras(String texto) {
         String regex = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$";
         return texto.matches(regex);
     }
 
-    // Método de alerta unificado
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);
         alert.setTitle(titulo);
@@ -249,7 +281,6 @@ public class EmpleadoController {
         alert.showAndWait();
     }
 
-    // Sobrecarga para mantener compatibilidad
     private void mostrarAlerta(String titulo, String mensaje) {
         mostrarAlerta(titulo, mensaje, Alert.AlertType.INFORMATION);
     }
@@ -257,6 +288,7 @@ public class EmpleadoController {
     private void limpiarCampos() {
         usuarioField.clear();
         contraseniaField.clear();
+        contraseniaVisibleField.clear(); // Limpiar también el campo visible
         fechaContratacionPicker.setValue(null);
         cargoField.clear();
         salarioField.clear();

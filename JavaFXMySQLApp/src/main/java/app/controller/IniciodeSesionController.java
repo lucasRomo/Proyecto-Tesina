@@ -5,15 +5,70 @@ import app.dao.UsuarioDAO;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.text.Text; // Aunque se importa, ya no se usa la referencia @FXML private Text eyeIconText;
 import java.io.IOException;
 
 public class IniciodeSesionController {
+
+    // Campos FXML originales
+    @FXML private TextField UsuarioField;
+    @FXML private PasswordField ContraseniaField;
+
+    // Campos FXML para el control de visibilidad
+    @FXML private TextField ContraseniaVisibleField;
+    @FXML private ToggleButton toggleVisibilityButton;
+    @FXML private ImageView eyeIconView; // USAMOS ESTE PARA LAS IMÁGENES
+    // @FXML private Text eyeIconText; // ELIMINAR si ya no está en el FXML
+
+    // Rutas de tus imágenes (ajustadas al nombre de tus archivos)
+    // /imagenes/ojo.png (ojo con raya/cerrado)
+    // /imagenes/ojo (1).png (ojo sin raya/abierto)
+    private static final String EYE_OPEN_ICON = "/imagenes/ojo.png";
+    private static final String EYE_CLOSED_ICON = "/imagenes/ojo (1).png";
+
+
     @FXML
-    private TextField UsuarioField;
+    private void initialize() {
+        // 1. Sincronizar el texto (se mantiene)
+        ContraseniaVisibleField.textProperty().addListener((observable, oldValue, newValue) -> {
+            ContraseniaField.setText(newValue);
+        });
+
+        ContraseniaField.textProperty().addListener((observable, oldValue, newValue) -> {
+            ContraseniaVisibleField.setText(newValue);
+        });
+    }
+
+
     @FXML
-    private TextField ContraseniaField;
+    private void togglePasswordVisibility(ActionEvent event) {
+        boolean isVisible = toggleVisibilityButton.isSelected();
+
+        if (isVisible) {
+            // Mostrar Contraseña: Ocultamos el PasswordField y mostramos el TextField
+            ContraseniaField.setVisible(false);
+            ContraseniaVisibleField.setVisible(true);
+            // Cargar imagen de ojo abierto
+            eyeIconView.setImage(new Image(getClass().getResource(EYE_OPEN_ICON).toExternalForm()));
+        } else {
+            // Ocultar Contraseña: Mostramos el PasswordField y ocultamos el TextField
+            ContraseniaField.setVisible(true);
+            ContraseniaVisibleField.setVisible(false);
+            // Cargar imagen de ojo cerrado
+            eyeIconView.setImage(new Image(getClass().getResource(EYE_CLOSED_ICON).toExternalForm()));
+        }
+
+        // Forzar el foco al campo actualmente visible
+        if (isVisible) {
+            ContraseniaVisibleField.requestFocus();
+        } else {
+            ContraseniaField.requestFocus();
+        }
+    }
+
 
     @FXML
     private void IniciarSesion(ActionEvent event) {
@@ -41,7 +96,6 @@ public class IniciodeSesionController {
                 alert.showAndWait();
 
                 try {
-                    // CLAVE: Usamos el método general 'loadScene'
                     MenuController.loadScene(
                             (Node) event.getSource(),
                             "/MenuAbms.fxml",
@@ -76,7 +130,6 @@ public class IniciodeSesionController {
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            // CLAVE: Usamos el método general 'loadScene'
             MenuController.loadScene(
                     (Node) event.getSource(),
                     "/menuInicial.fxml",

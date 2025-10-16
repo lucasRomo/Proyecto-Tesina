@@ -47,12 +47,35 @@
             </font>
         </Label>
 
-        <PasswordField fx:id="ContraseniaField" maxWidth="300.0" promptText="Ingrese su Contraseña">
-            <font>
-                <Font size="14.0" />
-            </font>
-        </PasswordField>
+        <StackPane maxWidth="300.0">
+            <PasswordField fx:id="ContraseniaField" maxWidth="300.0" promptText="Ingrese su Contraseña" visible="true">
+                <font>
+                    <Font size="14.0" />
+                </font>
+            </PasswordField>
 
+            <TextField fx:id="ContraseniaVisibleField" maxWidth="300.0" promptText="Ingrese su Contraseña" visible="false">
+                <font>
+                    <Font size="14.0" />
+                </font>
+            </TextField>
+
+            <ToggleButton fx:id="toggleVisibilityButton" onAction="#togglePasswordVisibility"
+                          style="-fx-background-color: transparent; -fx-padding: 0;"
+                          StackPane.alignment="CENTER_RIGHT"
+                          maxHeight="25.0">
+                <graphic>
+                    <ImageView fx:id="eyeIconView" fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@imagenes/ojo (1).png" />
+                        </image>
+                    </ImageView>
+                </graphic>
+                <StackPane.margin>
+                    <Insets right="5.0" />
+                </StackPane.margin>
+            </ToggleButton>
+        </StackPane>
         <HBox alignment="CENTER" spacing="10.0">
             <Button onAction="#IniciarSesion" text="Iniciar Sesion">
                 <font>

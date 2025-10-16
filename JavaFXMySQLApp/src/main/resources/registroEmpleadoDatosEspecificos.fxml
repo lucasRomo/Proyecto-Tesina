@@ -11,8 +11,7 @@
 <?import java.net.URL?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.PasswordField?>
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="550.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.EmpleadoController">
+<?import javafx.scene.layout.StackPane?> <?import javafx.scene.control.ToggleButton?> <?import javafx.scene.image.ImageView?> <?import javafx.scene.image.Image?> <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="550.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.EmpleadoController">
     <stylesheets>
         <URL value="@styleRegistro.css" />
     </stylesheets>
@@ -36,8 +35,28 @@
             <TextField fx:id="usuarioField" promptText="Ingrese un nombre de Usuario" maxWidth="300.0"/>
 
             <Label text="Contraseña:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
-            <PasswordField fx:id="contraseniaField" promptText="Ingrese una Contraseña" maxWidth="300.0"/>
 
+            <StackPane maxWidth="300.0">
+                <PasswordField fx:id="contraseniaField" promptText="Ingrese una Contraseña" maxWidth="300.0" visible="true"/>
+
+                <TextField fx:id="contraseniaVisibleField" promptText="Ingrese una Contraseña" maxWidth="300.0" visible="false"/>
+
+                <ToggleButton fx:id="toggleVisibilityButton" onAction="#togglePasswordVisibility"
+                              style="-fx-background-color: transparent; -fx-padding: 0;"
+                              StackPane.alignment="CENTER_RIGHT"
+                              maxHeight="25.0">
+                    <graphic>
+                        <ImageView fx:id="eyeIconView" fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                            <image>
+                                <Image url="@/imagenes/ojo (1).png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                    <StackPane.margin>
+                        <Insets right="5.0" />
+                    </StackPane.margin>
+                </ToggleButton>
+            </StackPane>
             <Label text="Fecha de Contratación:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
             <DatePicker fx:id="fechaContratacionPicker" promptText="Seleccione la fecha" maxWidth="300.0"/>
 
