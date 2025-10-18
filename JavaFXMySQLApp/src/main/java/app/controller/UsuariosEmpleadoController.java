@@ -514,12 +514,7 @@ public class UsuariosEmpleadoController implements Initializable {
 
     private void redireccionarAInicioSesion(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/inicioSesion.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Inicio de Sesión");
-            stage.show();
+            loadScene((Node) event.getSource(), "/inicioSesion.fxml", "Menu De Inicio de Sesion");
         } catch (IOException e) {
             e.printStackTrace();
         }
