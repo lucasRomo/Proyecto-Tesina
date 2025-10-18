@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static app.controller.MenuController.loadScene;
+
 public class HistorialActividadController {
 
     @FXML private TableView<HistorialActividadTableView> historialTableView;
@@ -89,12 +91,7 @@ public class HistorialActividadController {
     @FXML
     private void handleVolverButtonHistorial(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/menuAdmin.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal");
-            stage.show();
+            loadScene((Node) event.getSource(), "/menuAdmin.fxml", "Menú Admin");
         } catch (IOException e) {
             e.printStackTrace();
         }

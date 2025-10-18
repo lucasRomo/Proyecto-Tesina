@@ -38,6 +38,8 @@ import javafx.scene.control.TableCell;
 import app.controller.SessionManager;
 import javafx.fxml.Initializable;
 
+import static app.controller.MenuController.loadScene;
+
 // IMPLEMENTACIÓN DE LA INTERFAZ INITIALIZABLE
 public class UsuariosEmpleadoController implements Initializable {
 
@@ -551,13 +553,7 @@ public class UsuariosEmpleadoController implements Initializable {
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/MenuAdmin.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal");
-            stage.show();
-
+            loadScene((Node) event.getSource(), "/menuAdmin.fxml", "Menú Admin");
         } catch (IOException e) {
             e.printStackTrace();
         }

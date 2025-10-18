@@ -19,6 +19,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+import static app.controller.MenuController.loadScene;
+
 /**
  * Controlador para la interfaz de gestión de facturas.
  * Mapea las columnas del FXML a las propiedades del modelo FacturasAdminTableView.
@@ -170,16 +172,9 @@ public class FacturasController {
     @FXML
     private void handleVolverMenuInformesButton(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/InformesAdmin.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal");
-            stage.show();
-
+            loadScene((Node) event.getSource(), "/InformesAdmin.fxml", "Menú Informes Admin");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 }

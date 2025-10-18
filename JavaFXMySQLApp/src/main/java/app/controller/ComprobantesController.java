@@ -25,6 +25,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import static app.controller.MenuController.loadScene;
+
 /**
  * Controlador para la vista de Comprobantes (Administración).
  * Gestiona la carga de datos desde el ComprobanteDAO, el filtrado y las acciones
@@ -212,13 +214,7 @@ public class ComprobantesController {
     @FXML
     private void handleVolverMenuInformesButton(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/InformesAdmin.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal");
-            stage.show();
-
+            loadScene((Node) event.getSource(), "/InformesAdmin.fxml", "Menú Informes Admin");
         } catch (IOException e) {
             e.printStackTrace();
         }
