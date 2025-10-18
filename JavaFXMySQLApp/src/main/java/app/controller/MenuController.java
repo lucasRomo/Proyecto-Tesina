@@ -307,4 +307,14 @@ public class MenuController {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    private void handleVerHistorialDesdeAdmin(ActionEvent event) {
+        try {
+            loadScene((Node) event.getSource(), "/VerHistorialPedidos.fxml", "Menú de Historial de Pedidos");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
