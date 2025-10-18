@@ -34,8 +34,20 @@ public class PersonaDAO {
 
     // Método para insertar una persona en la base de datos
     public int insertarPersona(Persona persona, Connection conn) throws SQLException {
-        String sql = "INSERT INTO Persona (nombre, apellido, id_tipo_documento, numero_documento, id_direccion, telefono, email) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        // =========================================================================
+        // LÓGICA AGREGADA: ASIGNACIÓN DE ROL DE ADMINISTRADOR AL PRIMER USUARIO
+        // =========================================================================
+        if (contarPersonas() == 0) {
+            persona.setIdTipoPersona(4);
+            System.out.println("DEBUG: Asignando rol de Administrador (ID 4) al primer usuario.");
+        }
+        // =========================================================================
+
+        // SENTENCIA SQL CORREGIDA: Ahora incluye la columna 'id_tipo_de_persona' (8 campos)
+        String sql = "INSERT INTO Persona (nombre, apellido, id_tipo_documento, numero_documento, id_direccion, telefono, email, id_tipo_persona) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         int idGenerado = -1;
+
         try (PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, persona.getNombre());
             stmt.setString(2, persona.getApellido());
@@ -44,6 +56,8 @@ public class PersonaDAO {
             stmt.setInt(5, persona.getIdDireccion());
             stmt.setString(6, persona.getTelefono());
             stmt.setString(7, persona.getEmail());
+            // NUEVO PARÁMETRO: id_tipo_de_persona (puede ser 4 o el valor original)
+            stmt.setInt(8, persona.getIdTipoPersona());
 
             int filasAfectadas = stmt.executeUpdate();
             if (filasAfectadas > 0) {
@@ -140,6 +154,22 @@ public class PersonaDAO {
         }
         return null;
     }
+
+    public int contarPersonas() {
+        String sql = "SELECT COUNT(*) FROM Persona";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al contar personas: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return 0; // En caso de error, asumimos 0 para mantener la funcionalidad de Administrador.
+    }
+
 
     // =========================================================================
     // MODIFICACIÓN #1: Nuevo método para usar en transacciones externas (Controlador)
