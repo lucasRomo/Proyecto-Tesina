@@ -1,22 +1,159 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<?import java.net.URL?>
-<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="401.0" prefWidth="284.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuController">
+<!-- Raíz principal para mantener la idea del VBox, pero con un tamaño de dashboard -->
+
+<VBox prefHeight="750.0" prefWidth="1200.0" styleClass="background-panel" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuController">
     <stylesheets>
         <URL value="@style.css" />
     </stylesheets>
-   <children>
-      <Label styleClass="titulo-principal" alignment="CENTER" contentDisplay="CENTER" layoutX="34.0" layoutY="56.0" prefHeight="75.0" prefWidth="172.0" text="Informes">
-         <font>
-            <Font name="System Bold" size="36.0" />
-         </font>
-      </Label>
-      <Button fx:id="Buton" layoutX="32.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleFacturas" prefHeight="58.0" prefWidth="154.0" text="Facturas" />
-      <Button fx:id="Button" layoutX="32.0" layoutY="190.0" mnemonicParsing="false" onAction="#handleComprobantes" prefHeight="58.0" prefWidth="154.0" text="Comprobantes" />
-      <Button  fx:id="Buttton" mnemonicParsing="false" onAction="#handleVolverButtonInformes" prefHeight="27.0" prefWidth="102.0" text="Volver" styleClass="button-volver" />
-   </children>
+    <children>
+        <!-- Título Superior - CENTRADO CORRECTO (Asume que el fondo general es oscuro, manteniendo título blanco) -->
+        <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="Infinity" prefHeight="70.0" prefWidth="1200.0" styleClass="titulo-principal" text="Informes y Estadísticas del Sistema" HBox.hgrow="ALWAYS">
+            <!-- Se asegura de que el Label use todo el ancho para centrarse correctamente -->
+            <VBox.vgrow>NEVER</VBox.vgrow> <!-- El título no debe crecer, solo el contenido inferior -->
+        </Label>
+
+        <!-- Contenido Dividido (Menú Lateral + Área de Estadísticas) -->
+        <HBox VBox.vgrow="ALWAYS"> <!-- Esto hace que el HBox ocupe todo el espacio vertical restante -->
+
+            <!-- ************************************************************ -->
+            <!-- 1. Columna de Navegación Izquierda (Menú Lateral) -->
+            <!-- ************************************************************ -->
+            <VBox fx:id="menuLateral" alignment="TOP_CENTER" prefWidth="240.0" spacing="20.0" styleClass="sidebar-menu">
+                <padding>
+                    <Insets bottom="20.0" left="10.0" right="10.0" top="30.0" />
+                </padding>
+                <children>
+                    <!-- Etiqueta de Módulos (Color corregido, asumiendo menú lateral oscuro) -->
+                    <Label styleClass="subtitulo, label-blanco" text="Módulos">
+                        <font>
+                            <Font name="System Bold" size="20.0" />
+                        </font>
+                        <VBox.margin>
+                            <Insets bottom="10.0" />
+                        </VBox.margin>
+                    </Label>
+
+                    <!-- Botones de tu FXML base con fx:id claros -->
+                    <Button fx:id="btnFacturas" mnemonicParsing="false" onAction="#handleFacturas" prefHeight="50.0" prefWidth="200.0" styleClass="primary-button" text="Facturas" />
+                    <Button fx:id="btnComprobantes" mnemonicParsing="false" onAction="#handleComprobantes" prefHeight="50.0" prefWidth="200.0" styleClass="primary-button" text="Comprobantes" />
+
+                    <VBox VBox.vgrow="ALWAYS" /> <!-- Espaciador que empuja el botón Volver hacia abajo -->
+
+                    <!-- El botón Volver con su action -->
+                    <Button fx:id="btnVolver" mnemonicParsing="false" onAction="#handleVolverButtonInformes" prefHeight="35.0" prefWidth="100.0" styleClass="button-volver" text="Volver" />
+                </children>
+            </VBox>
+
+            <!-- ************************************************************ -->
+            <!-- 2. Área Principal de Estadísticas -->
+            <!-- ************************************************************ -->
+            <VBox fx:id="panelEstadisticas" prefWidth="960.0" spacing="15.0" HBox.hgrow="ALWAYS">
+                <padding>
+                    <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                </padding>
+                <children>
+                    <!-- Fila Superior: LineChart redimensionado y un nuevo panel de métricas clave al lado -->
+                    <HBox alignment="TOP_LEFT" spacing="15.0" VBox.vgrow="ALWAYS"> <!-- Esto permite que los gráficos de arriba crezcan -->
+
+                        <!-- LineChart redimensionado (Más pequeño) - FONDO GRIS MEDIO/OSCURO (#8A8A8A) SIN BORDE NEGRO -->
+                        <VBox alignment="CENTER" prefHeight="350.0" prefWidth="600.0" spacing="10.0" style="-fx-background-color: #8A8A8A; -fx-background-radius: 8;" HBox.hgrow="ALWAYS">
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                            <!-- Etiqueta de Título de Gráfico (A blanco) -->
+                            <Label prefHeight="41.0" prefWidth="102.0" style="-fx-text-fill: white;" styleClass="subtitulo" text="Ventas por Período" />
+                            <HBox alignment="CENTER" prefHeight="57.0" prefWidth="563.0" spacing="20.0">
+                                <DatePicker fx:id="dpFechaInicio" />
+                                <DatePicker fx:id="dpFechaFin" prefWidth="174.0" />
+                                <!-- Botón Generar Gráfico en blanco con letras negras, SIN BORDE NEGRO -->
+                                <Button mnemonicParsing="false" style="-fx-background-color: white; -fx-text-fill: black; -fx-background-radius: 5; -fx-font-weight: bold; -fx-padding: 8 15;" text="Generar Gráfico" />
+                            </HBox>
+                            <!-- Estilos del LineChart - Títulos de Chart y Leyendas a BLANCO -->
+                            <LineChart fx:id="lineChartVentas" prefHeight="250.0" prefWidth="550.0" style="-fx-title-fill: white; -fx-legend-fill: white;" title="Tendencia de Ventas (Datos por cargar)">
+                                <xAxis>
+                                    <!-- Eje X - Etiquetas, Marcas y Título a BLANCO -->
+                                    <CategoryAxis label="Día" style="-fx-tick-label-fill: white; -fx-text-fill: white; -fx-label-fill: white;" fx:id="xAxisVentas" />
+                                </xAxis>
+                                <yAxis>
+                                    <!-- Eje Y - Etiquetas, Marcas y Título a BLANCO -->
+                                    <NumberAxis fx:id="yAxisVentas" label="Monto ($)" style="-fx-tick-label-fill: white; -fx-text-fill: white; -fx-label-fill: white;" />
+                                </yAxis>
+                            </LineChart>
+                        </VBox>
+
+                        <!-- Panel de Métricas Clave (Ejemplo de otra estadística) - FONDO GRIS MEDIO/OSCURO (#8A8A8A) SIN BORDE NEGRO -->
+                        <VBox alignment="CENTER" prefHeight="350.0" prefWidth="350.0" spacing="15.0" style="-fx-background-color: #8A8A8A; -fx-background-radius: 8;" HBox.hgrow="ALWAYS">
+                            <padding>
+                                <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
+                            </padding>
+                            <!-- Título del Panel (A blanco) -->
+                            <Label style="-fx-text-fill: white;" styleClass="subtitulo" text="Métricas Clave del Período" />
+
+                            <VBox alignment="CENTER_LEFT" spacing="10.0">
+                                <!-- Etiqueta Métrica (A blanco) -->
+                                <Label style="-fx-text-fill: white;" styleClass="metric-label" text="Total de Ventas:">
+                                    <font><Font size="16.0" /></font>
+                                </Label>
+                                <!-- Valor Métrica (A blanco) -->
+                                <Label style="-fx-text-fill: white;" styleClass="metric-value" text="\$ 15,850.00">
+                                    <font><Font name="System Bold" size="28.0" /></font>
+                                </Label>
+                            </VBox>
+                            <VBox alignment="CENTER_LEFT" spacing="10.0">
+                                <!-- Etiqueta Métrica (A blanco) -->
+                                <Label style="-fx-text-fill: white;" styleClass="metric-label" text="Facturas Emitidas:">
+                                    <font><Font size="16.0" /></font>
+                                </Label>
+                                <!-- Valor Métrica (A blanco) -->
+                                <Label style="-fx-text-fill: white;" styleClass="metric-value" text="124">
+                                    <font><Font name="System Bold" size="28.0" /></font>
+                                </Label>
+                            </VBox>
+                            <VBox VBox.vgrow="ALWAYS" />
+                        </VBox>
+                    </HBox>
+
+                    <!-- Fila Inferior: PieChart y BarChart lado a lado (Mantiene el tamaño) -->
+                    <HBox alignment="TOP_LEFT" spacing="15.0" VBox.vgrow="ALWAYS"> <!-- Esto permite que los gráficos de abajo crezcan también, rellenando el espacio -->
+                        <!-- PieChart para Distribución - FONDO GRIS MEDIO/OSCURO (#8A8A8A) SIN BORDE NEGRO -->
+                        <VBox alignment="CENTER" prefHeight="280.0" prefWidth="470.0" style="-fx-background-color: #8A8A8A; -fx-background-radius: 8;" HBox.hgrow="ALWAYS">
+                            <children>
+                                <!-- Título del Gráfico (A blanco) -->
+                                <Label style="-fx-text-fill: white;" styleClass="subtitulo" text="Distribución de Ingresos" />
+                                <!-- Estilos para Título y Leyenda del PieChart a BLANCO -->
+                                <PieChart fx:id="pieChartVentas" prefHeight="213.0" prefWidth="485.0" style="-fx-title-fill: white; -fx-legend-fill: white;" title="Distribución (Datos por cargar)" />
+                            </children>
+                        </VBox>
+
+                        <!-- BarChart para Comparación de Categorías - FONDO GRIS MEDIO/OSCURO (#8A8A8A) SIN BORDE NEGRO -->
+                        <VBox alignment="CENTER" prefHeight="280.0" prefWidth="470.0" style="-fx-background-color: #8A8A8A; -fx-background-radius: 8;" HBox.hgrow="ALWAYS">
+                            <children>
+                                <!-- Título del Gráfico (A blanco) -->
+                                <Label style="-fx-text-fill: white;" styleClass="subtitulo" text="Ventas por Categoría de Producto" />
+                                <!-- Estilos para Título y Leyenda del BarChart a BLANCO -->
+                                <BarChart fx:id="barChartCategorias" prefHeight="210.0" prefWidth="437.0" style="-fx-title-fill: white; -fx-legend-fill: white;" title="Volumen por Categoría">
+                                    <xAxis>
+                                        <!-- Eje X - Etiquetas, Marcas y Título a BLANCO -->
+                                        <CategoryAxis label="Categoría" side="BOTTOM" style="-fx-tick-label-fill: white; -fx-text-fill: white; -fx-label-fill: white;" fx:id="xAxisCategorias" />
+                                    </xAxis>
+                                    <yAxis>
+                                        <!-- Eje Y - Etiquetas, Marcas y Título a BLANCO -->
+                                        <NumberAxis fx:id="yAxisUnidades" label="Unidades Vendidas" side="LEFT" style="-fx-tick-label-fill: white; -fx-text-fill: white; -fx-label-fill: white;" />
+                                    </yAxis>
+                                </BarChart>
+                            </children>
+                        </VBox>
+                    </HBox>
+                </children>
+            </VBox>
+        </HBox>
+    </children>
 </VBox>

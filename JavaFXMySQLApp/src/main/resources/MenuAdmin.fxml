@@ -24,7 +24,6 @@
                 <Font name="System Bold" size="24.0" />
             </font>
         </Label>
-        <Button fx:id="Butonn" onAction="#handleVerHistorialDesdeAdmin" prefHeight="34.0" prefWidth="234.0" text="Historial de Pedidos" />
         <Button fx:id="Buton" onAction="#handleInformesMenu" prefHeight="34.0" prefWidth="234.0" text="Informes" />
         <Button fx:id="Button" onAction="#handleGestionDeUsuariosButton" prefHeight="34.0" prefWidth="234.0" text="Gestión de Usuarios" />
         <Button fx:id="Buttton" onAction="#handleHistorialActividadButton" prefHeight="34.0" prefWidth="234.0" text="Historial de Actividad" />
