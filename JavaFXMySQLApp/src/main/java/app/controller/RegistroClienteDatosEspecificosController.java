@@ -86,6 +86,8 @@ public class RegistroClienteDatosEspecificosController {
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
             conn.setAutoCommit(false);
 
+            personaData.setIdTipoPersona(1);
+
             int idPersona = personaDAO.insertarPersona(personaData, conn);
 
             if (idPersona != -1) {

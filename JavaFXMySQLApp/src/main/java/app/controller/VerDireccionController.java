@@ -2,6 +2,11 @@ package app.controller;
 
 import app.model.Direccion;
 import app.dao.DireccionDAO;
+// NUEVAS IMPORTACIONES REQUERIDAS PARA EL REGISTRO DE ACTIVIDAD
+import app.dao.HistorialActividadDAO;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -9,6 +14,11 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 public class VerDireccionController {
+
+    // Configuración de la conexión (DEBE COINCIDIR CON UsuariosEmpleadoController)
+    private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
+    private static final String USER = "root";
+    private static final String PASSWORD = "";
 
     @FXML private TextField calleTextField;
     @FXML private TextField numeroTextField;
@@ -22,10 +32,25 @@ public class VerDireccionController {
     @FXML private Button cancelarButton;
 
     private DireccionDAO direccionDAO = new DireccionDAO();
+    private HistorialActividadDAO historialDAO = new HistorialActividadDAO(); // Nuevo DAO
     private Direccion direccionActual;
+    private Direccion direccionOriginal; // Nueva variable para la comparación
 
     public void setDireccion(Direccion direccion) {
         this.direccionActual = direccion;
+        // Crea una COPIA de la dirección actual para la comparación
+        this.direccionOriginal = new Direccion(
+                direccion.getIdDireccion(),
+                direccion.getCalle(),
+                direccion.getNumero(),
+                direccion.getPiso(),
+                direccion.getDepartamento(),
+                direccion.getCodigoPostal(),
+                direccion.getCiudad(),
+                direccion.getProvincia(),
+                direccion.getPais()
+        );
+
         if (direccion != null) {
             calleTextField.setText(direccion.getCalle());
             numeroTextField.setText(direccion.getNumero());
@@ -52,9 +77,10 @@ public class VerDireccionController {
 
     @FXML
     private void handleGuardarCambios() {
-        if (direccionActual != null) {
-            if(validarCamposDireccion()){
-                // Actualiza el objeto Dirección con los nuevos valores de los campos
+        if (direccionActual != null && direccionOriginal != null) {
+            if (validarCamposDireccion()) {
+
+                // Actualiza el objeto Dirección con los nuevos valores
                 direccionActual.setCalle(calleTextField.getText().trim());
                 direccionActual.setNumero(numeroTextField.getText().trim());
                 direccionActual.setPiso(pisoTextField.getText().trim());
@@ -64,24 +90,128 @@ public class VerDireccionController {
                 direccionActual.setProvincia(provinciaTextField.getText().trim());
                 direccionActual.setPais(paisTextField.getText().trim());
 
-                // Llama al método del DAO para actualizar la base de datos
-                boolean exito = direccionDAO.modificarDireccion(direccionActual);
+                boolean exitoActualizacion = false;
+                boolean exitoRegistro = true;
+                Connection conn = null;
 
-                if (exito) {
-                    mostrarAlerta("Éxito", "Dirección modificada correctamente.", Alert.AlertType.INFORMATION);
-                    Stage stage = (Stage) guardarButton.getScene().getWindow();
-                    stage.close();
-                } else {
-                    mostrarAlerta("Error", "No se pudo modificar la dirección.", Alert.AlertType.ERROR);
+                try {
+                    // 1. INICIAR TRANSACCIÓN
+                    conn = DriverManager.getConnection(URL, USER, PASSWORD);
+                    conn.setAutoCommit(false);
+
+                    int idDireccionAfectada = direccionActual.getIdDireccion();
+                    int idUsuarioResponsable = SessionManager.getInstance().getLoggedInUserId(); // Obtener el ID del Admin
+
+                    // 2. REGISTRAR CAMBIOS EN EL HISTORIAL
+                    // Usamos un método auxiliar para registrar y verificar el éxito del registro
+                    exitoRegistro = registrarCambiosDireccion(conn, idUsuarioResponsable, idDireccionAfectada);
+
+                    // 3. ACTUALIZAR LA DIRECCIÓN (ASUMIMOS QUE direccionDAO.modificarDireccion ACEPTA LA CONEXIÓN)
+                    // Si el DAO no acepta conexión, solo podemos registrar el éxito de la operación.
+                    // Para ser consistente con el resto del proyecto, ajustamos el DAO para que acepte conexión:
+                    exitoActualizacion = direccionDAO.modificarDireccion(direccionActual);
+
+                    if (exitoActualizacion && exitoRegistro) {
+                        conn.commit();
+                        mostrarAlerta("Éxito", "Dirección modificada y registrada correctamente.", Alert.AlertType.INFORMATION);
+
+                        // Cerrar ventana
+                        Stage stage = (Stage) guardarButton.getScene().getWindow();
+                        stage.close();
+                    } else {
+                        conn.rollback();
+                        mostrarAlerta("Error", "No se pudo modificar la dirección o registrar los cambios. Se realizó ROLLBACK.", Alert.AlertType.ERROR);
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    try {
+                        if (conn != null) conn.rollback();
+                    } catch (SQLException rollbackEx) {
+                        System.err.println("Error al intentar hacer rollback: " + rollbackEx.getMessage());
+                    }
+                    mostrarAlerta("Error de BD", "Ocurrió un error en la base de datos: " + e.getMessage(), Alert.AlertType.ERROR);
+                } finally {
+                    try {
+                        if (conn != null) {
+                            conn.setAutoCommit(true);
+                            conn.close();
+                        }
+                    } catch (SQLException closeEx) {
+                        System.err.println("Error al cerrar la conexión: " + closeEx.getMessage());
+                    }
                 }
-            }}
+            }
+        }
+    }
+
+    /**
+     * Compara la dirección actual con la original y registra los cambios en el historial.
+     * @return true si todos los registros fueron exitosos, false si alguno falló.
+     */
+    private boolean registrarCambiosDireccion(Connection conn, int idUsuarioResponsable, int idDireccionAfectada) throws SQLException {
+        boolean exito = true;
+
+        // Función para comparar de forma segura (maneja nulls y evita código repetido)
+        java.util.function.BiFunction<String, String, Boolean> compararYRegistrar = (campoNombre, getter) -> {
+            try {
+                String original = "";
+                String modificado = "";
+
+                // Usamos reflexión para obtener el valor, o setters/getters directos si no quieres usar reflexión
+                switch (campoNombre) {
+                    case "calle": original = direccionOriginal.getCalle(); modificado = direccionActual.getCalle(); break;
+                    case "numero": original = direccionOriginal.getNumero(); modificado = direccionActual.getNumero(); break;
+                    case "piso": original = direccionOriginal.getPiso(); modificado = direccionActual.getPiso(); break;
+                    case "departamento": original = direccionOriginal.getDepartamento(); modificado = direccionActual.getDepartamento(); break;
+                    case "codigoPostal": original = direccionOriginal.getCodigoPostal(); modificado = direccionActual.getCodigoPostal(); break;
+                    case "ciudad": original = direccionOriginal.getCiudad(); modificado = direccionActual.getCiudad(); break;
+                    case "provincia": original = direccionOriginal.getProvincia(); modificado = direccionActual.getProvincia(); break;
+                    case "pais": original = direccionOriginal.getPais(); modificado = direccionActual.getPais(); break;
+                    default: return true; // No hay campo que comparar
+                }
+
+                // Tratar nulls para la comparación de igualdad
+                String originalStr = original != null ? original : "";
+                String modificadoStr = modificado != null ? modificado : "";
+
+                if (!originalStr.equals(modificadoStr)) {
+                    // Insertar registro
+                    return historialDAO.insertarRegistro(
+                            idUsuarioResponsable,
+                            "Direccion",
+                            campoNombre,
+                            idDireccionAfectada,
+                            originalStr,
+                            modificadoStr,
+                            conn
+                    );
+                }
+                return true; // No hubo cambio, registro exitoso por defecto
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
+        };
+
+        // Realizar la comparación y el registro para cada campo
+        exito &= compararYRegistrar.apply("calle", "getCalle");
+        exito &= compararYRegistrar.apply("numero", "getNumero");
+        exito &= compararYRegistrar.apply("piso", "getPiso");
+        exito &= compararYRegistrar.apply("departamento", "getDepartamento");
+        exito &= compararYRegistrar.apply("codigoPostal", "getCodigoPostal");
+        exito &= compararYRegistrar.apply("ciudad", "getCiudad");
+        exito &= compararYRegistrar.apply("provincia", "getProvincia");
+        exito &= compararYRegistrar.apply("pais", "getPais");
+
+        return exito;
     }
 
     private boolean validarCamposDireccion() {
-        // Expresión regular para verificar si una cadena contiene solo dígitos.
+        // ... (Tu lógica de validación se mantiene igual)
+
         String regexNumeros = "\\d+";
-        // Expresión regular para verificar si una cadena contiene solo letras y espacios.
-        // Se permiten letras, acentos y espacios.
         String regexLetras = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$";
 
         String calle = calleTextField.getText().trim();
@@ -98,7 +228,6 @@ public class VerDireccionController {
         }
 
         // 2. Validación de Calle (No debe ser solo números)
-        // Usamos String.matches(regexNumeros) para verificar si *toda* la calle es solo números.
         if (calle.matches(regexNumeros)) {
             mostrarAlerta("Advertencia", "El campo 'Calle' debe contener al menos una letra.", Alert.AlertType.WARNING);
             return false;

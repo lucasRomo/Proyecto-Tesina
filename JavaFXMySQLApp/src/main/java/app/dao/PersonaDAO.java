@@ -34,7 +34,6 @@ public class PersonaDAO {
 
     // Método para insertar una persona en la base de datos
     public int insertarPersona(Persona persona, Connection conn) throws SQLException {
-
         // =========================================================================
         // LÓGICA AGREGADA: ASIGNACIÓN DE ROL DE ADMINISTRADOR AL PRIMER USUARIO
         // =========================================================================
