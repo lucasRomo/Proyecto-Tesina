@@ -351,22 +351,37 @@ public class UsuariosEmpleadoController implements Initializable {
             if (result.isPresent()) {
                 String inputPassword = result.get().trim();
                 String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword().trim();
+                int loggedInUserId = SessionManager.getInstance().getLoggedInUserId(); // Obtener el ID del usuario logueado
+
                 if (inputPassword.equals(loggedInUserPassword)) {
+                    // Variables para la verificación de cambio de credenciales
+                    String originalUsuarioNombre = null;
+                    String originalContrasena = null;
+                    boolean esUsuarioLogueado = selectedUsuario.getIdUsuario() == loggedInUserId;
+
                     try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
                         conn.setAutoCommit(false);
 
-                        int idUsuarioResponsable = SessionManager.getInstance().getLoggedInUserId();
+                        int idUsuarioResponsable = loggedInUserId;
+
                         // Obtener usuario original con datos de Persona y Empleado
+                        // ¡IMPORTANTE! Asumo que estos métodos ahora funcionan con 2 argumentos (ID, Connection)
                         Usuario originalUser = usuarioDAO.obtenerUsuarioPorId(selectedUsuario.getIdUsuario(), conn);
                         if (originalUser == null) {
                             mostrarAlerta("Error", "Usuario no encontrado.", Alert.AlertType.ERROR);
+                            conn.rollback();
                             return;
                         }
+
+                        // Guardar valores originales antes de la modificación para la validación de redirección
+                        originalUsuarioNombre = originalUser.getUsuario();
+                        originalContrasena = originalUser.getContrasenia();
 
                         // Obtener datos originales de Persona
                         Persona originalPersona = personaDAO.obtenerPersonaPorId(originalUser.getIdPersona(), conn);
                         if (originalPersona == null) {
                             mostrarAlerta("Error", "Datos de Persona no encontrados.", Alert.AlertType.ERROR);
+                            conn.rollback();
                             return;
                         }
 
@@ -374,6 +389,7 @@ public class UsuariosEmpleadoController implements Initializable {
                         Empleado originalEmpleado = empleadoDAO.obtenerEmpleadoPorId(originalUser.getIdPersona(), conn);
                         if (originalEmpleado == null) {
                             mostrarAlerta("Error", "Datos de Empleado no encontrados.", Alert.AlertType.ERROR);
+                            conn.rollback();
                             return;
                         }
 
@@ -383,9 +399,23 @@ public class UsuariosEmpleadoController implements Initializable {
                         if (!selectedUsuario.getUsuario().equals(originalUser.getUsuario())) {
                             exito = exito && historialDAO.insertarRegistro(idUsuarioResponsable, "Usuario", "nombre_usuario", selectedUsuario.getIdUsuario(), originalUser.getUsuario(), selectedUsuario.getUsuario(), conn);
                         }
+
+                        // *** AJUSTE AQUÍ: MOSTRAR LA CONTRASEÑA REAL EN EL HISTORIAL ***
                         if (!selectedUsuario.getContrasena().equals(originalUser.getContrasenia())) {
-                            exito = exito && historialDAO.insertarRegistro(idUsuarioResponsable, "Usuario", "contrasena", selectedUsuario.getIdUsuario(), originalUser.getContrasenia(), selectedUsuario.getContrasena(), conn);
+                            String nuevoValorContrasena = selectedUsuario.getContrasena();
+                            String valorPrevioContrasena = originalUser.getContrasenia();
+
+                            exito = exito && historialDAO.insertarRegistro(
+                                    idUsuarioResponsable,
+                                    "Usuario",
+                                    "contrasena",
+                                    selectedUsuario.getIdUsuario(),
+                                    valorPrevioContrasena, // <-- Dato Previo (Contraseña Anterior)
+                                    nuevoValorContrasena, // <-- Dato Modificado (Contraseña Nueva)
+                                    conn
+                            );
                         }
+                        // *** FIN DEL AJUSTE ***
 
                         // Comparar y registrar cambios en Persona
                         if (!selectedUsuario.getNombre().equals(originalPersona.getNombre())) {
@@ -428,16 +458,42 @@ public class UsuariosEmpleadoController implements Initializable {
                         }
 
                         if (exito) {
-                            conn.commit();
-                            mostrarAlerta("Éxito", "Usuario modificado exitosamente.", Alert.AlertType.INFORMATION);
-                            usuariosEditableView.refresh();
+                            conn.commit(); // Éxito en BD y registro de actividad
+
+                            // *** LÓGICA DE VALIDACIÓN Y REDIRECCIÓN ***
+                            boolean cambioContrasena = !selectedUsuario.getContrasena().equals(originalContrasena);
+                            boolean cambioNombreUsuario = !selectedUsuario.getUsuario().equals(originalUsuarioNombre);
+
+                            // Si es el mismo usuario y modificó sus credenciales
+                            if (esUsuarioLogueado && (cambioContrasena || cambioNombreUsuario)) {
+                                SessionManager.getInstance().clearSession(); // Cierra la sesión
+
+                                // Usar Platform.runLater para la interfaz de usuario
+                                Platform.runLater(() -> {
+                                    Alert alertaRedirect = new Alert(Alert.AlertType.INFORMATION);
+                                    alertaRedirect.setTitle("Credenciales Modificadas");
+                                    alertaRedirect.setHeaderText(null);
+                                    alertaRedirect.setContentText("Su nombre de usuario y/o contraseña ha sido modificado. Será redirigido al menú de inicio para volver a iniciar sesión.");
+                                    alertaRedirect.showAndWait();
+                                    redireccionarAInicioSesion(event);
+                                });
+                            } else {
+                                // Si no es el usuario logueado o solo se cambiaron datos no críticos
+                                mostrarAlerta("Éxito", "Usuario modificado exitosamente. Los cambios han sido registrados.", Alert.AlertType.INFORMATION);
+                                usuariosEditableView.refresh();
+                                cargarDatosyConfigurarFiltros(); // Recarga para reflejar cambios si aplica
+                            }
+
                         } else {
                             conn.rollback();
-                            mostrarAlerta("Error", "No se pudo modificar el usuario. Se realizó ROLLBACK.", Alert.AlertType.ERROR);
+                            mostrarAlerta("Error", "No se pudo registrar el historial de la modificación. Se realizó ROLLBACK.", Alert.AlertType.ERROR);
                         }
                     } catch (SQLException e) {
                         e.printStackTrace();
                         mostrarAlerta("Error", "Ocurrió un error en la base de datos: " + e.getMessage(), Alert.AlertType.ERROR);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        mostrarAlerta("Error", "Ocurrió un error inesperado: " + e.getMessage(), Alert.AlertType.ERROR);
                     }
                 } else {
                     mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
