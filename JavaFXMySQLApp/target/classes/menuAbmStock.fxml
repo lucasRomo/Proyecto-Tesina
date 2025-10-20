@@ -32,7 +32,7 @@
 
         <VBox alignment="CENTER" spacing="10.0" prefWidth="250.0" maxWidth="250.0">
             <Button styleClass="button" onAction="#handleProveedor" prefWidth="200.0" text="Proveedores" />
-            <Button styleClass="button" onAction="#handleStock" prefWidth="200.0" text="Stock (Vista General)" />
+            <Button styleClass="button" onAction="#handleStock" prefWidth="200.0" text="Stock de insumos" />
             <!-- ESTE ES EL NUEVO BOTÓN PARA CREAR PRODUCTOS -->
             <Button styleClass="button" onAction="#handleCrearProducto" prefWidth="200.0" text="Productos" />
         </VBox>

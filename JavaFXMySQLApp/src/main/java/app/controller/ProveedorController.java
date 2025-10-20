@@ -30,6 +30,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Optional;
 
 public class ProveedorController {
 
@@ -67,32 +68,45 @@ public class ProveedorController {
         proveedoresTableView.setEditable(true);
         idProveedorColumn.setCellValueFactory(new PropertyValueFactory<>("idProveedor"));
 
-        // Celdas editables con validación
+        // =========================================================================================
+        // === ONEDITCOMMIT: SOLO VALIDACIÓN Y ACTUALIZACIÓN DEL MODELO ============================
+        // =========================================================================================
+
+        // --- Columna Nombre ---
         nombreColumn.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         nombreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         nombreColumn.setOnEditCommit(event -> {
-            if (validarSoloLetras(event.getNewValue())) {
-                event.getRowValue().setNombre(event.getNewValue());
+            String nuevoNombre = event.getNewValue().trim();
+            if (nuevoNombre.isEmpty()) {
+                mostrarAlerta("Advertencia", "El nombre no puede quedar vacío.", Alert.AlertType.WARNING);
+                proveedoresTableView.refresh(); return;
+            }
+            if (validarSoloLetras(nuevoNombre)) {
+                event.getRowValue().setNombre(nuevoNombre); // Actualiza el modelo
             } else {
                 mostrarAlerta("Advertencia", "El nombre solo puede contener letras.", Alert.AlertType.WARNING);
                 proveedoresTableView.refresh();
             }
         });
 
+        // --- Columna Contacto ---
         contactoColumn.setCellValueFactory(new PropertyValueFactory<>("contacto"));
         contactoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         contactoColumn.setOnEditCommit(event -> {
-            if (validarSoloLetras(event.getNewValue())) {
-                event.getRowValue().setContacto(event.getNewValue());
+            String nuevoContacto = event.getNewValue().trim();
+            if (nuevoContacto.isEmpty()) {
+                mostrarAlerta("Advertencia", "El contacto no puede quedar vacío.", Alert.AlertType.WARNING);
+                proveedoresTableView.refresh(); return;
+            }
+            if (validarSoloLetras(nuevoContacto)) {
+                event.getRowValue().setContacto(nuevoContacto); // Actualiza el modelo
             } else {
                 mostrarAlerta("Advertencia", "El contacto solo puede contener letras.", Alert.AlertType.WARNING);
                 proveedoresTableView.refresh();
             }
         });
 
-        // =========================================================================================
-        // === VALIDACIÓN DE EMAIL (MANTENIDA) =====================================================
-        // =========================================================================================
+        // --- Columna Mail ---
         mailColumn.setCellValueFactory(new PropertyValueFactory<>("mail"));
         mailColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         mailColumn.setOnEditCommit(event -> {
@@ -104,15 +118,13 @@ public class ProveedorController {
                 proveedoresTableView.refresh();
             }
         });
-        // =========================================================================================
 
         // =========================================================================================
-        // === CORRECCIÓN DEL TIPO DE PROVEEDOR (REMOVIDO setOnAction) =============================
+        // === COLUMNA TIPO PROVEEDOR (ChoiceBox) - CORREGIDO PARA PERSISTENCIA EN EL MODELO =======
         // =========================================================================================
         tipoProveedorColumn.setCellValueFactory(cellData -> cellData.getValue().descripcionTipoProveedorProperty());
         tipoProveedorColumn.setCellFactory(column -> new TableCell<Proveedor, String>() {
             private final ChoiceBox<TipoProveedor> choiceBox = new ChoiceBox<>();
-            private boolean isEditing = false;
 
             {
                 try {
@@ -135,51 +147,42 @@ public class ProveedorController {
                     e.printStackTrace();
                     mostrarAlerta("Error de Carga", "No se pudieron cargar los tipos de proveedor para la edición.", Alert.AlertType.ERROR);
                 }
-
-                // *** ¡CORRECCIÓN! Se remueve choiceBox.setOnAction para que el ChoiceBox se despliegue ***
-                // El commitEdit ocurrirá automáticamente cuando el usuario seleccione un valor y pierda el foco.
             }
 
             @Override
             public void startEdit() {
-                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable()) {
-                    return;
-                }
+                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable() || isEmpty()) return;
                 super.startEdit();
-                isEditing = true;
 
                 Proveedor proveedor = getTableView().getItems().get(getIndex());
+                // Selecciona el tipo actual
                 tiposProveedor.stream()
                         .filter(t -> t.getId() == proveedor.getIdTipoProveedor())
                         .findFirst()
                         .ifPresent(choiceBox.getSelectionModel()::select);
 
+                // *** CAMBIO CRUCIAL: El commit se hace al seleccionar un valor ***
+                choiceBox.setOnAction(event -> {
+                    TipoProveedor selectedType = choiceBox.getSelectionModel().getSelectedItem();
+                    if (selectedType != null) {
+                        // Importante: El commit debe devolver el String de la columna (la descripción)
+                        commitEdit(selectedType.getDescripcion());
+                    } else {
+                        cancelEdit();
+                    }
+                });
+
                 setGraphic(choiceBox);
                 setText(null);
-                choiceBox.show(); // Ayuda a que se despliegue inmediatamente
+                choiceBox.show();
             }
 
             @Override
             public void cancelEdit() {
                 super.cancelEdit();
-                isEditing = false;
                 setGraphic(null);
                 setText(getItem());
             }
-
-            @Override
-            public void commitEdit(String newValue) {
-                // Si el valor no ha cambiado, no forzamos el commit para evitar el onEditCommit
-                if (newValue != null && !newValue.equals(getItem())) {
-                    super.commitEdit(newValue);
-                } else if (newValue != null && newValue.equals(getItem())) {
-                    // Si el usuario seleccionó el mismo valor, solo cancelamos la edición para cerrar el editor.
-                    cancelEdit();
-                } else {
-                    super.commitEdit(newValue);
-                }
-            }
-
 
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -199,41 +202,32 @@ public class ProveedorController {
             }
         });
 
-        // La lógica de guardado (onEditCommit) sigue igual, ya que solo se ejecuta cuando la edición finaliza.
+        // La lógica de onEditCommit solo actualiza el modelo
         tipoProveedorColumn.setOnEditCommit(event -> {
             Proveedor proveedor = event.getRowValue();
             String nuevaDescripcion = event.getNewValue();
 
             try {
-                TipoProveedor nuevoTipo = tipoProveedorDAO.getTipoProveedorByDescription(nuevaDescripcion);
-                if (nuevoTipo != null) {
+                // Buscamos el objeto TipoProveedor para obtener el ID
+                Optional<TipoProveedor> nuevoTipoOpt = tiposProveedor.stream()
+                        .filter(t -> t.getDescripcion().equals(nuevaDescripcion))
+                        .findFirst();
 
-                    // Solo modificamos si el ID es diferente
-                    if(proveedor.getIdTipoProveedor() != nuevoTipo.getId()){
-                        proveedor.setIdTipoProveedor(nuevoTipo.getId());
-                        proveedor.setDescripcionTipoProveedor(nuevoTipo.getDescripcion());
-
-                        boolean exito = proveedorDAO.modificarProveedor(proveedor);
-
-                        if (exito) {
-                            mostrarAlerta("Éxito", "Tipo de proveedor actualizado.", Alert.AlertType.INFORMATION);
-                        } else {
-                            mostrarAlerta("Error", "No se pudo actualizar el tipo de proveedor en la base de datos.", Alert.AlertType.ERROR);
-                            // Revertir el modelo al valor original si falla la BD
-                            proveedor.setDescripcionTipoProveedor(event.getOldValue());
-                        }
-                    } else {
-                        // El valor es el mismo, no hacemos nada ni alertamos
-                    }
+                if (nuevoTipoOpt.isPresent()) {
+                    TipoProveedor nuevoTipo = nuevoTipoOpt.get();
+                    // Actualiza el modelo con el nuevo ID y Descripción
+                    proveedor.setIdTipoProveedor(nuevoTipo.getId());
+                    proveedor.setDescripcionTipoProveedor(nuevoTipo.getDescripcion());
+                    // NO guardamos en DB aquí
                 } else {
                     mostrarAlerta("Error", "Tipo de proveedor no encontrado.", Alert.AlertType.ERROR);
-                    // Revertir el modelo al valor original si es inválido
-                    proveedor.setDescripcionTipoProveedor(event.getOldValue());
+                    // Revertir en el modelo si es inválido (usa el valor que estaba en la DB antes de la edición)
+                    // Para revertir en el modelo, necesitamos recargar el valor original de la lista masterData,
+                    // pero para simplificar la lógica de la tabla, solo forzamos el refresh.
                 }
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                mostrarAlerta("Error de BD", "Ocurrió un error al actualizar el tipo de proveedor.", Alert.AlertType.ERROR);
-                proveedor.setDescripcionTipoProveedor(event.getOldValue());
+                mostrarAlerta("Error", "Ocurrió un error al procesar el tipo de proveedor.", Alert.AlertType.ERROR);
             } finally {
                 proveedoresTableView.refresh();
             }
@@ -241,7 +235,7 @@ public class ProveedorController {
         // =========================================================================================
 
 
-        // Configuración de la celda de estado con estilo (MANTENIDO)
+        // --- Columna Estado (Mantiene guardado inmediato) ---
         estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
         estadoColumn.setCellFactory(column -> new TableCell<Proveedor, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
@@ -254,7 +248,7 @@ public class ProveedorController {
                 super.startEdit();
                 choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
                 choiceBox.getSelectionModel().select(getItem());
-                // En el ChoiceBox de Estado, SÍ queremos el setOnAction, ya que no tiene un conversor complejo
+                // Aquí el setOnAction es correcto porque queremos guardar inmediatamente
                 choiceBox.setOnAction(event -> commitEdit(choiceBox.getSelectionModel().getSelectedItem()));
                 setGraphic(choiceBox);
                 setText(null);
@@ -305,6 +299,7 @@ public class ProveedorController {
         estadoColumn.setOnEditCommit(event -> {
             Proveedor proveedor = event.getRowValue();
             String nuevoEstado = event.getNewValue();
+            String estadoOriginal = event.getOldValue();
 
             boolean exito = proveedorDAO.modificarEstadoProveedor(proveedor.getIdProveedor(), nuevoEstado);
 
@@ -313,7 +308,7 @@ public class ProveedorController {
                 mostrarAlerta("Éxito", "Estado del proveedor actualizado.", Alert.AlertType.INFORMATION);
             } else {
                 mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
-                proveedor.setEstado(event.getOldValue());
+                proveedor.setEstado(estadoOriginal);
             }
             proveedoresTableView.refresh();
         });
@@ -337,6 +332,7 @@ public class ProveedorController {
             }
         });
 
+        // --- Configuración de filtros ---
         estadoChoiceBox.setItems(FXCollections.observableArrayList("Todos", "Activo", "Desactivado"));
         estadoChoiceBox.getSelectionModel().select("Todos");
 
@@ -354,6 +350,57 @@ public class ProveedorController {
 
         cargarProveedoresYConfigurarFiltros();
     }
+
+    // =========================================================================================
+    // === MÉTODO PARA GUARDAR LOS CAMBIOS EN LA BASE DE DATOS (Botón) =========================
+    // =========================================================================================
+
+    @FXML
+    public void handleModificarProveedorButton(ActionEvent event) {
+        Proveedor selectedProveedor = proveedoresTableView.getSelectionModel().getSelectedItem();
+        if (selectedProveedor != null) {
+
+            // Validaciones de Modelo antes de guardar
+            String emailEnModelo = selectedProveedor.getMail();
+
+            // 1. Validar campos obligatorios
+            if (selectedProveedor.getNombre().isEmpty() || selectedProveedor.getContacto().isEmpty() || selectedProveedor.getMail().isEmpty()) {
+                mostrarAlerta("Error de Validación", "Los campos Nombre, Contacto y Mail no pueden estar vacíos.", Alert.AlertType.ERROR);
+                proveedoresTableView.refresh();
+                return;
+            }
+
+            // 2. Validar formato de email
+            if (!validarFormatoEmail(emailEnModelo)) {
+                mostrarAlerta("Error de Validación", "El formato del email ('" + emailEnModelo + "') es inválido.", Alert.AlertType.ERROR);
+                proveedoresTableView.refresh();
+                return;
+            }
+
+            // 3. Validar duplicidad de email (excluyendo al proveedor actual)
+            if (proveedorDAO.verificarSiMailExisteParaOtro(emailEnModelo, selectedProveedor.getIdProveedor())) {
+                mostrarAlerta("Error de Validación", "El email ingresado ya está registrado para otro proveedor.", Alert.AlertType.ERROR);
+                proveedoresTableView.refresh();
+                return;
+            }
+
+            // 4. GUARDAR EN DB: Solo aquí se llama a la modificación
+            boolean exito = proveedorDAO.modificarProveedor(selectedProveedor);
+
+            if (exito) {
+                mostrarAlerta("Éxito", "Proveedor modificado y guardado exitosamente en la base de datos.", Alert.AlertType.INFORMATION);
+            } else {
+                mostrarAlerta("Error", "No se pudo modificar el proveedor en la base de datos.", Alert.AlertType.ERROR);
+            }
+            proveedoresTableView.refresh();
+        } else {
+            mostrarAlerta("Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.", Alert.AlertType.WARNING);
+        }
+    }
+
+    // =========================================================================================
+    // === MÉTODOS DE UTILIDAD Y LÓGICA DE NAVEGACIÓN ==========================================
+    // =========================================================================================
 
     private void mostrarDireccionProveedor(int idDireccion) {
         Direccion direccion = direccionDAO.obtenerPorId(idDireccion);
@@ -418,78 +465,34 @@ public class ProveedorController {
     @FXML
     public void handleRegistrarProveedorButton(ActionEvent event) {
         try {
-            // 1. Cargar el FXML de registro
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/registroProveedor.fxml"));
             Parent root = loader.load();
 
-            // 2. Configurar el controlador y el callback
             RegistroProveedorController registroController = loader.getController();
             registroController.setProveedorController(this);
 
-            // 3. Crear el nuevo Stage (ventana) y la Scene
             Stage newStage = new Stage();
             Scene newScene = new Scene(root);
             newStage.setScene(newScene);
 
-            // 4. Obtener las dimensiones de la pantalla (Screen)
             Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
             double screenHeight = screenBounds.getHeight();
 
-            // 5. Aplicar el dimensionamiento solicitado:
-            // A. Establecer el ALTO al 100% de la pantalla
             newStage.setHeight(screenHeight);
-
-            // B. Adaptar el ANCHO al contenido del FXML
-            // sizeToScene calcula el ancho mínimo requerido por el layout del FXML.
             newStage.sizeToScene();
 
-            // 6. Configurar el modo (modal) y mostrar
             newStage.setTitle("Registrar Nuevo Proveedor");
             newStage.initModality(Modality.APPLICATION_MODAL);
             newStage.centerOnScreen();
 
             newStage.setResizable(false);
-            // Mostrar la nueva ventana y esperar a que se cierre (modal)
             newStage.showAndWait();
 
-            // 7. Refrescar la tabla al volver
             refreshProveedoresTable();
 
         } catch (IOException e) {
             e.printStackTrace();
             mostrarAlerta("Error", "No se pudo cargar el formulario de registro de proveedor.", Alert.AlertType.ERROR);
-        }
-    }
-
-    @FXML
-    public void handleModificarProveedorButton(ActionEvent event) {
-        Proveedor selectedProveedor = proveedoresTableView.getSelectionModel().getSelectedItem();
-        if (selectedProveedor != null) {
-
-            String emailEnModelo = selectedProveedor.getMail();
-
-            // 1. Validar formato de email
-            if (!validarFormatoEmail(emailEnModelo)) {
-                mostrarAlerta("Error de Modificación", "El formato del email ('" + emailEnModelo + "') es inválido.", Alert.AlertType.ERROR);
-                proveedoresTableView.refresh();
-                return;
-            }
-
-            // 2. Validar duplicidad de email (excluyendo al proveedor actual)
-            if (proveedorDAO.verificarSiMailExisteParaOtro(emailEnModelo, selectedProveedor.getIdProveedor())) {
-                mostrarAlerta("Error de Modificación", "El email ingresado ya está registrado para otro proveedor.", Alert.AlertType.ERROR);
-                proveedoresTableView.refresh();
-                return;
-            }
-
-            boolean exito = proveedorDAO.modificarProveedor(selectedProveedor);
-            if (exito) {
-                mostrarAlerta("Éxito", "Proveedor modificado exitosamente.", Alert.AlertType.INFORMATION);
-            } else {
-                mostrarAlerta("Error", "No se pudo modificar el proveedor en la base de datos.", Alert.AlertType.ERROR);
-            }
-        } else {
-            mostrarAlerta("Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.", Alert.AlertType.WARNING);
         }
     }
 
@@ -537,7 +540,7 @@ public class ProveedorController {
             }
         }
 
-        proveedor.setMail(trimmedMail);
+        proveedor.setMail(trimmedMail); // Actualiza el modelo
         return true;
     }
 
@@ -560,11 +563,10 @@ public class ProveedorController {
     private void handleVolverButton(ActionEvent event) {
         try {
             // Se usa el método estático unificado para asegurar la navegación
-            // y que la nueva vista ocupe toda la ventana maximizada.
             MenuController.loadScene(
                     (Node) event.getSource(),
-                    "/menuAbmStock.fxml", // Ruta correcta para volver al menú ABM de Stock
-                    "Menú ABMs de Stock"   // Título de la ventana
+                    "/menuAbmStock.fxml",
+                    "Menú ABMs de Stock"
             );
         } catch (IOException e) {
             e.printStackTrace();
