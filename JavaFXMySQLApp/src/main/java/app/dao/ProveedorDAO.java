@@ -169,4 +169,28 @@ public class ProveedorDAO {
             return affectedRows > 0;
         }
     }
+
+    public Proveedor getProveedorById(int idProveedor, Connection conn) throws SQLException {
+        String sql = "SELECT * FROM Proveedor WHERE id_proveedor = ?";
+        // Usamos la conexión (conn) que se pasa como parámetro, NO creamos una nueva.
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idProveedor);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Proveedor(
+                            rs.getInt("id_proveedor"),
+                            rs.getString("nombre"),
+                            rs.getString("contacto"),
+                            rs.getString("mail"),
+                            rs.getString("estado"),
+                            rs.getInt("id_direccion"),
+                            rs.getInt("id_tipo_proveedor")
+                            // Nota: La descripción del tipo de proveedor no es necesaria para obtener el estado original,
+                            // ya que se buscará aparte para el historial si cambia el ID.
+                    );
+                }
+            }
+        }
+        return null;
+    }
 }

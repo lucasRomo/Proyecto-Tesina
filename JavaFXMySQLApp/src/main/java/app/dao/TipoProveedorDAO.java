@@ -73,4 +73,21 @@ public class TipoProveedorDAO {
         }
         return null; // Retorna null si no se encuentra el tipo
     }
+
+    public TipoProveedor getTipoProveedorById(int id) throws SQLException {
+        String sql = "SELECT * FROM TipoProveedor WHERE id_tipo_proveedor = ?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new TipoProveedor(
+                            rs.getInt("id_tipo_proveedor"),
+                            rs.getString("descripcion")
+                    );
+                }
+            }
+        }
+        return null; // Retorna null si no se encuentra el tipo
+    }
 }
