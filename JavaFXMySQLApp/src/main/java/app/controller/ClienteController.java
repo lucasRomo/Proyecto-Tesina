@@ -25,6 +25,8 @@ import javafx.stage.Stage;
 import javafx.geometry.Rectangle2D;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +59,9 @@ public class ClienteController {
     private ObservableList<Cliente> masterData = FXCollections.observableArrayList();
     private FilteredList<Cliente> filteredData;
 
+    // Set para rastrear todos los clientes que tienen cambios pendientes de guardar en DB
+    private Set<Cliente> clientesPendientesDeGuardar = new HashSet<>();
+
     // Opciones fijas para Razón Social
     private static final ObservableList<String> RAZON_SOCIAL_OPCIONES = FXCollections.observableArrayList(
             "Responsable Inscripto", "Monotributista", "Persona"
@@ -87,7 +92,7 @@ public class ClienteController {
         estadoColumn.setCellValueFactory(cellData -> cellData.getValue().estadoProperty());
 
         // =========================================================================================
-        // === NUEVAS CONFIGURACIONES DE EDICIÓN Y VALIDACIÓN PARA COLUMNAS PERSONALES =============
+        // === CONFIGURACIONES DE EDICIÓN Y VALIDACIÓN (SOLO ACTUALIZAN EL MODELO Y REGISTRAN CAMBIO)
         // =========================================================================================
 
         // --- Columna Nombre (Editable con validación) ---
@@ -109,10 +114,7 @@ public class ClienteController {
             }
 
             cliente.setNombre(nuevoNombre);
-            if (!clienteDAO.modificarCliente(cliente)) {
-                mostrarAlerta("Error", "No se pudo modificar el Nombre en la base de datos.", Alert.AlertType.ERROR);
-                cliente.setNombre(nombreOriginal); // Revertir en el modelo
-            }
+            clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
 
@@ -135,10 +137,7 @@ public class ClienteController {
             }
 
             cliente.setApellido(nuevoApellido);
-            if (!clienteDAO.modificarCliente(cliente)) {
-                mostrarAlerta("Error", "No se pudo modificar el Apellido en la base de datos.", Alert.AlertType.ERROR);
-                cliente.setApellido(apellidoOriginal); // Revertir en el modelo
-            }
+            clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
 
@@ -167,10 +166,7 @@ public class ClienteController {
             }
 
             cliente.setNumeroDocumento(nuevoNumDoc);
-            if (!clienteDAO.modificarCliente(cliente)) {
-                mostrarAlerta("Error", "No se pudo modificar el Nro. Documento en la base de datos.", Alert.AlertType.ERROR);
-                cliente.setNumeroDocumento(numDocOriginal); // Revertir en el modelo
-            }
+            clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
 
@@ -191,10 +187,7 @@ public class ClienteController {
             }
 
             cliente.setTelefono(nuevoTelefono.isEmpty() ? null : nuevoTelefono);
-            if (!clienteDAO.modificarCliente(cliente)) {
-                mostrarAlerta("Error", "No se pudo modificar el Teléfono en la base de datos.", Alert.AlertType.ERROR);
-                cliente.setTelefono(telefonoOriginal); // Revertir en el modelo
-            }
+            clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
 
@@ -206,20 +199,14 @@ public class ClienteController {
             String emailOriginal = event.getOldValue();
 
             if (validarYGuardarEmail(cliente, nuevoEmail, emailOriginal)) {
-                // Si la validación es exitosa, el email ya fue actualizado en el modelo (cliente.setEmail())
-                if (!clienteDAO.modificarCliente(cliente)) {
-                    mostrarAlerta("Error", "No se pudo modificar el Email en la base de datos.", Alert.AlertType.ERROR);
-                    cliente.setEmail(emailOriginal); // Revertir si falla el guardado en DB
-                } else {
-                    mostrarAlerta("Éxito", "Email modificado y guardado correctamente.", Alert.AlertType.INFORMATION);
-                }
+                clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO si la validación es exitosa
             }
             clientesTableView.refresh();
         });
 
 
         // =========================================================================================
-        // === COLUMNA RAZÓN SOCIAL (CHOICEBOX) ====================================================
+        // === COLUMNA RAZÓN SOCIAL (CHOICEBOX) - SOLO ACTUALIZA MODELO Y REGISTRA CAMBIO ===========
         // =========================================================================================
         razonSocialColumn.setCellFactory(column -> new TableCell<Cliente, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>(RAZON_SOCIAL_OPCIONES);
@@ -276,24 +263,14 @@ public class ClienteController {
 
             if (nuevaRazonSocial == null || nuevaRazonSocial.trim().isEmpty()) {
                 mostrarAlerta("Advertencia", "La razón social no puede quedar vacía.", Alert.AlertType.WARNING);
-                clientesTableView.refresh(); // Revierte el valor en la tabla
+                clientesTableView.refresh();
                 return;
             }
 
-            // 1. Actualiza el modelo
             cliente.setRazonSocial(nuevaRazonSocial);
+            clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
 
-            // 2. Intenta modificar el cliente completo en la DB
-            boolean exito = clienteDAO.modificarCliente(cliente);
-
-            if (exito) {
-                mostrarAlerta("Éxito", "Razón Social modificada y guardada correctamente.", Alert.AlertType.INFORMATION);
-            } else {
-                mostrarAlerta("Error", "No se pudo modificar la Razón Social en la base de datos.", Alert.AlertType.ERROR);
-                // Si falla en la DB, revierte el modelo para ser consistente con la DB original.
-                cliente.setRazonSocial(razonSocialOriginal);
-            }
-            clientesTableView.refresh(); // Asegura la visualización correcta (puede ser el valor original si falló)
+            clientesTableView.refresh();
         });
         // =========================================================================================
 
@@ -311,10 +288,7 @@ public class ClienteController {
             }
 
             cliente.setPersonaContacto(nuevaPersonaContacto);
-            if (!clienteDAO.modificarCliente(cliente)) {
-                mostrarAlerta("Error", "No se pudo modificar la Persona de Contacto en la base de datos.", Alert.AlertType.ERROR);
-                cliente.setPersonaContacto(personaContactoOriginal);
-            }
+            clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
 
@@ -332,15 +306,11 @@ public class ClienteController {
             }
 
             cliente.setCondicionesPago(nuevasCondiciones);
-            if (!clienteDAO.modificarCliente(cliente)) {
-                mostrarAlerta("Error", "No se pudo modificar las Condiciones de Pago en la base de datos.", Alert.AlertType.ERROR);
-                cliente.setCondicionesPago(condicionesOriginales);
-            }
+            clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
 
-        // --- Columna Estado (ChoiceBox, se mantiene igual) ---
-        // El código para estadoColumn es correcto y solo necesita el CellFactory y OnEditCommit.
+        // --- Columna Estado (ChoiceBox) - SOLO ACTUALIZA MODELO Y REGISTRA CAMBIO ---
         estadoColumn.setCellFactory(column -> new TableCell<Cliente, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
 
@@ -413,15 +383,7 @@ public class ClienteController {
             String estadoOriginal = event.getOldValue();
 
             cliente.setEstado(nuevoEstado);
-
-            boolean exito = clienteDAO.modificarEstadoCliente(cliente.getIdCliente(), nuevoEstado);
-
-            if (exito) {
-                mostrarAlerta("Éxito", "Estado del cliente actualizado.", Alert.AlertType.INFORMATION);
-            } else {
-                mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
-                cliente.setEstado(estadoOriginal); // Revertir en el modelo
-            }
+            clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
 
@@ -457,9 +419,6 @@ public class ClienteController {
     }
 
     // --- Métodos de Lógica (refreshClientesTable, handleRegistrarClienteButton, etc.) ---
-    // (Se mantienen iguales a tu código original)
-
-    // ... (rest of methods: mostrarDireccionCliente, refreshClientesTable, cargarClientesYConfigurarFiltros, updateFilteredList) ...
 
     private void mostrarDireccionCliente(int idDireccion) {
         Direccion direccion = direccionDAO.obtenerPorId(idDireccion);
@@ -585,38 +544,51 @@ public class ClienteController {
 
     @FXML
     public void handleModificarClienteButton(ActionEvent event) {
-        Cliente selectedCliente = clientesTableView.getSelectionModel().getSelectedItem();
-        if (selectedCliente != null) {
 
-            String emailEnModelo = selectedCliente.getEmail();
-
-            // *******************************************************************
-            // NOTA: Esta validación y guardado general es redundante
-            // porque cada OnEditCommit ya valida y guarda el cambio individualmente.
-            // La dejamos por si hay otros cambios en el modelo no vinculados a celdas editables.
-            // *******************************************************************
-
-            if (!validarFormatoEmail(emailEnModelo)) {
-                mostrarAlerta("Error de Modificación", "El formato del email ('" + emailEnModelo + "') es inválido. Por favor, edítelo en la tabla.", Alert.AlertType.ERROR);
-                clientesTableView.refresh();
-                return;
-            }
-
-            if (personaDAO.verificarSiMailExisteParaOtro(emailEnModelo, selectedCliente.getIdPersona())) {
-                mostrarAlerta("Error de Modificación", "El email ingresado ya está registrado para otro cliente.", Alert.AlertType.ERROR);
-                clientesTableView.refresh();
-                return;
-            }
-
-            boolean exito = clienteDAO.modificarCliente(selectedCliente);
-            if (exito) {
-                mostrarAlerta("Éxito", "Cliente modificado exitosamente (Guardado general).", Alert.AlertType.INFORMATION);
-            } else {
-                mostrarAlerta("Error", "No se pudo modificar el cliente en la base de datos (Guardado general).", Alert.AlertType.ERROR);
-            }
-        } else {
-            mostrarAlerta("Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.", Alert.AlertType.WARNING);
+        if (clientesPendientesDeGuardar.isEmpty()) {
+            mostrarAlerta("Advertencia", "No hay modificaciones pendientes para guardar.", Alert.AlertType.WARNING);
+            return;
         }
+
+        int exitos = 0;
+        int fallos = 0;
+
+        for (Cliente cliente : clientesPendientesDeGuardar) {
+
+            // --- Re-validación Final (Email) ---
+            String emailEnModelo = cliente.getEmail();
+            if (!validarFormatoEmail(emailEnModelo) || personaDAO.verificarSiMailExisteParaOtro(emailEnModelo, cliente.getIdPersona())) {
+                // Si la validación final falla, lo marcamos como fallo pero permitimos que los demás se guarden
+                fallos++;
+                mostrarAlerta("Error de Validación", "El cliente " + cliente.getNombre() + " (" + cliente.getIdCliente() + ") no se guardó: Email inválido o duplicado.", Alert.AlertType.ERROR);
+                continue;
+            }
+            // --- Fin Re-validación ---
+
+            // ** PUNTO CENTRAL DE PERSISTENCIA **
+            boolean exitoCliente = clienteDAO.modificarCliente(cliente);
+            boolean exitoEstado = clienteDAO.modificarEstadoCliente(cliente.getIdCliente(), cliente.getEstado());
+
+            if (exitoCliente && exitoEstado) {
+                exitos++;
+            } else {
+                fallos++;
+                mostrarAlerta("Error de DB", "El cliente " + cliente.getNombre() + " (" + cliente.getIdCliente() + ") no se guardó correctamente en la base de datos.", Alert.AlertType.ERROR);
+            }
+        }
+
+        // --- Reporte Final ---
+        if (fallos == 0) {
+            mostrarAlerta("Éxito", "Columna modificada exitosamente", Alert.AlertType.INFORMATION);
+        } else if (exitos > 0) {
+            mostrarAlerta("Advertencia", "Se guardaron " + exitos + " clientes, pero falló el guardado de " + fallos + " clientes. Verifique los errores individuales.", Alert.AlertType.WARNING);
+        } else {
+            mostrarAlerta("Error", "Fallo al guardar todos los clientes. Ningún cambio fue persistido correctamente.", Alert.AlertType.ERROR);
+        }
+
+        // Limpiar el set y refrescar la tabla
+        clientesPendientesDeGuardar.clear();
+        refreshClientesTable();
     }
 
     private boolean validarSoloLetras(String texto) {
