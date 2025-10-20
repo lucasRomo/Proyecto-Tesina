@@ -373,6 +373,7 @@ public class ProveedorController {
             stage.setScene(new Scene(root));
             stage.setTitle("Dirección del Proveedor");
             stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setResizable(false);
             stage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
@@ -447,6 +448,7 @@ public class ProveedorController {
             newStage.initModality(Modality.APPLICATION_MODAL);
             newStage.centerOnScreen();
 
+            newStage.setResizable(false);
             // Mostrar la nueva ventana y esperar a que se cierre (modal)
             newStage.showAndWait();
 

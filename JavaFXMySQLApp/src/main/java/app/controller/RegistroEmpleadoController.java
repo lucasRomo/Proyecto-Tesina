@@ -141,13 +141,11 @@ public class RegistroEmpleadoController {
                 Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
                 Scene scene = new Scene(root);
                 stage.setScene(scene);
-                // =========================================================================
-                // === CORRECCIÓN CLAVE: ELIMINACIÓN DE TAMAÑO FIJO EN VENTANA NUEVA ===
-                // Eliminadas: stage.setWidth(1800); y stage.setHeight(1000);
-                // Se utiliza el tamaño preferido del AnchorPane en el FXML
-                // =========================================================================
+
                 stage.centerOnScreen();
                 stage.setTitle("Registro de Empleado");
+
+                stage.setResizable(false);
                 stage.show();
             } else {
                 mostrarAlerta("Error", "No se pudo registrar la dirección. Intente de nuevo.");

@@ -37,7 +37,7 @@
         </VBox>
     </VBox>
 
-    <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverButtonAbms" text="Volver"
+    <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverButtonAbms" text="Cerrar sesion"
             AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="20.0" />
 
 </AnchorPane>

@@ -165,6 +165,8 @@ public class MenuController {
             stage.initModality(Modality.APPLICATION_MODAL); // Lo hace modal
             stage.initOwner(((Node) event.getSource()).getScene().getWindow()); // Bloquea la ventana principal
 
+            stage.setResizable(false);
+
             stage.showAndWait(); // Espera a que se cierre
         } catch (IOException e) {
             e.printStackTrace();

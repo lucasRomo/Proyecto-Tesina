@@ -446,6 +446,7 @@ public class StockController {
                         stage.setScene(new Scene(root));
                         stage.setTitle("Proveedores de " + insumo.getNombreInsumo());
                         stage.initModality(Modality.APPLICATION_MODAL);
+                        stage.setResizable(false);
                         stage.showAndWait();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -513,7 +514,7 @@ public class StockController {
 
         alert.getDialogPane().setExpandableContent(expContent);
         alert.getDialogPane().setExpanded(true); // Mostrar el contenido expandido por defecto
-
+        alert.setResizable(false);
         alert.showAndWait();
     }
     // ====================================================================
@@ -572,6 +573,7 @@ public class StockController {
             newStage.initModality(Modality.APPLICATION_MODAL);
             newStage.centerOnScreen();
 
+            newStage.setResizable(false);
             // Mostrar la nueva ventana y esperar a que se cierre (modal)
             newStage.showAndWait();
 

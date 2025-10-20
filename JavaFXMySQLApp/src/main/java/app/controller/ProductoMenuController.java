@@ -374,6 +374,7 @@ public class ProductoMenuController {
             // Se elimina setResizable(false) para permitir que el alto se ajuste.
             // newStage.setResizable(false);
 
+            newStage.setResizable(false);
             // Mostrar la nueva ventana y esperar a que se cierre (modal)
             newStage.showAndWait();
 

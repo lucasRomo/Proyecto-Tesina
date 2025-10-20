@@ -479,6 +479,7 @@ public class ClienteController {
             stage.setScene(new Scene(root));
             stage.setTitle("Dirección del Cliente");
             stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setResizable(false);
             stage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
@@ -567,6 +568,7 @@ public class ClienteController {
             newStage.centerOnScreen();
 
             // Mostrar la nueva ventana y esperar a que se cierre (modal)
+            newStage.setResizable(false);
             newStage.showAndWait();
 
             // 7. Refrescar la tabla al volver
