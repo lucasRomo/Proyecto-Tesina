@@ -138,15 +138,20 @@ public class PersonaDAO {
     }
 
     public Persona obtenerPersonaPorId(int idPersona, Connection conn) throws SQLException {
-        String sql = "SELECT nombre, apellido FROM Persona WHERE id_persona = ?";
+        String sql = "SELECT id_persona, nombre, apellido, numero_documento, telefono, email " +
+                "FROM Persona WHERE id_persona = ?";
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idPersona);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     Persona persona = new Persona();
-                    persona.setIdPersona(idPersona);
+                    persona.setIdPersona(rs.getInt("id_persona"));
                     persona.setNombre(rs.getString("nombre"));
                     persona.setApellido(rs.getString("apellido"));
+                    persona.setNumeroDocumento(rs.getString("numero_documento"));
+                    persona.setTelefono(rs.getString("telefono"));
+                    persona.setEmail(rs.getString("email"));
                     return persona;
                 }
             }

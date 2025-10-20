@@ -3,8 +3,12 @@ package app.controller;
 import app.dao.ClienteDAO;
 import app.dao.DireccionDAO;
 import app.dao.PersonaDAO;
+import app.dao.HistorialActividadDAO;
+import app.dao.UsuarioDAO;
 import app.model.Cliente;
 import app.model.Direccion;
+import app.model.Persona;
+import app.model.Usuario;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -25,12 +29,24 @@ import javafx.stage.Stage;
 import javafx.geometry.Rectangle2D;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static app.controller.MenuController.loadScene;
+
 public class ClienteController {
+
+    // Configuración de la conexión (Asegúrate que estos datos sean correctos)
+    private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
+    private static final String USER = "root";
+    private static final String PASSWORD = "";
 
     @FXML private TableView<Cliente> clientesTableView;
     @FXML private TableColumn<Cliente, String> nombreColumn;
@@ -56,6 +72,8 @@ public class ClienteController {
     private ClienteDAO clienteDAO;
     private PersonaDAO personaDAO;
     private DireccionDAO direccionDAO;
+    private HistorialActividadDAO historialDAO;
+    private UsuarioDAO usuarioDAO;
     private ObservableList<Cliente> masterData = FXCollections.observableArrayList();
     private FilteredList<Cliente> filteredData;
 
@@ -72,8 +90,9 @@ public class ClienteController {
         this.clienteDAO = new ClienteDAO();
         this.personaDAO = new PersonaDAO();
         this.direccionDAO = new DireccionDAO();
+        this.historialDAO = new HistorialActividadDAO();
+        this.usuarioDAO = new UsuarioDAO();
     }
-
 
     @FXML
     private void initialize() {
@@ -550,44 +569,157 @@ public class ClienteController {
             return;
         }
 
+        // --- SECCIÓN ELIMINADA: VALIDACIÓN DE CONTRASEÑA ---
+        // (La verificación de seguridad con TextInputDialog ha sido removida)
+
+        // Obtener datos de sesión necesarios
+        int loggedInUserId = SessionManager.getInstance().getLoggedInUserId();
+        String loggedInUsername = SessionManager.getInstance().getLoggedInUsername(); // Se mantiene por si se usa en otro lado
+
+        // --- INICIO DEL PROCESO DE GUARDADO MÚLTIPLE ---
         int exitos = 0;
         int fallos = 0;
 
-        for (Cliente cliente : clientesPendientesDeGuardar) {
+        // Creamos una copia para evitar ConcurrentModificationException al remover elementos
+        Set<Cliente> clientesAGuardar = new HashSet<>(clientesPendientesDeGuardar);
 
-            // --- Re-validación Final (Email) ---
-            String emailEnModelo = cliente.getEmail();
-            if (!validarFormatoEmail(emailEnModelo) || personaDAO.verificarSiMailExisteParaOtro(emailEnModelo, cliente.getIdPersona())) {
-                // Si la validación final falla, lo marcamos como fallo pero permitimos que los demás se guarden
+        for (Cliente selectedCliente : clientesAGuardar) {
+
+            try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+                conn.setAutoCommit(false);
+
+                // 1. Obtener datos originales para el historial
+                Persona originalPersona = personaDAO.obtenerPersonaPorId(selectedCliente.getIdPersona(), conn);
+                Cliente originalCliente = clienteDAO.getClienteById(selectedCliente.getIdCliente(), conn);
+
+                if (originalPersona == null || originalCliente == null) {
+                    mostrarAlerta("Error Interno", "No se encontraron datos originales para el cliente ID: " + selectedCliente.getIdCliente() + ". Transacción fallida.", Alert.AlertType.ERROR);
+                    fallos++;
+                    continue;
+                }
+
+                boolean exitoHistorial = true;
+
+                // 2. Comparar y registrar cambios en Historial
+                //    (Se mantiene la lógica de historial, ya que es una buena práctica)
+                if (!selectedCliente.getNombre().equals(originalPersona.getNombre())) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Cliente", "nombre", selectedCliente.getIdPersona(),
+                            originalPersona.getNombre(), selectedCliente.getNombre(), conn
+                    );
+                }
+
+                if (!selectedCliente.getApellido().equals(originalPersona.getApellido())) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Cliente", "apellido", selectedCliente.getIdPersona(),
+                            originalPersona.getApellido(), selectedCliente.getApellido(), conn
+                    );
+                }
+
+                if (!selectedCliente.getNumeroDocumento().equals(originalPersona.getNumeroDocumento())) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Cliente", "numero_documento", selectedCliente.getIdPersona(),
+                            originalPersona.getNumeroDocumento(), selectedCliente.getNumeroDocumento(), conn
+                    );
+                }
+
+                String originalTelefono = originalPersona.getTelefono() != null ? originalPersona.getTelefono() : "";
+                String newTelefono = selectedCliente.getTelefono() != null ? selectedCliente.getTelefono() : "";
+                if (!newTelefono.equals(originalTelefono)) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Cliente", "telefono", selectedCliente.getIdPersona(),
+                            originalTelefono, newTelefono, conn
+                    );
+                }
+
+                String originalEmail = originalPersona.getEmail() != null ? originalPersona.getEmail() : "";
+                String newEmail = selectedCliente.getEmail() != null ? selectedCliente.getEmail() : "";
+                if (!newEmail.equals(originalEmail)) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Cliente", "email", selectedCliente.getIdPersona(),
+                            originalEmail, newEmail, conn
+                    );
+                }
+
+                if (!selectedCliente.getRazonSocial().equals(originalCliente.getRazonSocial())) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Cliente", "razon_social", selectedCliente.getIdCliente(),
+                            originalCliente.getRazonSocial(), selectedCliente.getRazonSocial(), conn
+                    );
+                }
+
+                if (!selectedCliente.getPersonaContacto().equals(originalCliente.getPersonaContacto())) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Cliente", "persona_contacto", selectedCliente.getIdCliente(),
+                            originalCliente.getPersonaContacto(), selectedCliente.getPersonaContacto(), conn
+                    );
+                }
+
+                if (!selectedCliente.getCondicionesPago().equals(originalCliente.getCondicionesPago())) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Cliente", "condiciones_pago", selectedCliente.getIdCliente(),
+                            originalCliente.getCondicionesPago(), selectedCliente.getCondicionesPago(), conn
+                    );
+                }
+
+                if (!selectedCliente.getEstado().equals(originalCliente.getEstado())) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Cliente", "estado", selectedCliente.getIdCliente(),
+                            originalCliente.getEstado(), selectedCliente.getEstado(), conn
+                    );
+                }
+
+                // 3. Actualizar Tablas
+
+                // Persona
+                String updatePersonaSql = "UPDATE Persona SET nombre = ?, apellido = ?, numero_documento = ?, telefono = ?, email = ? WHERE id_persona = ?";
+                try (PreparedStatement stmt = conn.prepareStatement(updatePersonaSql)) {
+                    stmt.setString(1, selectedCliente.getNombre());
+                    stmt.setString(2, selectedCliente.getApellido());
+                    stmt.setString(3, selectedCliente.getNumeroDocumento());
+                    stmt.setString(4, selectedCliente.getTelefono());
+                    stmt.setString(5, selectedCliente.getEmail());
+                    stmt.setInt(6, selectedCliente.getIdPersona());
+                    stmt.executeUpdate();
+                }
+
+                // Cliente
+                String updateClienteSql = "UPDATE Cliente SET razon_social = ?, persona_contacto = ?, condiciones_pago = ?, estado = ? WHERE id_cliente = ?";
+                try (PreparedStatement stmt = conn.prepareStatement(updateClienteSql)) {
+                    stmt.setString(1, selectedCliente.getRazonSocial());
+                    stmt.setString(2, selectedCliente.getPersonaContacto());
+                    stmt.setString(3, selectedCliente.getCondicionesPago());
+                    stmt.setString(4, selectedCliente.getEstado());
+                    stmt.setInt(5, selectedCliente.getIdCliente());
+                    stmt.executeUpdate();
+                }
+
+                // 4. Commit o Rollback
+                if (exitoHistorial) {
+                    conn.commit();
+                    exitos++;
+                    clientesPendientesDeGuardar.remove(selectedCliente); // Eliminar del set pendiente solo si fue exitoso
+                } else {
+                    conn.rollback();
+                    fallos++;
+                    mostrarAlerta("Error de Historial", "Fallo al registrar historial para el cliente ID: " + selectedCliente.getIdCliente() + ". Transacción revertida.", Alert.AlertType.ERROR);
+                }
+
+            } catch (SQLException e) {
                 fallos++;
-                mostrarAlerta("Error de Validación", "El cliente " + cliente.getNombre() + " (" + cliente.getIdCliente() + ") no se guardó: Email inválido o duplicado.", Alert.AlertType.ERROR);
-                continue;
+                e.printStackTrace();
+                // Manejo de Rollback manual si la conexión no pudo cerrarse o el autocommit falló antes
+                mostrarAlerta("Error de Guardado", "Error de base de datos al guardar los cambios para el cliente ID: " + selectedCliente.getIdCliente() + ". Error: " + e.getMessage(), Alert.AlertType.ERROR);
             }
-            // --- Fin Re-validación ---
+        } // Fin del bucle for
 
-            // ** PUNTO CENTRAL DE PERSISTENCIA **
-            boolean exitoCliente = clienteDAO.modificarCliente(cliente);
-            boolean exitoEstado = clienteDAO.modificarEstadoCliente(cliente.getIdCliente(), cliente.getEstado());
-
-            if (exitoCliente && exitoEstado) {
-                exitos++;
-            } else {
-                fallos++;
-                mostrarAlerta("Error de DB", "El cliente " + cliente.getNombre() + " (" + cliente.getIdCliente() + ") no se guardó correctamente en la base de datos.", Alert.AlertType.ERROR);
-            }
+        // --- Mostrar Resultado Final ---
+        if (exitos > 0 || fallos > 0) {
+            String mensaje = "Columna Modificada Exitosamente";
+            mostrarAlerta("Proceso Finalizado", mensaje, Alert.AlertType.INFORMATION);
         }
 
-        // --- Reporte Final ---
-        if (fallos == 0) {
-            mostrarAlerta("Éxito", "Columna modificada exitosamente", Alert.AlertType.INFORMATION);
-        } else if (exitos > 0) {
-            mostrarAlerta("Advertencia", "Se guardaron " + exitos + " clientes, pero falló el guardado de " + fallos + " clientes. Verifique los errores individuales.", Alert.AlertType.WARNING);
-        } else {
-            mostrarAlerta("Error", "Fallo al guardar todos los clientes. Ningún cambio fue persistido correctamente.", Alert.AlertType.ERROR);
-        }
-
-        // Limpiar el set y refrescar la tabla
-        clientesPendientesDeGuardar.clear();
+        // Refrescar la tabla para asegurar que los datos visuales estén sincronizados
         refreshClientesTable();
     }
 
@@ -684,7 +816,7 @@ public class ClienteController {
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            MenuController.loadScene(
+            loadScene(
                     (Node) event.getSource(),
                     "/menuAbms.fxml",
                     "Menú ABMs"

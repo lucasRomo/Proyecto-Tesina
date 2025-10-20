@@ -63,6 +63,35 @@ public class ClienteDAO {
         return clientes;
     }
 
+    public Cliente getClienteById(int idCliente, Connection conn) throws SQLException {
+        String sql = "SELECT p.*, c.* FROM Persona p JOIN Cliente c ON p.id_persona = c.id_persona WHERE c.id_cliente = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idCliente);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Cliente cliente = new Cliente(
+                            rs.getString("nombre"),
+                            rs.getString("apellido"),
+                            rs.getInt("id_tipo_documento"),
+                            rs.getString("numero_documento"),
+                            rs.getInt("id_direccion"),
+                            rs.getString("telefono"),
+                            rs.getString("email"),
+                            rs.getString("razon_social"),
+                            rs.getString("persona_contacto"),
+                            rs.getString("condiciones_pago"),
+                            rs.getString("estado")
+                    );
+                    cliente.setIdPersona(rs.getInt("id_persona"));
+                    cliente.setIdCliente(rs.getInt("id_cliente"));
+                    return cliente;
+                }
+            }
+        }
+        return null;
+    }
+
     // Método para obtener un cliente por su ID
     public Cliente getClienteById(int idCliente) {
         String sql = "SELECT p.*, c.* FROM Persona p JOIN Cliente c ON p.id_persona = c.id_persona WHERE c.id_cliente = ?";
