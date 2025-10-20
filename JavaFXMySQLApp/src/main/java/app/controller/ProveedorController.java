@@ -68,6 +68,19 @@ public class ProveedorController {
         proveedoresTableView.setEditable(true);
         idProveedorColumn.setCellValueFactory(new PropertyValueFactory<>("idProveedor"));
 
+        // ==========================================================
+        // === VINCULACIÓN DEL ANCHO DE COLUMNAS PORCENTUAL ========
+        // ==========================================================
+        // Asegúrate de que el FXML tiene <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        idProveedorColumn.prefWidthProperty().bind(proveedoresTableView.widthProperty().multiply(0.05));
+        nombreColumn.prefWidthProperty().bind(proveedoresTableView.widthProperty().multiply(0.20));
+        contactoColumn.prefWidthProperty().bind(proveedoresTableView.widthProperty().multiply(0.15));
+        mailColumn.prefWidthProperty().bind(proveedoresTableView.widthProperty().multiply(0.25)); // Email es el más largo
+        estadoColumn.prefWidthProperty().bind(proveedoresTableView.widthProperty().multiply(0.10));
+        tipoProveedorColumn.prefWidthProperty().bind(proveedoresTableView.widthProperty().multiply(0.15));
+        accionColumn.prefWidthProperty().bind(proveedoresTableView.widthProperty().multiply(0.10));
+
+
         // =========================================================================================
         // === ONEDITCOMMIT: SOLO VALIDACIÓN Y ACTUALIZACIÓN DEL MODELO ============================
         // =========================================================================================
@@ -563,6 +576,9 @@ public class ProveedorController {
     private void handleVolverButton(ActionEvent event) {
         try {
             // Se usa el método estático unificado para asegurar la navegación
+            // Es necesario que MenuController.loadScene exista
+            // Se asume que MenuController existe en el paquete app.controller
+            Class.forName("app.controller.MenuController");
             MenuController.loadScene(
                     (Node) event.getSource(),
                     "/menuAbmStock.fxml",
@@ -571,6 +587,8 @@ public class ProveedorController {
         } catch (IOException e) {
             e.printStackTrace();
             mostrarAlerta("Error de Navegación", "No se pudo cargar la vista anterior.", Alert.AlertType.ERROR);
+        } catch (ClassNotFoundException e) {
+            mostrarAlerta("Error de Navegación", "Clase MenuController no encontrada. No se puede volver.", Alert.AlertType.ERROR);
         }
     }
 }

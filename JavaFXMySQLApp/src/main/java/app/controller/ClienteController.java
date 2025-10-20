@@ -74,6 +74,24 @@ public class ClienteController {
     private void initialize() {
         clientesTableView.setEditable(true);
 
+        // ==========================================================
+        // === VINCULACIÓN DEL ANCHO DE COLUMNAS PORCENTUAL ========
+        // ==========================================================
+        // Asegúrate de haber puesto: <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /> en el FXML
+
+        idClienteColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.03));
+        nombreColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.08));
+        apellidoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.08));
+        tipoDocumentoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.07));
+        numeroDocumentoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.09));
+        telefonoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.07));
+        emailColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.18));
+        razonSocialColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.10));
+        personaContactoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.10));
+        condicionesPagoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.07));
+        estadoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.05));
+        accionColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.08));
+
         // --- Configuración de PropertyValueFactory ---
         nombreColumn.setCellValueFactory(cellData -> cellData.getValue().nombreProperty());
         apellidoColumn.setCellValueFactory(cellData -> cellData.getValue().apellidoProperty());
@@ -177,6 +195,7 @@ public class ClienteController {
                 if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable() || isEmpty()) return;
                 super.startEdit();
                 choiceBox.getSelectionModel().select(getItem());
+                // Esto hace que el cambio se aplique al modelo temporal
                 choiceBox.setOnAction(event -> commitEdit(choiceBox.getSelectionModel().getSelectedItem()));
                 setGraphic(choiceBox); setText(null);
             }
@@ -231,16 +250,39 @@ public class ClienteController {
         // --- Columna Estado (Mantiene guardado inmediato, ya que es un toggle de estado) ---
         estadoColumn.setCellFactory(column -> new TableCell<Cliente, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
-            // ... (código interno de ChoiceBox omitido por brevedad, sin cambios) ...
-            @Override public void startEdit() { /* ... */ }
-            @Override public void cancelEdit() { /* ... */ }
-            @Override protected void updateItem(String item, boolean empty) { /* ... */
+
+            { // Inicialización del ChoiceBox para Estado (Active/Inactive)
+                choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
+                choiceBox.setOnAction(event -> {
+                    if (isEditing()) {
+                        commitEdit(choiceBox.getSelectionModel().getSelectedItem());
+                    }
+                });
+            }
+
+            @Override
+            public void startEdit() {
+                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable() || isEmpty()) return;
+                super.startEdit();
+                choiceBox.getSelectionModel().select(getItem());
+                setGraphic(choiceBox); setText(null);
+            }
+
+            @Override
+            public void cancelEdit() {
+                super.cancelEdit(); setGraphic(null); setText(getItem());
+                applyCellStyle(getItem());
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 getStyleClass().removeAll("activo-cell", "desactivado-cell");
                 if (empty || item == null) { setText(null); setGraphic(null); setStyle(null); }
                 else if (isEditing()) { choiceBox.getSelectionModel().select(item); setText(null); setGraphic(choiceBox); }
                 else { setGraphic(null); setText(item); applyCellStyle(item); }
             }
+
             private void applyCellStyle(String item) {
                 if ("Activo".equalsIgnoreCase(item)) { getStyleClass().add("activo-cell"); setStyle("-fx-text-fill: black; -fx-font-weight: bold;"); }
                 else if ("Desactivado".equalsIgnoreCase(item)) { getStyleClass().add("desactivado-cell"); setStyle("-fx-text-fill: black; -fx-font-weight: bold;"); }
@@ -270,6 +312,7 @@ public class ClienteController {
         accionColumn.setCellFactory(param -> new TableCell<Cliente, Void>() {
             private final Button btn = new Button("Direccion");
             {
+                // El prefWidthProperty().bind ya no es necesario aquí si usas CONSTRAINED_RESIZE_POLICY
                 btn.prefWidthProperty().bind(accionColumn.widthProperty());
                 btn.setOnAction(event -> {
                     Cliente cliente = getTableView().getItems().get(getIndex());
@@ -339,8 +382,6 @@ public class ClienteController {
     // =========================================================================================
     // === MÉTODOS DE UTILIDAD Y LÓGICA DE NAVEGACIÓN (Sin cambios significativos) =============
     // =========================================================================================
-
-    // ... (El resto de métodos se mantienen iguales a los de tu código original) ...
 
     private void mostrarDireccionCliente(int idDireccion) {
         Direccion direccion = direccionDAO.obtenerPorId(idDireccion);

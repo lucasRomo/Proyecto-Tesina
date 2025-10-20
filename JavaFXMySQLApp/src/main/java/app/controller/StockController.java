@@ -60,6 +60,23 @@ public class StockController {
     private void initialize() {
         insumosTableView.setEditable(true);
 
+        // ==========================================================
+        // === VINCULACIÓN DEL ANCHO DE COLUMNAS PORCENTUAL ========
+        // ==========================================================
+        idInsumoColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.05));
+        nombreInsumoColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.20));
+        descripcionColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.25));
+        stockMinimoColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.10));
+        stockActualColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.10));
+        estadoColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.08));
+        idTipoProveedorColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.12));
+        accionColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.10));
+
+        // ==========================================================
+        // === FIN DE VINCULACIÓN PORCENTUAL ========================
+        // ==========================================================
+
+
         idInsumoColumn.setCellValueFactory(new PropertyValueFactory<>("idInsumo"));
         nombreInsumoColumn.setCellValueFactory(cellData -> cellData.getValue().nombreInsumoProperty());
         descripcionColumn.setCellValueFactory(cellData -> cellData.getValue().descripcionProperty());
@@ -435,6 +452,7 @@ public class StockController {
         accionColumn.setCellFactory(param -> new TableCell<Insumo, Void>() {
             private final Button btn = new Button("Ver Proveedores");
             {
+                btn.prefWidthProperty().bind(accionColumn.widthProperty());
                 btn.setOnAction(event -> {
                     Insumo insumo = getTableView().getItems().get(getIndex());
                     try {
@@ -640,6 +658,8 @@ public class StockController {
         try {
             // Se usa el método estático unificado para asegurar la navegación
             // y que la nueva vista ocupe toda la ventana maximizada.
+            // Se asume que MenuController existe en el paquete app.controller
+            Class.forName("app.controller.MenuController");
             MenuController.loadScene(
                     (Node) event.getSource(),
                     "/menuAbmStock.fxml",
@@ -648,6 +668,8 @@ public class StockController {
         } catch (IOException e) {
             e.printStackTrace();
             mostrarAlerta("Error de Navegación", "No se pudo cargar la vista anterior.", Alert.AlertType.ERROR);
+        } catch (ClassNotFoundException e) {
+            mostrarAlerta("Error de Navegación", "Clase MenuController no encontrada. No se puede volver.", Alert.AlertType.ERROR);
         }
     }
 }

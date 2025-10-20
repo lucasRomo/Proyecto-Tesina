@@ -35,6 +35,16 @@ public class VerProveedoresController {
 
     @FXML
     private void initialize() {
+
+        // ==========================================================
+        // === VINCULACIÓN DEL ANCHO DE COLUMNAS PORCENTUAL ========
+        // ==========================================================
+        nombreColumn.prefWidthProperty().bind(proveedoresTableView.widthProperty().multiply(0.25));
+        contactoColumn.prefWidthProperty().bind(proveedoresTableView.widthProperty().multiply(0.25));
+        mailColumn.prefWidthProperty().bind(proveedoresTableView.widthProperty().multiply(0.35));
+        estadoColumn.prefWidthProperty().bind(proveedoresTableView.widthProperty().multiply(0.15));
+        // ==========================================================
+
         nombreColumn.setCellValueFactory(cellData -> cellData.getValue().nombreProperty());
         contactoColumn.setCellValueFactory(cellData -> cellData.getValue().contactoProperty());
         mailColumn.setCellValueFactory(cellData -> cellData.getValue().mailProperty());

@@ -37,7 +37,7 @@
         <children>
             <TableView fx:id="insumosTableView" editable="true" VBox.vgrow="ALWAYS">
                 <columnResizePolicy>
-                    <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                 </columnResizePolicy>
                 <columns>
                     <TableColumn fx:id="idInsumoColumn" prefWidth="50.0" text="ID" />
@@ -47,7 +47,7 @@
                     <TableColumn fx:id="stockActualColumn" prefWidth="180.0" text="Stock Actual" />
                     <TableColumn fx:id="estadoColumn" prefWidth="200.0" text="Estado" />
                     <TableColumn fx:id="idTipoProveedorColumn" prefWidth="130.6" text="Tipo Proveedor" />
-                    <TableColumn fx:id="accionColumn" prefWidth="200.0" text="Proveedores" />
+                    <TableColumn fx:id="accionColumn" styleClass="columna-boton-direccion" prefWidth="200.0" text="Proveedores" />
                 </columns>
             </TableView>
 

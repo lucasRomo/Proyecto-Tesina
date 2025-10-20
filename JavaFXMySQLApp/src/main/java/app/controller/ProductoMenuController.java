@@ -159,6 +159,18 @@ public class ProductoMenuController {
 
 
     private void setupColumns() {
+        // ==========================================================
+        // === VINCULACIÓN DEL ANCHO DE COLUMNAS PORCENTUAL ========
+        // ==========================================================
+        idProductoColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.05));
+        nombreProductoColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.20));
+        descripcionColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.30));
+        precioColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.15));
+        stockColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.10));
+        categoriaNombreColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.20));
+        // ==========================================================
+
+
         idProductoColumn.setCellValueFactory(cellData -> cellData.getValue().idProductoProperty().asObject());
 
         nombreProductoColumn.setCellValueFactory(cellData -> cellData.getValue().nombreProductoProperty());
@@ -428,6 +440,8 @@ public class ProductoMenuController {
         try {
             // Se utiliza el método estático unificado para asegurar la navegación
             // y que la nueva vista ocupe toda la ventana maximizada.
+            // Se asume que MenuController existe en el paquete app.controller
+            Class.forName("app.controller.MenuController");
             MenuController.loadScene(
                     (Node) event.getSource(),
                     "/menuAbmStock.fxml",
@@ -436,6 +450,8 @@ public class ProductoMenuController {
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Error de Navegación", "No se pudo cargar la vista de Menu Abm Stock.");
             e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            showAlert(Alert.AlertType.ERROR, "Error de Navegación", "Clase MenuController no encontrada. No se puede volver.");
         }
     }
 
