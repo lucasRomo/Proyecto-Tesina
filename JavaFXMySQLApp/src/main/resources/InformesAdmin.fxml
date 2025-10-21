@@ -9,7 +9,7 @@
 
 <!-- Raíz principal para mantener la idea del VBox, pero con un tamaño de dashboard -->
 
-<VBox prefHeight="750.0" prefWidth="1200.0" styleClass="background-panel" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.MenuController">
+<VBox prefHeight="750.0" prefWidth="1200.0" styleClass="background-panel" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.InformesController">
     <stylesheets>
         <URL value="@style.css" />
     </stylesheets>
