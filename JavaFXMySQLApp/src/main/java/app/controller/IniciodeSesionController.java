@@ -8,7 +8,6 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.text.Text; // Aunque se importa, ya no se usa la referencia @FXML private Text eyeIconText;
 import java.io.IOException;
 
 public class IniciodeSesionController {
@@ -20,12 +19,9 @@ public class IniciodeSesionController {
     // Campos FXML para el control de visibilidad
     @FXML private TextField ContraseniaVisibleField;
     @FXML private ToggleButton toggleVisibilityButton;
-    @FXML private ImageView eyeIconView; // USAMOS ESTE PARA LAS IMÁGENES
-    // @FXML private Text eyeIconText; // ELIMINAR si ya no está en el FXML
+    @FXML private ImageView eyeIconView;
 
-    // Rutas de tus imágenes (ajustadas al nombre de tus archivos)
-    // /imagenes/ojo.png (ojo con raya/cerrado)
-    // /imagenes/ojo (1).png (ojo sin raya/abierto)
+    // Rutas de tus imágenes
     private static final String EYE_OPEN_ICON = "/imagenes/ojo.png";
     private static final String EYE_CLOSED_ICON = "/imagenes/ojo (1).png";
 
@@ -81,6 +77,21 @@ public class IniciodeSesionController {
             Usuario usuarioLogueado = usuarioDAO.obtenerUsuarioPorCredenciales(usuario, contrasena);
 
             if (usuarioLogueado != null) {
+
+                // =========================================================
+                // INICIO DE VALIDACIÓN DE ESTADO (NUEVO CÓDIGO)
+                // =========================================================
+                if ("desactivado".equalsIgnoreCase(usuarioLogueado.getEstado())) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Acceso Denegado");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Su cuenta de usuario se encuentra Desactivada, No tiene Permitido Iniciar Sesion.");
+                    alert.showAndWait();
+                    return; // Detiene el proceso de inicio de sesión
+                }
+                // =========================================================
+                // FIN DE VALIDACIÓN DE ESTADO
+                // =========================================================
 
                 SessionManager session = SessionManager.getInstance();
                 session.setLoggedInUserPassword(usuarioLogueado.getContrasenia());

@@ -253,11 +253,15 @@ public class UsuarioDAO {
         return null;
     }
 
+    // =========================================================================
+    // MODIFICACIÓN CLAVE: Incluir JOIN con Empleado para obtener el estado.
+    // =========================================================================
     public Usuario obtenerUsuarioPorCredenciales(String nombreUsuario, String contrasena) {
 
-        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_persona, p.id_direccion, p.id_tipo_persona " +
+        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_persona, p.id_direccion, p.id_tipo_persona, e.estado " +
                 "FROM Usuario u " +
                 "JOIN Persona p ON u.id_persona = p.id_persona " +
+                "LEFT JOIN Empleado e ON u.id_persona = e.id_persona " + // LEFT JOIN para obtener el estado del empleado
                 "WHERE u.nombre_usuario = ? AND u.contrasena = ?";
 
         Usuario usuarioEncontrado = null;
@@ -270,6 +274,7 @@ public class UsuarioDAO {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     int idTipoUsuario = rs.getInt("id_tipo_persona");
+                    String estadoEmpleado = rs.getString("estado"); // Recuperamos el estado
 
                     usuarioEncontrado = new Usuario(
                             rs.getInt("id_usuario"),
@@ -279,6 +284,9 @@ public class UsuarioDAO {
                             rs.getInt("id_direccion"),
                             idTipoUsuario
                     );
+
+                    // Asignamos el estado al objeto Usuario
+                    usuarioEncontrado.setEstado(estadoEmpleado);
                 }
             }
         } catch (SQLException e) {

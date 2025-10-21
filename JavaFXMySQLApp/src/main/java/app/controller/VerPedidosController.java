@@ -233,7 +233,7 @@ public class VerPedidosController implements Initializable {
                 original.getInstrucciones(),        // 11. instrucciones
                 original.getMontoTotal(),           // 12. montoTotal
                 original.getMontoEntregado(),       // 13. montoEntregado
-                original.getRutaComprobante()       // 14. rutaComprobante
+                original.getRutaComprobante()       // 14. RutaComprobante
         );
 
         return copia;
@@ -313,7 +313,7 @@ public class VerPedidosController implements Initializable {
                 case "Ruta Comprobante":
                     valorOriginal = original.getRutaComprobante();
                     valorNuevo = pedidoActual.getRutaComprobante();
-                    if (!String.valueOf(valorOriginal).equals(String.valueOf(valorNuevo))) { auditarCambio(conn, pedidoActual, "rutaComprobante", valorOriginal, valorNuevo); huboCambioParaAuditar = true; }
+                    if (!String.valueOf(valorOriginal).equals(String.valueOf(valorNuevo))) { auditarCambio(conn, pedidoActual, "RutaComprobante", valorOriginal, valorNuevo); huboCambioParaAuditar = true; }
                     break;
             }
 
@@ -556,7 +556,7 @@ public class VerPedidosController implements Initializable {
             boolean exito = pedidoDAO.modificarPedido(pedidoSeleccionado);
 
             if (exito) {
-                mostrarAlerta("Éxito", "El Pedido ID " + pedidoSeleccionado.getIdPedido() + " ha sido modificado y guardado correctamente.", Alert.AlertType.INFORMATION);
+                mostrarAlerta("Éxito", "El Pedido ha sido modificado y guardado correctamente.", Alert.AlertType.INFORMATION);
                 if ("Retirado".equalsIgnoreCase(pedidoSeleccionado.getEstado())) {
                     cargarPedidos();
                 } else {

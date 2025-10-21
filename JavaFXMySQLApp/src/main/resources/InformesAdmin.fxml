@@ -120,7 +120,7 @@
                             </children>
                         </VBox>
                     </HBox>
-                    <Button fx:id="btnVolver" mnemonicParsing="false" onAction="#handleVolverButtonInformes" prefHeight="35.0" prefWidth="100.0" styleClass="button-volver" text="Volver" />
+                    <Button fx:id="btnVolver" alignment="CENTER" mnemonicParsing="false" onAction="#handleVolverButtonInformes" prefHeight="35.0" prefWidth="100.0" styleClass="button-volver" text="Volver" />
                 </children>
             </VBox>
         </HBox>
