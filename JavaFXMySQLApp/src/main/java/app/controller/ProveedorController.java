@@ -584,9 +584,7 @@ public class ProveedorController {
 
         // --- Mostrar Resultado Final ---
         if (exitos > 0 || fallos > 0) {
-            String mensaje = "Proceso de Guardado Finalizado:\n" +
-                    "- Modificaciones Guardadas con Éxito: " + exitos + "\n" +
-                    "- Fallos en el Guardado: " + fallos;
+            String mensaje = "Columna Modificada Exitosamente";
             mostrarAlerta("Proceso Finalizado", mensaje, Alert.AlertType.INFORMATION);
         }
 

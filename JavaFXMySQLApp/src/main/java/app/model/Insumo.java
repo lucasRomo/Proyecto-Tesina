@@ -56,9 +56,9 @@ public class Insumo {
         return idInsumo.get();
     }
 
-    public String getNombreInsumo() {
-        return nombreInsumo.get();
-    }
+    public void setIdInsumo(int idInsumo) { this.idInsumo.set(idInsumo); }
+
+    public String getNombreInsumo() { return nombreInsumo.get(); }
 
     public void setNombreInsumo(String nombreInsumo) {
         this.nombreInsumo.set(nombreInsumo);
