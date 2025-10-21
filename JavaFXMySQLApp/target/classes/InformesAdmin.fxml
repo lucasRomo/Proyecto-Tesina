@@ -16,46 +16,14 @@
     <children>
         <!-- Título Superior - CENTRADO CORRECTO (Asume que el fondo general es oscuro, manteniendo título blanco) -->
         <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="Infinity" prefHeight="70.0" prefWidth="1200.0" styleClass="titulo-principal" text="Informes y Estadísticas del Sistema" HBox.hgrow="ALWAYS">
-            <!-- Se asegura de que el Label use todo el ancho para centrarse correctamente -->
+
             <VBox.vgrow>NEVER</VBox.vgrow> <!-- El título no debe crecer, solo el contenido inferior -->
         </Label>
 
         <!-- Contenido Dividido (Menú Lateral + Área de Estadísticas) -->
-        <HBox VBox.vgrow="ALWAYS"> <!-- Esto hace que el HBox ocupe todo el espacio vertical restante -->
+        <HBox VBox.vgrow="ALWAYS">
 
-            <!-- ************************************************************ -->
-            <!-- 1. Columna de Navegación Izquierda (Menú Lateral) -->
-            <!-- ************************************************************ -->
-            <VBox fx:id="menuLateral" alignment="TOP_CENTER" prefWidth="240.0" spacing="20.0" styleClass="sidebar-menu">
-                <padding>
-                    <Insets bottom="20.0" left="10.0" right="10.0" top="30.0" />
-                </padding>
-                <children>
-                    <!-- Etiqueta de Módulos (Color corregido, asumiendo menú lateral oscuro) -->
-                    <Label styleClass="subtitulo, label-blanco" text="Módulos">
-                        <font>
-                            <Font name="System Bold" size="20.0" />
-                        </font>
-                        <VBox.margin>
-                            <Insets bottom="10.0" />
-                        </VBox.margin>
-                    </Label>
-
-                    <!-- Botones de tu FXML base con fx:id claros -->
-                    <Button fx:id="btnFacturas" mnemonicParsing="false" onAction="#handleFacturas" prefHeight="50.0" prefWidth="200.0" styleClass="primary-button" text="Facturas" />
-                    <Button fx:id="btnComprobantes" mnemonicParsing="false" onAction="#handleComprobantes" prefHeight="50.0" prefWidth="200.0" styleClass="primary-button" text="Comprobantes" />
-
-                    <VBox VBox.vgrow="ALWAYS" /> <!-- Espaciador que empuja el botón Volver hacia abajo -->
-
-                    <!-- El botón Volver con su action -->
-                    <Button fx:id="btnVolver" mnemonicParsing="false" onAction="#handleVolverButtonInformes" prefHeight="35.0" prefWidth="100.0" styleClass="button-volver" text="Volver" />
-                </children>
-            </VBox>
-
-            <!-- ************************************************************ -->
-            <!-- 2. Área Principal de Estadísticas -->
-            <!-- ************************************************************ -->
-            <VBox fx:id="panelEstadisticas" prefWidth="960.0" spacing="15.0" HBox.hgrow="ALWAYS">
+            <VBox fx:id="panelEstadisticas" prefHeight="680.0" prefWidth="1428.0" spacing="15.0" HBox.hgrow="ALWAYS">
                 <padding>
                     <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
                 </padding>
@@ -69,12 +37,12 @@
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </padding>
                             <!-- Etiqueta de Título de Gráfico (A blanco) -->
-                            <Label prefHeight="41.0" prefWidth="102.0" style="-fx-text-fill: white;" styleClass="subtitulo" text="Ventas por Período" />
-                            <HBox alignment="CENTER" prefHeight="57.0" prefWidth="563.0" spacing="20.0">
+                            <Label style="-fx-text-fill: white;" styleClass="subtitulo" text="Ventas por Período" />
+                            <HBox alignment="CENTER" spacing="20.0">
                                 <DatePicker fx:id="dpFechaInicio" />
-                                <DatePicker fx:id="dpFechaFin" prefWidth="174.0" />
-                                <!-- Botón Generar Gráfico en blanco con letras negras, SIN BORDE NEGRO -->
-                                <Button mnemonicParsing="false" style="-fx-background-color: white; -fx-text-fill: black; -fx-background-radius: 5; -fx-font-weight: bold; -fx-padding: 8 15;" text="Generar Gráfico" />
+                                <DatePicker fx:id="dpFechaFin" />
+                                <!-- Botón Generar Gráfico: Fondo Morado, Letras NEGRAS, Borde transparente -->
+                                <Button mnemonicParsing="false" style="-fx-background-color: #7f5af0; -fx-text-fill: white; -fx-background-radius: 5; -fx-font-weight: bold; -fx-padding: 8 15;" text="Generar Gráfico" />
                             </HBox>
                             <!-- Estilos del LineChart - Títulos de Chart y Leyendas a BLANCO -->
                             <LineChart fx:id="lineChartVentas" prefHeight="250.0" prefWidth="550.0" style="-fx-title-fill: white; -fx-legend-fill: white;" title="Tendencia de Ventas (Datos por cargar)">
@@ -152,6 +120,7 @@
                             </children>
                         </VBox>
                     </HBox>
+                    <Button fx:id="btnVolver" mnemonicParsing="false" onAction="#handleVolverButtonInformes" prefHeight="35.0" prefWidth="100.0" styleClass="button-volver" text="Volver" />
                 </children>
             </VBox>
         </HBox>
