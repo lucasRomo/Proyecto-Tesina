@@ -3,8 +3,10 @@ package app.controller;
 import app.dao.ClienteDAO;
 import app.dao.DireccionDAO;
 import app.dao.PersonaDAO;
+import app.dao.TipoDocumentoDAO;
 import app.model.Cliente;
 import app.model.Direccion;
+import app.model.TipoDocumento;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -21,6 +23,8 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import javafx.application.Platform;
 
 import javafx.geometry.Rectangle2D;
 
@@ -28,13 +32,15 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.List;
+import java.util.Arrays;
 
 public class ClienteController {
 
     @FXML private TableView<Cliente> clientesTableView;
     @FXML private TableColumn<Cliente, String> nombreColumn;
     @FXML private TableColumn<Cliente, String> apellidoColumn;
-    @FXML private TableColumn<Cliente, Number> tipoDocumentoColumn;
+    @FXML private TableColumn<Cliente, String> tipoDocumentoColumn;
     @FXML private TableColumn<Cliente, String> numeroDocumentoColumn;
     @FXML private TableColumn<Cliente, String> telefonoColumn;
     @FXML private TableColumn<Cliente, String> emailColumn;
@@ -55,6 +61,8 @@ public class ClienteController {
     private ClienteDAO clienteDAO;
     private PersonaDAO personaDAO;
     private DireccionDAO direccionDAO;
+    private TipoDocumentoDAO tipoDocumentoDAO;
+
     private ObservableList<Cliente> masterData = FXCollections.observableArrayList();
     private FilteredList<Cliente> filteredData;
 
@@ -62,11 +70,28 @@ public class ClienteController {
             "Responsable Inscripto", "Monotributista", "Persona"
     );
 
+    private ObservableList<TipoDocumento> TIPOS_DOCUMENTO_OPCIONES = FXCollections.observableArrayList();
+
+    private Cliente clienteOriginal;
+    private int clienteOriginalIndex = -1;
+
 
     public ClienteController() {
         this.clienteDAO = new ClienteDAO();
         this.personaDAO = new PersonaDAO();
         this.direccionDAO = new DireccionDAO();
+        this.tipoDocumentoDAO = new TipoDocumentoDAO();
+        cargarTiposDocumento();
+    }
+
+    private void cargarTiposDocumento() {
+        try {
+            List<TipoDocumento> tipos = tipoDocumentoDAO.obtenerTodos();
+            TIPOS_DOCUMENTO_OPCIONES.addAll(tipos);
+        } catch (Exception e) {
+            e.printStackTrace();
+            mostrarAlerta("Error de Carga", "No se pudieron cargar los tipos de documento desde la base de datos.", Alert.AlertType.ERROR);
+        }
     }
 
 
@@ -74,11 +99,16 @@ public class ClienteController {
     private void initialize() {
         clientesTableView.setEditable(true);
 
+        clientesTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                clienteOriginal = new Cliente(newSelection);
+                clienteOriginalIndex = clientesTableView.getSelectionModel().getSelectedIndex();
+            }
+        });
+
         // ==========================================================
         // === VINCULACIÓN DEL ANCHO DE COLUMNAS PORCENTUAL ========
         // ==========================================================
-        // Asegúrate de haber puesto: <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /> en el FXML
-
         idClienteColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.03));
         nombreColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.08));
         apellidoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.08));
@@ -88,14 +118,20 @@ public class ClienteController {
         emailColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.18));
         razonSocialColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.10));
         personaContactoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.10));
-        condicionesPagoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.07));
+        condicionesPagoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.10));
         estadoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.05));
         accionColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.08));
 
         // --- Configuración de PropertyValueFactory ---
         nombreColumn.setCellValueFactory(cellData -> cellData.getValue().nombreProperty());
         apellidoColumn.setCellValueFactory(cellData -> cellData.getValue().apellidoProperty());
-        tipoDocumentoColumn.setCellValueFactory(new PropertyValueFactory<>("idTipoDocumento"));
+
+        tipoDocumentoColumn.setCellValueFactory(cellData -> {
+            int id = cellData.getValue().getIdTipoDocumento();
+            String nombre = obtenerNombreTipoDocumento(id);
+            return new javafx.beans.property.SimpleStringProperty(nombre);
+        });
+
         numeroDocumentoColumn.setCellValueFactory(cellData -> cellData.getValue().numeroDocumentoProperty());
         telefonoColumn.setCellValueFactory(cellData -> cellData.getValue().telefonoProperty());
         emailColumn.setCellValueFactory(cellData -> cellData.getValue().emailProperty());
@@ -106,10 +142,137 @@ public class ClienteController {
         estadoColumn.setCellValueFactory(cellData -> cellData.getValue().estadoProperty());
 
         // =========================================================================================
-        // === ONEDITCOMMIT: SOLO VALIDACIÓN Y ACTUALIZACIÓN DEL MODELO ============================
+        // === ONEDITCOMMIT: SOLO ACTUALIZACIÓN DEL MODELO Y REFRESCADO DE FILA ====================
         // =========================================================================================
 
-        // --- Columna Nombre ---
+        // --- Columna Tipo Documento (ChoiceBox) ---
+        tipoDocumentoColumn.setCellFactory(column -> {
+            return new TableCell<Cliente, String>() {
+                private final ChoiceBox<TipoDocumento> choiceBox = new ChoiceBox<>();
+                private final StringConverter<TipoDocumento> converter = new StringConverter<TipoDocumento>() {
+                    @Override
+                    public String toString(TipoDocumento tipo) {
+                        return tipo == null ? "" : tipo.getNombreTipo();
+                    }
+                    @Override
+                    public TipoDocumento fromString(String string) {
+                        return TIPOS_DOCUMENTO_OPCIONES.stream()
+                                .filter(t -> t.getNombreTipo().equals(string))
+                                .findFirst()
+                                .orElse(null);
+                    }
+                };
+
+                {
+                    choiceBox.setItems(TIPOS_DOCUMENTO_OPCIONES);
+                    choiceBox.setConverter(converter);
+
+                    // *** SOLUCIÓN DEFINITIVA: Aplazar el refresco total después del commit ***
+                    choiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                        if (newVal != null && isEditing() && !newVal.equals(oldVal)) {
+                            // 1. Commit del valor. Esto dispara setOnEditCommit
+                            commitEdit(converter.toString(newVal));
+
+                            // 2. Aplazar el refresco forzado y el cierre de la edición
+                            //    para asegurar que el CellValueFactory se ejecute.
+                            Platform.runLater(() -> {
+                                getTableView().refresh(); // Forzar el repintado (Redundante pero efectivo aquí)
+                                cancelEdit();
+                            });
+                        }
+                    });
+                }
+
+                @Override
+                public void startEdit() {
+                    if (!isEmpty()) {
+                        super.startEdit();
+                        Cliente cliente = getTableView().getItems().get(getIndex());
+
+                        TIPOS_DOCUMENTO_OPCIONES.stream()
+                                .filter(t -> t.getIdTipoDocumento() == cliente.getIdTipoDocumento())
+                                .findFirst()
+                                .ifPresent(choiceBox.getSelectionModel()::select);
+
+                        setGraphic(choiceBox);
+                        setText(null);
+                    }
+                }
+
+                @Override
+                public void commitEdit(String newValue) {
+                    super.commitEdit(newValue);
+                    setGraphic(null);
+                    setText(newValue);
+                }
+
+
+                @Override
+                public void cancelEdit() {
+                    super.cancelEdit();
+                    setGraphic(null);
+                    setText(getItem());
+                }
+
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                        setGraphic(null);
+                    } else if (isEditing()) {
+                        setGraphic(choiceBox);
+                        setText(null);
+                    } else {
+                        setGraphic(null);
+                        setText(item);
+                    }
+                }
+            };
+        });
+
+        // Bloque setOnEditCommit: responsable de actualizar el modelo y forzar el refresco de la fila. (CRUCIAL)
+        tipoDocumentoColumn.setOnEditCommit(event -> {
+            String nuevoNombreTipo = event.getNewValue();
+            Cliente cliente = event.getRowValue();
+
+            TipoDocumento nuevoTipo = TIPOS_DOCUMENTO_OPCIONES.stream()
+                    .filter(t -> t.getNombreTipo().equals(nuevoNombreTipo))
+                    .findFirst()
+                    .orElse(null);
+
+            if (nuevoTipo != null) {
+                int nuevoId = nuevoTipo.getIdTipoDocumento();
+
+                // 1. ACTUALIZA EL MODELO
+                cliente.setIdTipoDocumento(nuevoId);
+
+                // 2. FUERZA EL RE-INSERTADO DEL OBJETO (CRUCIAL para re-ejecutar CellValueFactory)
+                clientesTableView.getItems().set(event.getTablePosition().getRow(), cliente);
+
+            } else {
+                mostrarAlerta("Error", "Tipo de documento no encontrado. Se revierte el valor.", Alert.AlertType.ERROR);
+                clientesTableView.refresh();
+            }
+        });
+
+        // --- Columna Número Documento ---
+        numeroDocumentoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        numeroDocumentoColumn.setOnEditCommit(event -> {
+            Cliente cliente = event.getRowValue();
+            String nuevoNumDoc = event.getNewValue().trim();
+
+            if (nuevoNumDoc.isEmpty()) {
+                mostrarAlerta("Advertencia", "El número de documento no puede quedar vacío.", Alert.AlertType.WARNING);
+                clientesTableView.refresh(); return;
+            }
+
+            // *** SOLO ACTUALIZA EL MODELO ***
+            cliente.setNumeroDocumento(nuevoNumDoc);
+            clientesTableView.refresh();
+        });
+
+        // --- Columna Nombre (sin cambios) ---
         nombreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         nombreColumn.setOnEditCommit(event -> {
             Cliente cliente = event.getRowValue();
@@ -118,15 +281,15 @@ public class ClienteController {
                 mostrarAlerta("Advertencia", "El nombre no puede quedar vacío.", Alert.AlertType.WARNING);
                 clientesTableView.refresh(); return;
             }
-            if (!validarSoloLetras(nuevoNombre)) {
+            if (!validarSoloLetrasYEspacios(nuevoNombre)) {
                 mostrarAlerta("Advertencia", "El nombre solo puede contener letras y espacios.", Alert.AlertType.WARNING);
                 clientesTableView.refresh(); return;
             }
-            cliente.setNombre(nuevoNombre); // Actualiza el modelo
+            cliente.setNombre(nuevoNombre);
             clientesTableView.refresh();
         });
 
-        // --- Columna Apellido ---
+        // --- Columna Apellido (sin cambios) ---
         apellidoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         apellidoColumn.setOnEditCommit(event -> {
             Cliente cliente = event.getRowValue();
@@ -135,31 +298,11 @@ public class ClienteController {
                 mostrarAlerta("Advertencia", "El apellido no puede quedar vacío.", Alert.AlertType.WARNING);
                 clientesTableView.refresh(); return;
             }
-            if (!validarSoloLetras(nuevoApellido)) {
+            if (!validarSoloLetrasYEspacios(nuevoApellido)) {
                 mostrarAlerta("Advertencia", "El apellido solo puede contener letras y espacios.", Alert.AlertType.WARNING);
                 clientesTableView.refresh(); return;
             }
-            cliente.setApellido(nuevoApellido); // Actualiza el modelo
-            clientesTableView.refresh();
-        });
-
-        // --- Columna Número Documento ---
-        numeroDocumentoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        numeroDocumentoColumn.setOnEditCommit(event -> {
-            Cliente cliente = event.getRowValue();
-            String nuevoNumDoc = event.getNewValue().trim();
-            if (nuevoNumDoc.isEmpty()) {
-                mostrarAlerta("Advertencia", "El número de documento no puede quedar vacío.", Alert.AlertType.WARNING);
-                clientesTableView.refresh(); return;
-            }
-            if (!validarSoloNumeros(nuevoNumDoc)) {
-                mostrarAlerta("Advertencia", "El número de documento solo puede contener dígitos.", Alert.AlertType.WARNING);
-                clientesTableView.refresh(); return;
-            }
-            if (!validarNumeroDocumento(cliente.getIdTipoDocumento(), nuevoNumDoc, cliente.getIdPersona())) {
-                clientesTableView.refresh(); return;
-            }
-            cliente.setNumeroDocumento(nuevoNumDoc); // Actualiza el modelo
+            cliente.setApellido(nuevoApellido);
             clientesTableView.refresh();
         });
 
@@ -174,7 +317,7 @@ public class ClienteController {
                     clientesTableView.refresh(); return;
                 }
             }
-            cliente.setTelefono(nuevoTelefono.isEmpty() ? null : nuevoTelefono); // Actualiza el modelo
+            cliente.setTelefono(nuevoTelefono.isEmpty() ? null : nuevoTelefono);
             clientesTableView.refresh();
         });
 
@@ -183,7 +326,9 @@ public class ClienteController {
         emailColumn.setOnEditCommit(event -> {
             Cliente cliente = event.getRowValue();
             String nuevoEmail = event.getNewValue();
-            validarYGuardarEmail(cliente, nuevoEmail, cliente.getEmail()); // La validación actualiza el modelo si es exitosa
+            if(!validarYGuardarEmail(cliente, nuevoEmail, cliente.getEmail())) {
+                clientesTableView.refresh();
+            }
             clientesTableView.refresh();
         });
 
@@ -195,8 +340,11 @@ public class ClienteController {
                 if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable() || isEmpty()) return;
                 super.startEdit();
                 choiceBox.getSelectionModel().select(getItem());
-                // Esto hace que el cambio se aplique al modelo temporal
-                choiceBox.setOnAction(event -> commitEdit(choiceBox.getSelectionModel().getSelectedItem()));
+                // Asegurar commit al seleccionar
+                choiceBox.setOnAction(event -> {
+                    commitEdit(choiceBox.getSelectionModel().getSelectedItem());
+                    cancelEdit();
+                });
                 setGraphic(choiceBox); setText(null);
             }
             @Override
@@ -217,7 +365,7 @@ public class ClienteController {
                 mostrarAlerta("Advertencia", "La razón social no puede quedar vacía.", Alert.AlertType.WARNING);
                 clientesTableView.refresh(); return;
             }
-            cliente.setRazonSocial(nuevaRazonSocial); // Actualiza el modelo
+            cliente.setRazonSocial(nuevaRazonSocial);
             clientesTableView.refresh();
         });
 
@@ -230,7 +378,11 @@ public class ClienteController {
                 mostrarAlerta("Advertencia", "La persona de contacto no puede quedar vacía.", Alert.AlertType.WARNING);
                 clientesTableView.refresh(); return;
             }
-            cliente.setPersonaContacto(nuevaPersonaContacto); // Actualiza el modelo
+            if (!validarSoloLetrasYEspacios(nuevaPersonaContacto)) {
+                mostrarAlerta("Advertencia", "La persona de contacto solo puede contener letras y espacios.", Alert.AlertType.WARNING);
+                clientesTableView.refresh(); return;
+            }
+            cliente.setPersonaContacto(nuevaPersonaContacto);
             clientesTableView.refresh();
         });
 
@@ -243,19 +395,20 @@ public class ClienteController {
                 mostrarAlerta("Advertencia", "Las condiciones de pago no pueden quedar vacías.", Alert.AlertType.WARNING);
                 clientesTableView.refresh(); return;
             }
-            cliente.setCondicionesPago(nuevasCondiciones); // Actualiza el modelo
+            cliente.setCondicionesPago(nuevasCondiciones);
             clientesTableView.refresh();
         });
 
-        // --- Columna Estado (Mantiene guardado inmediato, ya que es un toggle de estado) ---
+        // --- Columna Estado (Guardado Inmediato, sin cambios) ---
         estadoColumn.setCellFactory(column -> new TableCell<Cliente, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
 
-            { // Inicialización del ChoiceBox para Estado (Active/Inactive)
+            {
                 choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
                 choiceBox.setOnAction(event -> {
                     if (isEditing()) {
                         commitEdit(choiceBox.getSelectionModel().getSelectedItem());
+                        cancelEdit();
                     }
                 });
             }
@@ -296,13 +449,12 @@ public class ClienteController {
             String estadoOriginal = event.getOldValue();
             cliente.setEstado(nuevoEstado);
 
-            // Llama a DB inmediatamente
             boolean exito = clienteDAO.modificarEstadoCliente(cliente.getIdCliente(), nuevoEstado);
             if (exito) {
                 mostrarAlerta("Éxito", "Estado del cliente actualizado.", Alert.AlertType.INFORMATION);
             } else {
                 mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
-                cliente.setEstado(estadoOriginal); // Revertir en el modelo si falla
+                cliente.setEstado(estadoOriginal);
             }
             clientesTableView.refresh();
         });
@@ -312,7 +464,6 @@ public class ClienteController {
         accionColumn.setCellFactory(param -> new TableCell<Cliente, Void>() {
             private final Button btn = new Button("Direccion");
             {
-                // El prefWidthProperty().bind ya no es necesario aquí si usas CONSTRAINED_RESIZE_POLICY
                 btn.prefWidthProperty().bind(accionColumn.widthProperty());
                 btn.setOnAction(event -> {
                     Cliente cliente = getTableView().getItems().get(getIndex());
@@ -338,40 +489,67 @@ public class ClienteController {
     }
 
     // =========================================================================================
-    // === MÉTODO PARA GUARDAR LOS CAMBIOS EN LA BASE DE DATOS =================================
+    // === MÉTODO PARA GUARDAR LOS CAMBIOS EN LA BASE DE DATOS (VALIDACIÓN CENTRALIZADA) ========
     // =========================================================================================
 
     @FXML
     public void handleModificarClienteButton(ActionEvent event) {
         Cliente selectedCliente = clientesTableView.getSelectionModel().getSelectedItem();
+
         if (selectedCliente != null) {
             String emailEnModelo = selectedCliente.getEmail();
 
-            // 1. VALIDACIÓN FINAL: Campos esenciales no vacíos (que podrían no haberse re-validado en setOnEditCommit)
+            // 1. Validaciones
+            // Campos esenciales no vacíos
             if (selectedCliente.getNombre().isEmpty() || selectedCliente.getApellido().isEmpty() || selectedCliente.getNumeroDocumento().isEmpty()) {
                 mostrarAlerta("Error de Validación", "Asegúrese de que los campos Nombre, Apellido y Número de Documento no estén vacíos.", Alert.AlertType.ERROR);
-                clientesTableView.refresh();
+                revertirCambios(selectedCliente); // *** REVERTIR EN CASO DE ERROR ***
                 return;
             }
 
-            // 2. VALIDACIÓN FINAL: Email
-            if (!validarFormatoEmail(emailEnModelo)) {
-                mostrarAlerta("Error de Validación", "El formato del email ('" + emailEnModelo + "') es inválido. Por favor, edítelo en la tabla.", Alert.AlertType.ERROR);
-                clientesTableView.refresh();
+            // Formato de Número de Documento (solo dígitos)
+            if (!validarSoloNumeros(selectedCliente.getNumeroDocumento())) {
+                mostrarAlerta("Error de Validación", "El Número de Documento solo puede contener dígitos.", Alert.AlertType.ERROR);
+                revertirCambios(selectedCliente); // *** REVERTIR EN CASO DE ERROR ***
                 return;
             }
-            if (personaDAO.verificarSiMailExisteParaOtro(emailEnModelo, selectedCliente.getIdPersona())) {
+
+            // Tipo y Número (Longitud y Duplicidad)
+            if (!validarNumeroDocumento(selectedCliente.getIdTipoDocumento(), selectedCliente.getNumeroDocumento(), selectedCliente.getIdPersona())) {
+                revertirCambios(selectedCliente); // *** REVERTIR EN CASO DE ERROR ***
+                return;
+            }
+
+            // Persona de Contacto
+            if (!validarSoloLetrasYEspacios(selectedCliente.getPersonaContacto())) {
+                mostrarAlerta("Error de Validación", "La persona de contacto solo puede contener letras y espacios.", Alert.AlertType.ERROR);
+                revertirCambios(selectedCliente); // *** REVERTIR EN CASO DE ERROR ***
+                return;
+            }
+
+            // Email
+            if (emailEnModelo != null && !emailEnModelo.isEmpty() && !validarFormatoEmail(emailEnModelo)) {
+                mostrarAlerta("Error de Validación", "El formato del email ('" + emailEnModelo + "') es inválido.", Alert.AlertType.ERROR);
+                revertirCambios(selectedCliente); // *** REVERTIR EN CASO DE ERROR ***
+                return;
+            }
+            // Asumo que tienes un método verificarSiMailExisteParaOtro en PersonaDAO
+            if (emailEnModelo != null && !emailEnModelo.isEmpty() && personaDAO.verificarSiMailExisteParaOtro(emailEnModelo, selectedCliente.getIdPersona())) {
                 mostrarAlerta("Error de Validación", "El email ingresado ya está registrado para otro cliente.", Alert.AlertType.ERROR);
-                clientesTableView.refresh();
+                revertirCambios(selectedCliente); // *** REVERTIR EN CASO DE ERROR ***
                 return;
             }
 
-            // 3. GUARDAR EN DB: SÓLO AQUÍ se llama a la modificación
+            // 2. GUARDAR EN DB
             boolean exito = clienteDAO.modificarCliente(selectedCliente);
             if (exito) {
                 mostrarAlerta("Éxito", "Cliente modificado y guardado exitosamente en la base de datos.", Alert.AlertType.INFORMATION);
+
+                // Actualiza el objeto clienteOriginal para el siguiente ciclo de edición
+                clienteOriginal = new Cliente(selectedCliente);
             } else {
                 mostrarAlerta("Error", "No se pudo modificar el cliente en la base de datos.", Alert.AlertType.ERROR);
+                revertirCambios(selectedCliente); // *** REVERTIR EN CASO DE FALLA EN LA DB ***
             }
             clientesTableView.refresh();
         } else {
@@ -379,8 +557,35 @@ public class ClienteController {
         }
     }
 
+    /**
+     * Revierto los cambios visuales y en el modelo si la validación final falla.
+     */
+    private void revertirCambios(Cliente clienteModificado) {
+        if (clienteOriginal != null && clienteOriginalIndex != -1) {
+
+            // Revertir el estado del objeto Cliente en la lista observable (modelo)
+            clienteModificado.setNombre(clienteOriginal.getNombre());
+            clienteModificado.setApellido(clienteOriginal.getApellido());
+            clienteModificado.setIdTipoDocumento(clienteOriginal.getIdTipoDocumento());
+            clienteModificado.setNumeroDocumento(clienteOriginal.getNumeroDocumento());
+            clienteModificado.setTelefono(clienteOriginal.getTelefono());
+            clienteModificado.setEmail(clienteOriginal.getEmail());
+            clienteModificado.setRazonSocial(clienteOriginal.getRazonSocial());
+            clienteModificado.setPersonaContacto(clienteOriginal.getPersonaContacto());
+            clienteModificado.setCondicionesPago(clienteOriginal.getCondicionesPago());
+
+            // Forzar el refresco de la fila con los valores revertidos
+            clientesTableView.getItems().set(clienteOriginalIndex, clienteModificado);
+
+            // Clonar de nuevo para que el objeto 'original' refleje el estado real
+            clienteOriginal = new Cliente(clienteModificado);
+
+            clientesTableView.refresh();
+        }
+    }
+
     // =========================================================================================
-    // === MÉTODOS DE UTILIDAD Y LÓGICA DE NAVEGACIÓN (Sin cambios significativos) =============
+    // === MÉTODOS DE UTILIDAD Y LÓGICA ========================================================
     // =========================================================================================
 
     private void mostrarDireccionCliente(int idDireccion) {
@@ -394,8 +599,12 @@ public class ClienteController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/verDireccion.fxml"));
             Parent root = loader.load();
 
-            VerDireccionController direccionController = loader.getController();
-            direccionController.setDireccion(direccion);
+            Object controller = loader.getController();
+            if (controller instanceof VerDireccionController) {
+                ((VerDireccionController) controller).setDireccion(direccion);
+            } else {
+                System.err.println("Error: El controlador cargado no es VerDireccionController.");
+            }
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
@@ -501,7 +710,8 @@ public class ClienteController {
 
     // --- Métodos de Validación ---
 
-    private boolean validarSoloLetras(String texto) {
+    private boolean validarSoloLetrasYEspacios(String texto) {
+        if (texto == null || texto.trim().isEmpty()) return true;
         return texto.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+");
     }
 
@@ -527,7 +737,6 @@ public class ClienteController {
             return false;
         }
 
-        // Solo verifica en la DB si el email cambió
         if (!trimmedEmail.equalsIgnoreCase(emailOriginal)) {
             if (personaDAO.verificarSiMailExisteParaOtro(trimmedEmail, cliente.getIdPersona())) {
                 mostrarAlerta("Error de Modificación", "El email que ingresó ya se encuentra registrado para otro cliente.", Alert.AlertType.WARNING);
@@ -535,11 +744,12 @@ public class ClienteController {
             }
         }
 
-        cliente.setEmail(trimmedEmail); // Actualiza el modelo
+        cliente.setEmail(trimmedEmail);
         return true;
     }
 
     private boolean validarFormatoEmail(String email) {
+        if (email == null || email.trim().isEmpty()) return true;
         String regex = "^[A-Za-z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[A-Za-z0-9_!#$%&'*+/=?`{|}~^-]+)*@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)*$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(email);
@@ -548,10 +758,10 @@ public class ClienteController {
 
     private boolean validarNumeroDocumento(int idTipoDocumento, String numeroDocumento, int idPersonaActual) {
         String tipoDocumento = obtenerNombreTipoDocumento(idTipoDocumento);
-        int longitudDocumento = numeroDocumento.length();
+        int longitudDocumento = numeroDocumento != null ? numeroDocumento.length() : 0;
 
-        if (!validarSoloNumeros(numeroDocumento)) {
-            mostrarAlerta("Advertencia", "El número de documento solo puede contener dígitos.", Alert.AlertType.WARNING);
+        if (longitudDocumento == 0 && idTipoDocumento > 0) {
+            mostrarAlerta("Advertencia", "El número de documento no puede estar vacío para el tipo: " + tipoDocumento, Alert.AlertType.WARNING);
             return false;
         }
 
@@ -575,11 +785,11 @@ public class ClienteController {
     }
 
     private String obtenerNombreTipoDocumento(int idTipoDocumento) {
-        if (idTipoDocumento == 1) return "DNI";
-        if (idTipoDocumento == 2) return "CUIT";
-        if (idTipoDocumento == 3) return "CUIL";
-        if (idTipoDocumento == 4) return "Pasaporte";
-        return "";
+        return TIPOS_DOCUMENTO_OPCIONES.stream()
+                .filter(t -> t.getIdTipoDocumento() == idTipoDocumento)
+                .findFirst()
+                .map(TipoDocumento::getNombreTipo)
+                .orElse("ID " + idTipoDocumento + " (Desconocido)");
     }
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
@@ -593,14 +803,15 @@ public class ClienteController {
     @FXML
     private void handleVolverButton(ActionEvent event) {
         try {
-            // Asegurarse de que MenuController.loadScene existe y funciona
-            // Usamos Objects.requireNonNull para evitar NullPointerException si la clase no existe
             Class.forName("app.controller.MenuController");
-            MenuController.loadScene(
-                    (Node) event.getSource(),
-                    "/menuAbms.fxml",
-                    "Menú ABMs"
-            );
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            // Asumiendo que /menuAbms.fxml es la escena anterior
+            Parent root = FXMLLoader.load(getClass().getResource("/menuAbms.fxml"));
+            stage.setScene(new Scene(root));
+            stage.setTitle("Menú ABMs");
+            stage.show();
+
 
         } catch (IOException e) {
             e.printStackTrace();

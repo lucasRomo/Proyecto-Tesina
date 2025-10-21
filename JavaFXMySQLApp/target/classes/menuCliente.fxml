@@ -32,7 +32,7 @@
         <children>
             <TableView fx:id="clientesTableView" editable="true" VBox.vgrow="ALWAYS">
                 <columnResizePolicy>
-                    <TableView fx:constant="UNCONSTRAINED_RESIZE_POLICY" />
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                 </columnResizePolicy>
                 <columns>
                     <TableColumn fx:id="nombreColumn" prefWidth="100.0" text="Nombre" />
