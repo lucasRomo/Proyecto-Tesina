@@ -22,6 +22,9 @@ public class PersonaDAO {
             "UPDATE Persona SET nombre = ?, apellido = ?, id_tipo_documento = ?, numero_documento = ?, " +
                     "id_direccion = ?, telefono = ?, email = ? WHERE id_persona = ?";
 
+    private static final String UPDATE_DOCUMENTO =
+            "UPDATE Persona SET id_tipo_documento = ?, numero_documento = ? WHERE id_persona = ?";
+
     private Connection getConnection() throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -57,7 +60,7 @@ public class PersonaDAO {
         return idGenerado;
     }
 
-    // Método para verificar si un número de documento ya existe
+    // Método para verificar si un número de documento ya existe (solo número)
     public boolean verificarSiDocumentoExiste(String numeroDocumento) {
         String sql = "SELECT COUNT(*) FROM Persona WHERE numero_documento = ?";
         try (Connection conn = getConnection();
@@ -107,6 +110,32 @@ public class PersonaDAO {
         return false;
     }
 
+    // =========================================================================
+    // NUEVO MÉTODO DE VALIDACIÓN: Incluye tipo de documento y excluye a la persona actual
+    // Este método es el que usará EdicionDocumentoController
+    // =========================================================================
+    /**
+     * Verifica si la combinación de Tipo y Número de Documento ya existe para otra persona.
+     */
+    public boolean verificarSiDocumentoExisteParaOtro(int idTipoDocumento, String numeroDocumento, int idPersonaExcluir) {
+        String sql = "SELECT COUNT(*) FROM Persona WHERE id_tipo_documento = ? AND numero_documento = ? AND id_persona != ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idTipoDocumento);
+            stmt.setString(2, numeroDocumento);
+            stmt.setInt(3, idPersonaExcluir);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    // =========================================================================
+
     public boolean verificarSiMailExisteParaOtro(String email, int idPersonaActual) {
         String sql = "SELECT COUNT(*) FROM Persona WHERE email = ? AND id_persona != ?";
         try (Connection conn = getConnection();
@@ -141,16 +170,6 @@ public class PersonaDAO {
         return null;
     }
 
-    // =========================================================================
-    // MODIFICACIÓN #1: Nuevo método para usar en transacciones externas (Controlador)
-    // =========================================================================
-    /**
-     * Modifica los datos de una persona usando una conexión provista.
-     * @param persona El objeto Persona con los datos actualizados.
-     * @param conn La conexión activa para la transacción.
-     * @return true si la modificación fue exitosa.
-     * @throws SQLException Si ocurre un error SQL.
-     */
     public boolean modificarPersona(Persona persona, Connection conn) throws SQLException {
         String SQL = UPDATE_PERSONA;
 
@@ -174,24 +193,45 @@ public class PersonaDAO {
                 return false;
             }
         }
-        // Nota: No se maneja el catch aquí, la excepción se propaga al controlador.
     }
-    // =========================================================================
 
-
-    /**
-     * Modifica los datos de una persona (Versión original sin transacciones).
-     * Ahora utiliza el método sobrecargado con su propia conexión.
-     * @param persona El objeto Persona con los datos actualizados.
-     * @return true si la modificación fue exitosa.
-     */
     public boolean modificarPersona(Persona persona) {
         try (Connection con = getConnection()) {
-            return modificarPersona(persona, con); // Llama al método que acepta la conexión
+            return modificarPersona(persona, con);
         } catch (SQLException e) {
             System.err.println("Error al modificar persona: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
+
+    // =========================================================================
+    // NUEVO MÉTODO DE MODIFICACIÓN: Modifica solo Tipo y Número de Documento
+    // Este método es el que usará EdicionDocumentoController
+    // =========================================================================
+    /**
+     * Actualiza el tipo y número de documento para una persona específica.
+     * @param idPersona ID de la persona a modificar.
+     * @param idTipoDocumento Nuevo ID de tipo de documento.
+     * @param numeroDocumento Nuevo número de documento.
+     * @return true si la actualización fue exitosa, false en caso contrario.
+     */
+    public boolean modificarDocumento(int idPersona, int idTipoDocumento, String numeroDocumento) {
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(UPDATE_DOCUMENTO)) {
+
+            ps.setInt(1, idTipoDocumento);
+            ps.setString(2, numeroDocumento);
+            ps.setInt(3, idPersona);
+
+            int filasAfectadas = ps.executeUpdate();
+
+            return filasAfectadas > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al modificar el documento de la persona: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    // =========================================================================
 }

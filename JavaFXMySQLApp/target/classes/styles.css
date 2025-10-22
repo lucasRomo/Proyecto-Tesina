@@ -280,3 +280,16 @@ Button.button:pressed {
     -fx-border-color: #31b0d5;
     -fx-background-color: #31b0d5;
 }
+
+.choice-box .label {
+    -fx-text-fill: white;
+}
+
+.text-field {
+    -fx-text-fill: white;
+}
+
+/* Asegurar que el estilo .editable-field sobreescriba si es necesario */
+.editable-field .label {
+    -fx-text-fill: white;
+}

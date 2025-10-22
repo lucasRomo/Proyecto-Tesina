@@ -7,7 +7,6 @@ app\controller\IniciodeSesionController.class
 app\controller\CrearPedidoController.class
 app\model\Pedido.class
 app\controller\VerPedidosController$2.class
-app\controller\ClienteController$4.class
 app\controller\FacturasController$1.class
 app\controller\EmpleadoController.class
 app\dao\DetallePedidoDAO.class
@@ -33,7 +32,6 @@ app\dao\ComprobanteDAO.class
 app\controller\RegistroEmpleadoController.class
 app\controller\FacturasController.class
 app\controller\UsuariosEmpleadoController$2.class
-app\controller\ClienteController$1$1.class
 app\controller\UsuariosEmpleadoController.class
 app\model\Producto.class
 app\model\Categoria.class

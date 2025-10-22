@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="550.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.EdicionClienteController">
+    <children>
+        <VBox alignment="TOP_CENTER" layoutX="10.0" layoutY="10.0" prefHeight="530.0" prefWidth="580.0" spacing="10.0" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+            <children>
+                <Label text="Edición de Cliente" textFill="#03518c">
+                    <font>
+                        <Font name="System Bold" size="24.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets bottom="10.0" />
+                    </VBox.margin>
+                </Label>
+
+                <GridPane hgap="10.0" vgap="10.0">
+                    <columnConstraints>
+                        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="150.0" minWidth="10.0" prefWidth="120.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                    <children>
+                        <Label text="Nombre:" />
+                        <TextField fx:id="nombreField" GridPane.columnIndex="1" />
+                        <Label text="Apellido:" GridPane.rowIndex="1" />
+                        <TextField fx:id="apellidoField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                        <Label text="Tipo Documento:" GridPane.rowIndex="2" />
+                        <ComboBox fx:id="tipoDocumentoComboBox" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                        <Label text="Nº Documento:" GridPane.rowIndex="3" />
+                        <TextField fx:id="numeroDocumentoField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                        <Label text="Teléfono:" GridPane.rowIndex="4" />
+                        <TextField fx:id="telefonoField" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                        <Label text="Email:" GridPane.rowIndex="5" />
+                        <TextField fx:id="emailField" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+                        <Label text="Razón Social:" GridPane.rowIndex="6" />
+                        <ComboBox fx:id="razonSocialComboBox" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
+                        <Label text="Persona Contacto:" GridPane.rowIndex="7" />
+                        <TextField fx:id="personaContactoField" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+
+                        <Label text="Condiciones Pago:" GridPane.rowIndex="8" />
+                        <TextField fx:id="condicionesPagoField" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+
+                        <Label text="ID Dirección:" GridPane.rowIndex="9" />
+                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9">
+                            <Label fx:id="idDireccionLabel" text="[ID]" style="-fx-font-weight: bold;" />
+                            <Button text="Modificar Dirección" onAction="#handleModificarDireccion" />
+                        </HBox>
+
+                    </children>
+                    <VBox.margin>
+                        <Insets left="50.0" right="50.0" />
+                    </VBox.margin>
+                </GridPane>
+
+                <HBox alignment="CENTER" prefHeight="50.0" prefWidth="200.0" spacing="20.0">
+                    <children>
+                        <Button onAction="#handleGuardar" prefWidth="100.0" text="Guardar" style="-fx-background-color: #007bff; -fx-text-fill: white;" />
+                        <Button onAction="#handleCancelar" prefWidth="100.0" text="Cancelar" />
+                    </children>
+                    <VBox.margin>
+                        <Insets top="20.0" />
+                    </VBox.margin>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>

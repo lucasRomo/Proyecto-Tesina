@@ -46,7 +46,7 @@
                     <TableColumn fx:id="personaContactoColumn" prefWidth="186.0" text="Persona Contacto" />
                     <TableColumn fx:id="condicionesPagoColumn" prefWidth="177.0" text="Condiciones de Pago" />
                     <TableColumn fx:id="estadoColumn" prefWidth="130.0" text="Estado" />
-                    <TableColumn fx:id="accionColumn" prefWidth="136.0" styleClass="columna-boton-direccion" text="Direccion" />
+                    <TableColumn fx:id="direccionColumn" prefWidth="136.0" styleClass="columna-boton-direccion" text="Direccion" />
                 </columns>
             </TableView>
 
@@ -62,6 +62,9 @@
                 <children>
                     <Button fx:id="nuevoClienteButton" mnemonicParsing="false" onAction="#handleRegistrarClienteButton" text="Registrar Cliente" textFill="#111111" />
                     <Button fx:id="modificarClienteButton" mnemonicParsing="false" onAction="#handleModificarClienteButton" text="Modificar Cliente" />
+
+                    <Button fx:id="modificarDocumentoButton" mnemonicParsing="false" onAction="#handleModificarDocumentoModalButton" text="Modificar Documento" />
+
                     <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefreshButton" text="Refrescar" />
                     <Button fx:id="volverButton" mnemonicParsing="false" onAction="#handleVolverButton" styleClass="button-volver" text="Volver" />
                 </children>
