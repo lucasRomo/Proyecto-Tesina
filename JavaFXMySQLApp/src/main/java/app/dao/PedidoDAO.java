@@ -18,9 +18,8 @@ import java.util.List;
 
 /**
  * DAO (Data Access Object) para la entidad Pedido.
- * Se ha ajustado para:
- * 1. ELIMINAR TODA REFERENCIA a 'metodo_pago' de la tabla Pedido.
- * 2. Obtener el 'tipo_pago' y la 'rutaComprobante' de la tabla 'ComprobantePago' mediante un JOIN en las consultas SELECT.
+ * Se ha ajustado para incluir los datos de contacto del cliente (telefono, email)
+ * en las consultas de pedidos y la inserción del tipo_pago en ComprobantePago.
  */
 public class PedidoDAO {
 
@@ -40,24 +39,28 @@ public class PedidoDAO {
     }
 
     // ----------------------------------------------------------------------------------
-    // MÉTODOS DE CREACIÓN Y MODIFICACIÓN (Mantener sin cambios)
+    // MÉTODOS DE CREACIÓN Y MODIFICACIÓN
     // ----------------------------------------------------------------------------------
 
     /**
-     * Guarda un nuevo Pedido. La información de pago se maneja EXCLUSIVAMENTE
-     * en la tabla ComprobantePago en otro proceso.
+     * Guarda un nuevo Pedido y su información de pago asociada en ComprobantePago.
      * @param pedido El objeto Pedido a guardar.
+     * @param tipoPago El tipo de pago seleccionado (Ej: "Efectivo", "Transferencia").
      * @return true si la operación fue exitosa.
      */
     public boolean savePedido(Pedido pedido, String tipoPago) {
-        // ELIMINADA la columna metodo_pago del INSERT de la tabla Pedido
         String sqlPedido = "INSERT INTO Pedido (id_cliente, estado, fecha_creacion, fecha_entrega_estimada, instrucciones, monto_total, monto_entregado) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         String sqlAsignacion = "INSERT INTO AsignacionPedido (id_pedido, id_empleado, fecha_asignacion) VALUES (?, ?, ?)";
 
+        // *** CORRECCIÓN SQL: Se añade id_cliente y monto_pago. Se cambia fecha_comprobante por fecha_carga. ***
+        String sqlComprobante = "INSERT INTO ComprobantePago (id_pedido, id_cliente, tipo_pago, monto_pago, archivo, fecha_carga, estado_verificacion) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+
         Connection conn = null;
         PreparedStatement stmtPedido = null;
         PreparedStatement stmtAsignacion = null;
+        PreparedStatement stmtComprobante = null; // PreparedStatement para el comprobante
 
         try {
             conn = obtenerConexion();
@@ -114,6 +117,34 @@ public class PedidoDAO {
                 }
             }
 
+            // 3. Insertar en la tabla ComprobantePago
+            if (tipoPago != null && !tipoPago.isEmpty()) {
+                stmtComprobante = conn.prepareStatement(sqlComprobante);
+
+                // Parámetros para ComprobantePago
+                stmtComprobante.setInt(1, idPedidoGenerado);
+                stmtComprobante.setInt(2, pedido.getIdCliente()); // id_cliente (nuevo requerido)
+                stmtComprobante.setString(3, tipoPago);
+                stmtComprobante.setDouble(4, pedido.getMontoTotal()); // monto_pago (nuevo requerido)
+
+                // archivo (ruta)
+                stmtComprobante.setNull(5, Types.VARCHAR);
+
+                // fecha_carga (corregido de fecha_comprobante)
+                stmtComprobante.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
+
+                // estado_verificacion
+                stmtComprobante.setString(7, "Pendiente");
+
+                int affectedRowsComprobante = stmtComprobante.executeUpdate();
+                if (affectedRowsComprobante == 0) {
+                    // Si falla la inserción del comprobante, revertir todo.
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+
             conn.commit();
             return true;
 
@@ -130,6 +161,7 @@ public class PedidoDAO {
             return false;
         } finally {
             try {
+                if (stmtComprobante != null) stmtComprobante.close(); // Cerrar statement
                 if (stmtAsignacion != null) stmtAsignacion.close();
                 if (stmtPedido != null) stmtPedido.close();
                 if (conn != null) conn.close();
@@ -219,10 +251,12 @@ public class PedidoDAO {
     public List<Pedido> getPedidosPorEmpleado(int idEmpleado) {
         List<Pedido> pedidos = new ArrayList<>();
 
+        // Se añaden clp.telefono y clp.email a la SELECT
         String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
                 "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
                 "cpr.tipo_pago, cpr.archivo, " + // <-- OBTENEMOS TIPO_PAGO Y EL ARCHIVO (RUTA)
                 "clp.nombre AS nombre_cliente, clp.apellido AS apellido_cliente, " +
+                "clp.telefono AS telefono_cliente, clp.email AS email_cliente, " + // <-- NUEVOS CAMPOS DE CONTACTO
                 "ap.id_empleado, emp.nombre AS nombre_empleado, emp.apellido AS apellido_empleado " +
                 "FROM Pedido p " +
                 "LEFT JOIN Cliente cl ON p.id_cliente = cl.id_cliente " +
@@ -263,10 +297,12 @@ public class PedidoDAO {
     public List<Pedido> getPedidosPorEstado(String estado) {
         List<Pedido> pedidos = new ArrayList<>();
 
+        // Se añaden clp.telefono y clp.email a la SELECT
         String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
                 "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
                 "cpr.tipo_pago, cpr.archivo, " + // <-- OBTENEMOS TIPO_PAGO Y EL ARCHIVO (RUTA)
                 "clp.nombre AS nombre_cliente, clp.apellido AS apellido_cliente, " +
+                "clp.telefono AS telefono_cliente, clp.email AS email_cliente, " + // <-- NUEVOS CAMPOS DE CONTACTO
                 "ap.id_empleado, emp.nombre AS nombre_empleado, emp.apellido AS apellido_empleado " +
                 "FROM Pedido p " +
                 "LEFT JOIN Cliente cl ON p.id_cliente = cl.id_cliente " +
@@ -342,13 +378,15 @@ public class PedidoDAO {
 
     /**
      * Helper para mapear un ResultSet a un objeto Pedido.
-     * Ahora mapea el 'tipo_pago' y la 'rutaComprobante'.
      */
     private Pedido mapResultSetToPedido(ResultSet rs) throws SQLException {
 
         int idPedido = rs.getInt("id_pedido");
         int idCliente = rs.getInt("id_cliente");
         String nombreCliente = rs.getString("nombre_cliente") + " " + rs.getString("apellido_cliente");
+
+        String telefonoCliente = rs.getString("telefono_cliente");
+        String emailCliente = rs.getString("email_cliente");
 
         int idEmpleadoResultado = rs.getInt("id_empleado");
         String nombreEmpleado = "";
@@ -367,10 +405,8 @@ public class PedidoDAO {
             tipoPago = "N/A";
         }
 
-        // *******************************************************************
-        // CAMBIO CLAVE: Extraer 'archivo' del ResultSet (la ruta)
+        // Extraer 'archivo' del ResultSet (la ruta)
         String rutaComprobante = rs.getString("archivo");
-        // *******************************************************************
 
         LocalDateTime fechaCreacion = rs.getTimestamp("fecha_creacion").toLocalDateTime();
 
@@ -384,10 +420,13 @@ public class PedidoDAO {
         double montoTotal = rs.getDouble("monto_total");
         double montoEntregado = rs.getDouble("monto_entregado");
 
+        // LLAMADA AL CONSTRUCTOR AJUSTADA:
         return new Pedido(
                 idPedido,
                 idCliente,
                 nombreCliente,
+                telefonoCliente,
+                emailCliente,
                 idEmpleadoResultado,
                 nombreEmpleado,
                 estado,
@@ -398,7 +437,7 @@ public class PedidoDAO {
                 instrucciones,
                 montoTotal,
                 montoEntregado,
-                rutaComprobante // <--- Aquí se pasa la nueva ruta del comprobante
+                rutaComprobante
         );
     }
 
@@ -416,7 +455,7 @@ public class PedidoDAO {
     }
 
     // ----------------------------------------------------------------------------------
-    // MÉTODOS DE UTILIDAD
+    // MÉTODOS DE UTILIDAD (Se mantienen sin cambios)
     // ----------------------------------------------------------------------------------
 
     public List<String> getAllClientesDisplay() {

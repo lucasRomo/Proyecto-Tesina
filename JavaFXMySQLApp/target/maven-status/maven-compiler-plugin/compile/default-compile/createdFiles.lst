@@ -7,6 +7,7 @@ app\controller\IniciodeSesionController.class
 app\controller\CrearPedidoController.class
 app\model\Pedido.class
 app\controller\VerPedidosController$2.class
+app\controller\VerPedidosController$1$1.class
 app\controller\FacturasController$1.class
 app\controller\EmpleadoController.class
 app\dao\DetallePedidoDAO.class
@@ -16,7 +17,6 @@ app\model\Empleado.class
 app\util\TicketPDFUtil.class
 app\controller\VerPedidosController.class
 app\controller\MenuController.class
-app\controller\VerPedidosController$2$1.class
 app\controller\HistorialActividadController$1.class
 app\controller\ComprobantesController$1.class
 app\controller\HistorialActividadController.class
@@ -34,6 +34,7 @@ app\controller\FacturasController.class
 app\controller\UsuariosEmpleadoController$2.class
 app\controller\UsuariosEmpleadoController.class
 app\model\Producto.class
+app\controller\VerPedidosController$3$1.class
 app\model\Categoria.class
 app\controller\HistorialActividadTableView.class
 app\controller\AsignarPedidoController.class
@@ -48,6 +49,8 @@ app\dao\ProductoDAO.class
 app\controller\VerHistorialPedidosController$FormattedDateTableCell.class
 app\controller\VerHistorialPedidosController$2.class
 app\controller\VerPedidosController$1.class
+app\controller\VerPedidosController$3.class
+app\util\ComprobanteService.class
 app\controller\VerHistorialPedidosController$5.class
 app\dao\FacturaDAO.class
 app\controller\DetallePedidoController.class
