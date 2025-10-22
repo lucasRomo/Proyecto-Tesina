@@ -22,6 +22,18 @@ public class Direccion {
         this.pais = pais;
     }
 
+    public Direccion(int idDireccion, String calle, String numero, String piso, String departamento, String codigoPostal, String ciudad, String provincia, String pais) {
+        this.idDireccion = idDireccion;
+        this.calle = calle;
+        this.numero = numero;
+        this.piso = piso;
+        this.departamento = departamento;
+        this.codigoPostal = codigoPostal;
+        this.ciudad = ciudad;
+        this.provincia = provincia;
+        this.pais = pais;
+    }
+
     public Direccion() {
 
     }

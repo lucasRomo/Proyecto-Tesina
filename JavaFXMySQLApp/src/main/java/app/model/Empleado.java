@@ -8,7 +8,7 @@ public class Empleado {
     private LocalDate fechaContratacion;
     private String cargo;
     private double salario;
-    private String estado; // <-- ¡AGREGAR ESTE ATRIBUTO!
+    private String estado;
     private int idPersona;
     private String nombre;
     private String apellido;
@@ -16,24 +16,24 @@ public class Empleado {
     public Empleado() {
     }
 
-    // Constructor para cuando se obtienen datos desde la DB (AHORA INCLUYE 'estado')
+    // Constructor completo (usado para lectura desde DB)
     public Empleado(int idEmpleado, LocalDate fechaContratacion, String cargo, double salario, String estado, int idPersona, String nombre, String apellido) {
         this.idEmpleado = idEmpleado;
         this.fechaContratacion = fechaContratacion;
         this.cargo = cargo;
         this.salario = salario;
-        this.estado = estado; // <-- Asignar el valor del estado
+        this.estado = estado;
         this.idPersona = idPersona;
         this.nombre = nombre;
         this.apellido = apellido;
     }
 
-    // Constructor sin id_empleado, útil para la inserción (AHORA INCLUYE 'estado')
+    // Constructor para inserción (sin id_empleado, con id_persona)
     public Empleado(LocalDate fechaContratacion, String cargo, double salario, String estado, int idPersona) {
         this.fechaContratacion = fechaContratacion;
         this.cargo = cargo;
         this.salario = salario;
-        this.estado = estado; // <-- Asignar el valor del estado
+        this.estado = estado;
         this.idPersona = idPersona;
     }
 
@@ -81,11 +81,11 @@ public class Empleado {
         this.salario = salario;
     }
 
-    public String getEstado() { // <-- ¡AGREGAR ESTE GETTER!
+    public String getEstado() {
         return estado;
     }
 
-    public void setEstado(String estado) { // <-- ¡AGREGAR ESTE SETTER!
+    public void setEstado(String estado) {
         this.estado = estado;
     }
 

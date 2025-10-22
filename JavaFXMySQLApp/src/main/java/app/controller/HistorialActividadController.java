@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static app.controller.MenuController.loadScene;
+
 public class HistorialActividadController {
 
     @FXML private TableView<HistorialActividadTableView> historialTableView;
@@ -37,6 +39,19 @@ public class HistorialActividadController {
     @FXML
     public void initialize() {
         historialDAO = new HistorialActividadDAO();
+
+        // ==========================================================
+        // === VINCULACIÓN DEL ANCHO DE COLUMNAS PORCENTUAL ========
+        // ==========================================================
+        fechaModificacionColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.15));
+        nombreUsuarioColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.15));
+        tablaAfectadaColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.12));
+        columnaAfectadaColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.13));
+        idRegistroModificadoColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.10));
+        datoPrevioColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.175));
+        datoModificadoColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.175));
+        // ==========================================================
+
 
         // 1. Configurar las Cell Value Factories
         // Usamos los nombres de los métodos 'propiedadProperty()' definidos en HistorialActividadTableView.
@@ -89,14 +104,13 @@ public class HistorialActividadController {
     @FXML
     private void handleVolverButtonHistorial(ActionEvent event) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/menuAdmin.fxml"));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("Menú Principal");
-            stage.show();
+            // Se asume que MenuController existe en el paquete app.controller
+            Class.forName("app.controller.MenuController");
+            loadScene((Node) event.getSource(), "/menuAdmin.fxml", "Menú Admin");
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            System.err.println("Clase MenuController no encontrada. No se puede volver.");
         }
     }
 }

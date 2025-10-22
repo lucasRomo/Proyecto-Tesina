@@ -3,6 +3,7 @@ package app.controller;
 import app.dao.DireccionDAO;
 import app.dao.ProveedorDAO;
 import app.dao.TipoProveedorDAO;
+import app.dao.HistorialActividadDAO;
 import app.model.Direccion;
 import app.model.Proveedor;
 import app.model.TipoProveedor;
@@ -26,13 +27,28 @@ import javafx.util.StringConverter;
 import javafx.stage.Screen;
 import javafx.geometry.Rectangle2D;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Optional;
 
+// Nota: Asumo que MenuController.loadScene está disponible.
+// import static app.controller.MenuController.loadScene;
+
+
 public class ProveedorController {
+
+    // Configuración de la conexión (DEBE COINCIDIR CON LA DE TUS DAOs)
+    private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
+    private static final String USER = "root";
+    private static final String PASSWORD = "";
+
 
     @FXML private TableView<Proveedor> proveedoresTableView;
     @FXML private TableColumn<Proveedor, Number> idProveedorColumn;
@@ -53,14 +69,19 @@ public class ProveedorController {
     private ProveedorDAO proveedorDAO;
     private DireccionDAO direccionDAO;
     private TipoProveedorDAO tipoProveedorDAO;
+    private HistorialActividadDAO historialDAO;
     private ObservableList<Proveedor> masterData = FXCollections.observableArrayList();
     private FilteredList<Proveedor> filteredData;
     private List<TipoProveedor> tiposProveedor;
+
+    // Set para rastrear todos los proveedores que tienen cambios pendientes de guardar en DB
+    private Set<Proveedor> proveedoresPendientesDeGuardar = new HashSet<>();
 
     public ProveedorController() {
         this.proveedorDAO = new ProveedorDAO();
         this.direccionDAO = new DireccionDAO();
         this.tipoProveedorDAO = new TipoProveedorDAO();
+        this.historialDAO = new HistorialActividadDAO();
     }
 
     @FXML
@@ -164,7 +185,9 @@ public class ProveedorController {
 
             @Override
             public void startEdit() {
-                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable() || isEmpty()) return;
+                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable()) {
+                    return;
+                }
                 super.startEdit();
 
                 Proveedor proveedor = getTableView().getItems().get(getIndex());
@@ -187,7 +210,7 @@ public class ProveedorController {
 
                 setGraphic(choiceBox);
                 setText(null);
-                choiceBox.show();
+                choiceBox.show(); // Ayuda a que se despliegue inmediatamente
             }
 
             @Override
@@ -326,6 +349,7 @@ public class ProveedorController {
             proveedoresTableView.refresh();
         });
 
+        // --- Columna Acción (Ver Dirección) ---
         accionColumn.setCellFactory(param -> new TableCell<Proveedor, Void>() {
             private final Button btn = new Button("Ver Dirección");
             {
@@ -533,6 +557,9 @@ public class ProveedorController {
         return texto.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+");
     }
 
+    /**
+     * Modificado: Solo valida el formato y la unicidad en la DB. Actualiza el modelo.
+     */
     private boolean validarYGuardarMail(Proveedor proveedor, String nuevoMail, String mailOriginal) {
         String trimmedMail = nuevoMail != null ? nuevoMail.trim() : "";
 

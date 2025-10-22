@@ -4,6 +4,14 @@ import app.dao.PedidoDAO;
 import app.model.Cliente;
 import app.model.Pedido;
 import app.util.ComprobanteService;
+// AGREGADO: Importaciones requeridas para Auditoría y Transacción
+import app.dao.HistorialActividadDAO;
+import app.controller.SessionManager; // Necesario para la auditoría (asumiendo que existe)
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+// FIN AGREGADO
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -41,6 +49,12 @@ import java.util.stream.Collectors;
 
 public class VerPedidosController implements Initializable {
 
+    // CONFIGURACIÓN DE CONEXIÓN (Debe coincidir con la de otros controllers)
+    private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
+    private static final String USER = "root";
+    private static final String PASSWORD = "";
+    // FIN CONFIGURACIÓN
+
     // Formato para mostrar la fecha de creación (dd-MM-yyyy HH:mm)
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
@@ -72,10 +86,25 @@ public class VerPedidosController implements Initializable {
     // Instancia del servicio de comprobantes
     private final ComprobanteService comprobanteService = new ComprobanteService();
     private int idEmpleadoFiltro = 0; // 0 significa 'Todos los Empleados'
+    // AGREGADO: DAO de historial
+    private final HistorialActividadDAO historialDAO = new HistorialActividadDAO();
+    // CLAVE: Variable para guardar el estado original antes de la edición de CELDA
+    private Pedido pedidoOriginal;
+
+    private int idEmpleadoFiltro = 0;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         pedidosTable.setEditable(true);
+
+        // --- AGREGADO: Listener para capturar la copia original ---
+        // Al seleccionar una fila, se guarda su estado original para la auditoría.
+        pedidosTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                this.pedidoOriginal = crearCopiaPedido(newVal);
+            }
+        });
+        // --- FIN AGREGADO ---
 
         // --- Configuración de Propiedades ---
         idPedidoColumn.setCellValueFactory(new PropertyValueFactory<>("idPedido"));
@@ -103,9 +132,13 @@ public class VerPedidosController implements Initializable {
         estadoColumn.setOnEditCommit(event -> {
             Pedido pedido = event.getRowValue();
             String nuevoEstado = event.getNewValue();
+            String estadoAnterior = event.getOldValue();
+
+            if (estadoAnterior.equals(nuevoEstado)) { return; }
 
             if (nuevoEstado.equalsIgnoreCase("Retirado")) {
                 pedido.setFechaFinalizacion(LocalDateTime.now());
+                // ALERTA ESPECÍFICA MANTENIDA: Esta alerta es para confirmar una acción importante (finalización/retiro)
                 mostrarAlerta("Éxito", "El pedido ha sido marcado como Retirado.", Alert.AlertType.INFORMATION);
             } else if (pedido.getEstado() != null && pedido.getEstado().equalsIgnoreCase("Retirado") && !nuevoEstado.equalsIgnoreCase("Retirado")) {
                 pedido.setFechaFinalizacion(null);
@@ -127,8 +160,10 @@ public class VerPedidosController implements Initializable {
         // --- 5 & 6. Columnas NUMÉRICAS (Double) ---
         montoTotalColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
         montoTotalColumn.setOnEditCommit(event -> {
-            if (event.getNewValue() != null && event.getNewValue() >= 0) {
-                event.getRowValue().setMontoTotal(event.getNewValue());
+            Double nuevoValor = event.getNewValue();
+            if (nuevoValor != null && nuevoValor >= 0) {
+                if (event.getOldValue().equals(nuevoValor)) { return; }
+                event.getRowValue().setMontoTotal(nuevoValor);
                 guardarCambiosEnBD(event.getRowValue(), "Monto Total");
             } else {
                 mostrarAlerta("Advertencia", "El monto total debe ser un valor numérico positivo.", Alert.AlertType.WARNING);
@@ -138,8 +173,10 @@ public class VerPedidosController implements Initializable {
 
         montoEntregadoColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
         montoEntregadoColumn.setOnEditCommit(event -> {
-            if (event.getNewValue() != null && event.getNewValue() >= 0) {
-                event.getRowValue().setMontoEntregado(event.getNewValue());
+            Double nuevoValor = event.getNewValue();
+            if (nuevoValor != null && nuevoValor >= 0) {
+                if (event.getOldValue().equals(nuevoValor)) { return; }
+                event.getRowValue().setMontoEntregado(nuevoValor);
                 guardarCambiosEnBD(event.getRowValue(), "Monto Entregado");
             } else {
                 mostrarAlerta("Advertencia", "El monto entregado debe ser un valor numérico positivo.", Alert.AlertType.WARNING);
@@ -150,7 +187,10 @@ public class VerPedidosController implements Initializable {
         // --- 7. Columna INSTRUCCIONES (TextFieldTableCell) ---
         instruccionesColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         instruccionesColumn.setOnEditCommit(event -> {
-            event.getRowValue().setInstrucciones(event.getNewValue());
+            String nuevoValor = event.getNewValue();
+            String valorOriginal = event.getOldValue();
+            if (valorOriginal.equals(nuevoValor)) { return; }
+            event.getRowValue().setInstrucciones(nuevoValor);
             guardarCambiosEnBD(event.getRowValue(), "Instrucciones");
         });
 
@@ -181,6 +221,156 @@ public class VerPedidosController implements Initializable {
         // Carga inicial de pedidos
         cargarPedidos();
     }
+
+    // =========================================================================
+    // UTILIDADES DE AUDITORÍA Y CONTROL
+    // =========================================================================
+
+    /**
+     * Crea una copia profunda del Pedido, esencial para la auditoría.
+     * Utiliza el CONSTRUCTOR COMPLETO de 14 parámetros de Pedido.java.
+     */
+    private Pedido crearCopiaPedido(Pedido original) {
+        if (original == null) return null;
+
+        // ** CLAVE CORREGIDA: Usar el Constructor Completo de 14 parámetros **
+        // El orden DEBE coincidir con el constructor de Pedido.java
+        Pedido copia = new Pedido(
+                original.getIdPedido(),             // 1. idPedido
+                original.getIdCliente(),            // 2. idCliente
+                original.getNombreCliente(),        // 3. nombreCliente
+                original.getIdEmpleado(),           // 4. idEmpleado
+                original.getNombreEmpleado(),       // 5. nombreEmpleado
+                original.getEstado(),               // 6. estado
+                original.getTipoPago(),             // 7. tipoPago
+                original.getFechaCreacion(),        // 8. fechaCreacion
+                original.getFechaEntregaEstimada(), // 9. fechaEntregaEstimada
+                original.getFechaFinalizacion(),    // 10. fechaFinalizacion
+                original.getInstrucciones(),        // 11. instrucciones
+                original.getMontoTotal(),           // 12. montoTotal
+                original.getMontoEntregado(),       // 13. montoEntregado
+                original.getRutaComprobante()       // 14. RutaComprobante
+        );
+
+        return copia;
+    }
+
+    /**
+     * Registra el cambio en Historial. Utiliza la conexión transaccional. No hace Commit.
+     */
+    private void auditarCambio(Connection conn, Pedido pedidoActual, String columna, Object valorOriginal, Object valorNuevo) throws SQLException {
+        String originalStr = (valorOriginal != null) ? valorOriginal.toString() : "";
+        String nuevoStr = (valorNuevo != null) ? valorNuevo.toString() : "";
+
+        // Asumiendo que SessionManager existe y proporciona el ID de usuario
+        boolean exitoRegistro = historialDAO.insertarRegistro(
+                SessionManager.getInstance().getLoggedInUserId(),
+                "Pedido",
+                columna,
+                pedidoActual.getIdPedido(),
+                originalStr,
+                nuevoStr,
+                conn
+        );
+
+        if (!exitoRegistro) {
+            // Si falla el registro, lanzamos una excepción para provocar el ROLLBACK
+            throw new SQLException("Fallo al registrar la actividad para la columna: " + columna);
+        }
+    }
+
+    // =========================================================================
+    // LÓGICA DE PERSISTENCIA Y AUDITORÍA (POR CELDA)
+    // =========================================================================
+
+    private void guardarCambiosEnBD(Pedido pedidoActual, String campoEditado) {
+
+        // 1. Obtener la versión original del pedido antes de la edición.
+        Pedido original = this.pedidoOriginal;
+
+        if (original == null || pedidoActual.getIdPedido() != original.getIdPedido()) {
+            mostrarAlerta("Error", "No se pudo iniciar la auditoría. Seleccione la fila nuevamente.", Alert.AlertType.ERROR);
+            pedidosTable.refresh();
+            return;
+        }
+
+        Connection conn = null;
+        Object valorOriginal = null;
+        Object valorNuevo = null;
+        boolean huboCambioParaAuditar = false;
+
+        try {
+            // 2. Iniciar Transacción (SOLO para HistorialActividadDAO)
+            conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            conn.setAutoCommit(false);
+
+            // --- 3. IDENTIFICAR LOS CAMBIOS Y AUDITAR ---
+            switch (campoEditado) {
+                case "Estado":
+                    valorOriginal = original.getEstado();
+                    valorNuevo = pedidoActual.getEstado();
+                    if (!valorOriginal.equals(valorNuevo)) { auditarCambio(conn, pedidoActual, "estado", valorOriginal, valorNuevo); huboCambioParaAuditar = true; }
+                    break;
+                case "Monto Total":
+                    valorOriginal = original.getMontoTotal();
+                    valorNuevo = pedidoActual.getMontoTotal();
+                    if (Double.compare((double)valorOriginal, (double)valorNuevo) != 0) { auditarCambio(conn, pedidoActual, "montoTotal", valorOriginal, valorNuevo); huboCambioParaAuditar = true; }
+                    break;
+                case "Monto Entregado":
+                    valorOriginal = original.getMontoEntregado();
+                    valorNuevo = pedidoActual.getMontoEntregado();
+                    if (Double.compare((double)valorOriginal, (double)valorNuevo) != 0) { auditarCambio(conn, pedidoActual, "montoEntregado", valorOriginal, valorNuevo); huboCambioParaAuditar = true; }
+                    break;
+                case "Instrucciones":
+                    valorOriginal = original.getInstrucciones();
+                    valorNuevo = pedidoActual.getInstrucciones();
+                    if (!String.valueOf(valorOriginal).equals(String.valueOf(valorNuevo))) { auditarCambio(conn, pedidoActual, "instrucciones", valorOriginal, valorNuevo); huboCambioParaAuditar = true; }
+                    break;
+                case "Ruta Comprobante":
+                    valorOriginal = original.getRutaComprobante();
+                    valorNuevo = pedidoActual.getRutaComprobante();
+                    if (!String.valueOf(valorOriginal).equals(String.valueOf(valorNuevo))) { auditarCambio(conn, pedidoActual, "RutaComprobante", valorOriginal, valorNuevo); huboCambioParaAuditar = true; }
+                    break;
+            }
+
+            if (!huboCambioParaAuditar) {
+                conn.rollback();
+                return;
+            }
+
+            // --- 4. PERSISTIR CAMBIOS EN EL DAO ---
+            boolean exitoActualizacion = pedidoDAO.modificarPedido(pedidoActual);
+
+            if (exitoActualizacion) {
+                conn.commit(); // Confirma el registro de actividad
+                // <<--- ALERTA DE ÉXITO ELIMINADA AQUÍ para guardado silencioso --->>
+
+                // Actualizar la copia original para futuras ediciones en la misma fila
+                this.pedidoOriginal = crearCopiaPedido(pedidoActual);
+
+                if ("Retirado".equalsIgnoreCase(pedidoActual.getEstado()) && !campoEditado.equalsIgnoreCase("Ruta Comprobante")) {
+                    cargarPedidos();
+                } else {
+                    pedidosTable.refresh();
+                }
+            } else {
+                conn.rollback(); // Deshace la auditoría si el DAO falla
+                mostrarAlerta("Error de Guardado", "No se pudo actualizar el pedido en la BD. ROLLBACK de historial realizado.", Alert.AlertType.ERROR);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try { if (conn != null) conn.rollback(); } catch (SQLException rollbackEx) { /* Ignorar */ }
+            mostrarAlerta("Error de BD", "Ocurrió un error de base de datos durante la auditoría: " + e.getMessage(), Alert.AlertType.ERROR);
+        } finally {
+            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (SQLException closeEx) { /* Ignorar */ }
+            pedidosTable.refresh();
+        }
+    }
+
+
+    // =========================================================================
+    // MÉTODOS EXISTENTES (sin cambios críticos)
+    // =========================================================================
 
     /**
      * Helper para cargar un ImageView desde un recurso.
@@ -490,6 +680,10 @@ public class VerPedidosController implements Initializable {
         FileChooser.ExtensionFilter imgFilter = new FileChooser.ExtensionFilter("Imágenes JPG (*.jpg, *.jpeg)", "*.jpg", "*.jpeg");
         fileChooser.getExtensionFilters().addAll(pdfFilter, imgFilter);
 
+        if (archivoExistenteAbierto && pedido.getRutaComprobante() != null && !pedido.getRutaComprobante().isEmpty()) {
+            // Si hay archivo y se abrió, el usuario decidirá si quiere cambiarlo o solo verlo.
+        }
+
         File file = fileChooser.showOpenDialog(stage);
 
         if (file != null) {
@@ -599,6 +793,7 @@ public class VerPedidosController implements Initializable {
         Pedido pedidoSeleccionado = pedidosTable.getSelectionModel().getSelectedItem();
 
         if (pedidoSeleccionado != null) {
+            // Este botón debe usarse principalmente si la edición de celda no se usó (ej. edición externa).
             boolean exito = pedidoDAO.modificarPedido(pedidoSeleccionado);
 
             if (exito) {
@@ -644,6 +839,7 @@ public class VerPedidosController implements Initializable {
             mostrarAlerta("Error", "No se pudo volver al menú de pedidos. Verifique la ruta del FXML y la clase MenuController.", Alert.AlertType.ERROR);
         }
     }
+    // ===============================================
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);

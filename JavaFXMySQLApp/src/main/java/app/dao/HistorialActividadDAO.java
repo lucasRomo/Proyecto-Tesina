@@ -20,6 +20,7 @@ public class HistorialActividadDAO {
 
     /**
      * Establece una conexión con la base de datos.
+     *
      * @return Objeto Connection.
      * @throws SQLException Si ocurre un error de conexión.
      */
@@ -33,10 +34,11 @@ public class HistorialActividadDAO {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
+    // ✅ DESPUÉS:
     private static final String SELECT_ALL_REGISTROS =
             "SELECT ra.id_RegAct, ra.fecha_modificacion, ra.tabla_afectada, " +
-                    "ra.columna_afectada, ra.id_registro_modificado, ra.dato_previo_modificacion, ra.dato_modificado, " +
-                    "p.nombre, p.apellido, u.nombre_usuario AS nombre_usuario_login " +
+                    "ra.columna_afectada, ra.id_registro_modificado, ra.dato_previo_modificacion, " +
+                    "ra.dato_modificado, p.nombre, p.apellido, u.nombre_usuario AS nombre_usuario_login " +
                     "FROM RegistroActividad ra " +
                     "JOIN usuario u ON ra.id_usuario_responsable = u.id_usuario " +
                     "LEFT JOIN persona p ON u.id_persona = p.id_persona " +
@@ -56,72 +58,35 @@ public class HistorialActividadDAO {
     // MODIFICACIÓN #1: Nueva sobrecarga para la transacción (Usa la conexión recibida)
     // =========================================================================
 
-    /**
-     * Inserta un nuevo registro de actividad usando una conexión provista (para transacciones).
-     * @param conn La conexión de la base de datos activa.
-     * @throws SQLException Si ocurre un error SQL, se propaga al controlador para el rollback.
-     */
-    public boolean insertarRegistro(int idUsuarioResponsable, String tabla, String columna, int idRegistro, String valorAnterior, String valorNuevo, Connection conn) throws SQLException {
-        // Verificar si ya existe un registro para este id_registro_modificado y columna
-        String checkSql = "SELECT id_RegAct FROM RegistroActividad WHERE id_registro_modificado = ? AND columna_afectada = ? LIMIT 1";
-        int existingIdRegAct = -1;
-        try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
-            checkStmt.setInt(1, idRegistro);
-            checkStmt.setString(2, columna);
-            try (ResultSet rs = checkStmt.executeQuery()) {
-                if (rs.next()) {
-                    existingIdRegAct = rs.getInt("id_RegAct");
-                }
-            }
-        }
 
-        if (existingIdRegAct > 0) {
-            // Si ya existe, actualiza el registro existente usando id_RegAct
-            String updateSql = "UPDATE RegistroActividad SET dato_previo_modificacion = ?, dato_modificado = ?, fecha_modificacion = NOW() WHERE id_RegAct = ?";
-            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
-                updateStmt.setString(1, valorAnterior);
-                updateStmt.setString(2, valorNuevo);
-                updateStmt.setInt(3, existingIdRegAct);
-                int rowsAffected = updateStmt.executeUpdate();
-                return rowsAffected > 0;
-            }
-        } else {
-            // Si no existe, inserta un nuevo registro
-            String insertSql = "INSERT INTO RegistroActividad (id_usuario_responsable, tabla_afectada, columna_afectada, id_registro_modificado, dato_previo_modificacion, dato_modificado, fecha_modificacion) VALUES (?, ?, ?, ?, ?, ?, NOW())";
-            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
-                insertStmt.setInt(1, idUsuarioResponsable);
-                insertStmt.setString(2, tabla);
-                insertStmt.setString(3, columna);
-                insertStmt.setInt(4, idRegistro);
-                insertStmt.setString(5, valorAnterior);
-                insertStmt.setString(6, valorNuevo);
-                int rowsAffected = insertStmt.executeUpdate();
-                return rowsAffected > 0;
-            }
+    public boolean insertarRegistro(int idUsuarioResponsable, String tabla, String columna,
+                                    int idRegistro, String valorAnterior, String valorNuevo,
+                                    Connection conn) throws SQLException {
+
+        String insertSql = "INSERT INTO RegistroActividad (id_usuario_responsable, tabla_afectada, " +
+                "columna_afectada, id_registro_modificado, dato_previo_modificacion, " +
+                "dato_modificado) VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+            insertStmt.setInt(1, idUsuarioResponsable);      // ← ID DEL USUARIO
+            insertStmt.setString(2, tabla);
+            insertStmt.setString(3, columna);
+            insertStmt.setInt(4, idRegistro);
+            insertStmt.setString(5, valorAnterior);
+            insertStmt.setString(6, valorNuevo);
+            return insertStmt.executeUpdate() > 0;
         }
     }
-    // =========================================================================
 
-
-    /**
-     * Inserta un nuevo registro de actividad en la tabla RegistroActividad (Maneja su propia conexión).
-     * Ahora reutiliza la lógica del método sobrecargado.
-     */
-    public void insertarRegistro(
-            int idUsuarioResponsable,
-            String tablaAfectada,
-            String columnaAfectada,
-            int idRegistroModificado,
-            String datoPrevio,
-            String datoModificado) {
-
+    public boolean insertarRegistro(int idUsuarioResponsable, String tabla, String columna,
+                                    int idRegistro, String valorAnterior, String valorNuevo) {
         try (Connection con = getConnection()) {
-            // Llama a la nueva versión, pasando la conexión que acaba de abrir
-            insertarRegistro(idUsuarioResponsable, tablaAfectada, columnaAfectada, idRegistroModificado, datoPrevio, datoModificado, con);
-
+            return insertarRegistro(idUsuarioResponsable, tabla, columna, idRegistro,
+                    valorAnterior, valorNuevo, con);
         } catch (SQLException e) {
-            System.err.println("❌ ERROR FATAL al insertar registro de actividad en la BD (sin transacción): " + e.getMessage());
+            System.err.println("❌ ERROR al insertar registro: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -146,21 +111,20 @@ public class HistorialActividadDAO {
                 if (nombre != null && apellido != null) {
                     nombreCompleto = nombre + " " + apellido;
                 } else if (nombreUsuarioLogin != null && !nombreUsuarioLogin.trim().isEmpty()) {
-                    // Si no tiene persona asociada, usamos el nombre de usuario de login (ej: "admin")
                     nombreCompleto = nombreUsuarioLogin + " (Admin/Sistema)";
                 } else {
                     nombreCompleto = "Usuario del Sistema Desconocido";
                 }
 
                 HistorialActividadTableView registro = new HistorialActividadTableView(
-                        rs.getInt("id_RegAct"),
-                        rs.getTimestamp("fecha_modificacion"),
-                        nombreCompleto,
-                        rs.getString("tabla_afectada"),
-                        rs.getString("columna_afectada"),
-                        rs.getInt("id_registro_modificado"),
-                        rs.getString("dato_previo_modificacion"),
-                        rs.getString("dato_modificado")
+                        rs.getInt("id_RegAct"),                    // ← COLUMNA REAL
+                        rs.getTimestamp("fecha_modificacion"),     // ← COLUMNA REAL
+                        nombreCompleto,                            // ← DEL JOIN
+                        rs.getString("tabla_afectada"),            // ← COLUMNA REAL
+                        rs.getString("columna_afectada"),          // ← COLUMNA REAL
+                        rs.getInt("id_registro_modificado"),       // ← COLUMNA REAL
+                        rs.getString("dato_previo_modificacion"),  // ← COLUMNA REAL
+                        rs.getString("dato_modificado")            // ← COLUMNA REAL
                 );
                 registros.add(registro);
             }

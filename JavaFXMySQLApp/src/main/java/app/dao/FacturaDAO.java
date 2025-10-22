@@ -1,98 +1,168 @@
 package app.dao;
 
-import app.controller.FacturasAdminTableView;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import java.sql.*;
-import java.time.LocalDateTime;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * Clase de acceso a datos para la entidad Factura.
- * Proporciona métodos para interactuar con la tabla Factura.
- */
 public class FacturaDAO {
-    // Configuración de la conexión a la BD
+
     private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
+    // Método auxiliar para la conexión
+    private Connection obtenerConexion() throws SQLException {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Error: No se encontró el driver JDBC de MySQL.");
+            throw new SQLException("Falta el driver de MySQL.", e);
+        }
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
+
+    // ----------------------------------------------------------------------------------
+    // 1. MÉTODOS DE MÉTRICAS CLAVE (lblTotalVentas) - RENOMBRADO A *PorRango*
+    // ----------------------------------------------------------------------------------
+
     /**
-     * Establece la conexión con la base de datos MySQL.
-     * @return Objeto Connection.
-     * @throws SQLException Si ocurre un error de conexión a la base de datos.
+     * Obtiene el monto total de ventas (Facturas) emitidas en un rango de fechas.
+     * Método requerido por InformesController: getTotalVentasPorRango.
      */
-    private Connection getConnection() throws SQLException {
-        // Ajuste de zona horaria para compatibilidad entre Java y MySQL
-        return DriverManager.getConnection(URL + "?serverTimezone=America/Argentina/Buenos_Aires", USER, PASSWORD);
+    public double getTotalVentasPorRango(LocalDate inicio, LocalDate fin) {
+        String sql = "SELECT COALESCE(SUM(monto_total), 0) AS total_ventas " +
+                "FROM Factura WHERE fecha_emision BETWEEN ? AND ?";
+        double total = 0.0;
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            // inicio.atStartOfDay() y fin.atTime(23, 59, 59) para incluir el día completo
+            stmt.setTimestamp(1, Timestamp.valueOf(inicio.atStartOfDay()));
+            stmt.setTimestamp(2, Timestamp.valueOf(fin.atTime(23, 59, 59)));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    total = rs.getDouble("total_ventas");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener total de ventas: " + e.getMessage());
+            // Manejo de excepciones adecuado
+        }
+        return total;
     }
 
     /**
-     * Obtiene todas las facturas de la base de datos, incluyendo el nombre del cliente.
-     * @return Una ObservableList de objetos FacturasAdminTableView.
+     * Obtiene el número total de facturas emitidas en un rango de fechas.
+     * Método requerido por InformesController: getTotalFacturasPorRango.
      */
-    public ObservableList<FacturasAdminTableView> obtenerFacturasAdmin() {
-        ObservableList<FacturasAdminTableView> listaFacturas = FXCollections.observableArrayList();
+    public int getTotalFacturasPorRango(LocalDate inicio, LocalDate fin) {
+        String sql = "SELECT COUNT(id_factura) AS count_facturas " +
+                "FROM Factura WHERE fecha_emision BETWEEN ? AND ?";
+        int count = 0;
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-        // Consulta SQL MEJORADA: Incluye JOINs para obtener el nombre del cliente.
-        // Asumo que tienes tablas Cliente y Persona para obtener el nombre/razón social.
-        String sql = """
-            SELECT
-                f.id_factura,
-                f.id_pedido,
-                f.id_cliente,
-                f.numero_factura,
-                f.fecha_emision,
-                f.monto_total,
-                f.estado_pago,
-                TRIM(CONCAT_WS(' - ',\s
-                                        c.razon_social,
-                                        CONCAT(p.nombre, ' ', p.apellido)
-                                    )) AS nombre_cliente
-            FROM
-                Factura f
-            INNER JOIN
-                Cliente c ON f.id_cliente = c.id_cliente
-            INNER JOIN
-                Persona p ON c.id_persona = p.id_persona
-            ORDER BY
-                f.fecha_emision DESC;
-            """;
+            stmt.setTimestamp(1, Timestamp.valueOf(inicio.atStartOfDay()));
+            stmt.setTimestamp(2, Timestamp.valueOf(fin.atTime(23, 59, 59)));
 
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                int idFactura = rs.getInt("id_factura");
-                int idPedido = rs.getInt("id_pedido");
-                String numeroFactura = rs.getString("numero_factura");
-
-                // Conversión de Timestamp a LocalDateTime
-                Timestamp ts = rs.getTimestamp("fecha_emision");
-                LocalDateTime fechaEmision = ts != null ? ts.toLocalDateTime() : null;
-
-                double montoTotal = rs.getDouble("monto_total");
-                String estadoPago = rs.getString("estado_pago");
-
-                // NUEVO: Obtener el nombre del cliente
-                String nombreCliente = rs.getString("nombre_Cliente");
-
-                // Llama al constructor AHORA DE 8 PARÁMETROS del modelo de vista
-                FacturasAdminTableView factura = new FacturasAdminTableView(
-                        idFactura,
-                        idPedido,
-                        nombreCliente,
-                        numeroFactura,
-                        fechaEmision,
-                        montoTotal,
-                        estadoPago
-                );
-                listaFacturas.add(factura);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt("count_facturas");
+                }
             }
         } catch (SQLException e) {
-            System.err.println("Error al obtener la lista de facturas para la vista de administración: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error al obtener conteo de facturas: " + e.getMessage());
+            // Manejo de excepciones adecuado
         }
-        return listaFacturas;
+        return count;
+    }
+
+    // ----------------------------------------------------------------------------------
+    // 2. MÉTODO DE GRÁFICO DE TENDENCIA (lineChartVentas) - AJUSTADO PARA RETORNAR Map
+    // ----------------------------------------------------------------------------------
+
+    /**
+     * Obtiene las ventas diarias (Facturas) para el LineChart.
+     * Retorna un Map<LocalDate, Double> (Fecha, Monto).
+     * Método requerido por InformesController: getVentasDiariasPorRango.
+     */
+    public Map<LocalDate, Double> getVentasDiariasPorRango(LocalDate inicio, LocalDate fin) {
+        // Utilizamos HashMap para el retorno
+        Map<LocalDate, Double> data = new HashMap<>();
+        String sql = "SELECT DATE(fecha_emision) AS dia, SUM(monto_total) AS monto " +
+                "FROM Factura WHERE fecha_emision BETWEEN ? AND ? " +
+                "GROUP BY dia ORDER BY dia";
+
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setTimestamp(1, Timestamp.valueOf(inicio.atStartOfDay()));
+            stmt.setTimestamp(2, Timestamp.valueOf(fin.atTime(23, 59, 59)));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    // Mapeamos directamente al HashMap
+                    data.put(
+                            rs.getDate("dia").toLocalDate(),
+                            rs.getDouble("monto")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener ventas diarias: " + e.getMessage());
+            // Manejo de excepciones adecuado
+        }
+        return data;
+    }
+
+    // ----------------------------------------------------------------------------------
+    // 3. MÉTODO DE MÉTRICA POR EMPLEADO (Mantenido y Renombrado)
+    // ----------------------------------------------------------------------------------
+
+    /**
+     * Obtiene el conteo de facturas asociadas a un Empleado en un rango de fechas.
+     * La relación se establece a través de Pedido y AsignacionPedido.
+     * * NOTA: Se RENOMBRA a 'contarFacturasPorEmpleado' para coincidir con el Controller.
+     */
+    public int contarFacturasPorEmpleado(int idEmpleado, LocalDate inicio, LocalDate fin) {
+        String sql = "SELECT COUNT(f.id_factura) AS count_facturas " +
+                "FROM Factura f " +
+                "JOIN Pedido p ON f.id_pedido = p.id_pedido " +
+                "JOIN AsignacionPedido ap ON p.id_pedido = ap.id_pedido " +
+                "WHERE ap.id_empleado = ? AND f.fecha_emision BETWEEN ? AND ?";
+        int count = 0;
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idEmpleado);
+            stmt.setTimestamp(2, Timestamp.valueOf(inicio.atStartOfDay()));
+            stmt.setTimestamp(3, Timestamp.valueOf(fin.atTime(23, 59, 59)));
+
+            // Log para debug (opcional, pero útil)
+            System.out.println("DEBUG FacturaDAO: Ejecutando consulta para empleado ID: " + idEmpleado +
+                    " entre " + inicio + " y " + fin);
+
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt("count_facturas");
+                    System.out.println("DEBUG FacturaDAO: Conteo de facturas: " + count);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener facturas por empleado: " + e.getMessage());
+            // Manejo de excepciones adecuado
+        }
+        return count;
     }
 }

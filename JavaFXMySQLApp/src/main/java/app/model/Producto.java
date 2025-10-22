@@ -35,6 +35,17 @@ public class Producto {
         this(0, nombreProducto, descripcion, precio, stock, 0); // idCategoria = 0 para NULL en DB
     }
 
+    public Producto() {
+        // Inicializar propiedades FINAL con valores por defecto
+        this.idProducto = new SimpleIntegerProperty(0);
+        this.nombreProducto = new SimpleStringProperty(null);
+        this.descripcion = new SimpleStringProperty(null);
+        this.precio = new SimpleDoubleProperty(0.0);
+        this.stock = new SimpleIntegerProperty(0);
+        this.idCategoria = new SimpleIntegerProperty(0);
+    }
+
+
     // --- Getters para Properties ---
     public IntegerProperty idProductoProperty() {
         return idProducto;

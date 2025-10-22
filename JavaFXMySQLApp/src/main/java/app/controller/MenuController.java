@@ -211,24 +211,6 @@ public class MenuController {
     }
 
     @FXML
-    public void handleFacturas(ActionEvent event) {
-        try {
-            loadScene((Node) event.getSource(), "/FacturasAdmin.fxml", "Menu de Facturas");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    public void handleComprobantes(ActionEvent event) {
-        try {
-            loadScene((Node) event.getSource(), "/ComprobantesAdmin.fxml", "Menu de Comprobantes");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
     public void handleHistorialActividadButton(ActionEvent event) {
         try {
             // Carga el FXML de la tabla de usuarios
@@ -302,11 +284,12 @@ public class MenuController {
     }
 
     @FXML
-    private void handleVolverButtonComprobantes(ActionEvent event) {
+    private void handleVerHistorialDesdeAdmin(ActionEvent event) {
         try {
-            loadScene((Node) event.getSource(), "/InformesAdmin.fxml", "Menú de Informes");
+            loadScene((Node) event.getSource(), "/VerHistorialPedidos.fxml", "Menú de Historial de Pedidos");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 }

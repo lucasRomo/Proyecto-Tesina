@@ -2,15 +2,22 @@ package app.dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager; // Importación necesaria para getConnection
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 
 /**
  * Data Access Object para la tabla ComprobantePago.
  * Maneja la inserción inicial del pago y la actualización posterior del archivo.
+ * Data Access Object para la tabla comprobantepago.
+ * Se encarga de guardar la referencia al archivo PDF generado y de obtener estadísticas.
  */
 public class ComprobantePagoDAO {
 
@@ -92,5 +99,47 @@ public class ComprobantePagoDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    // ----------------------------------------------------------------------------------
+    // NUEVO MÉTODO DE ESTADÍSTICAS - AJUSTADO PARA InformesController
+    // ----------------------------------------------------------------------------------
+
+    /**
+     * Obtiene la distribución de ingresos agrupada por tipo de pago (Efectivo, Transferencia, etc.)
+     * en un rango de fechas. Retorna un Map<Tipo de Pago, Monto Total>.
+     * Método requerido por InformesController: getDistribucionPagosPorRango.
+     */
+    public Map<String, Double> getDistribucionPagosPorRango(LocalDate inicio, LocalDate fin) {
+        // Retornamos un Map<String, Double> para la compatibilidad con InformesController
+        Map<String, Double> data = new HashMap<>();
+
+        String sql = "SELECT tipo_pago, COALESCE(SUM(monto_pago), 0) AS total_pago " +
+                "FROM ComprobantePago WHERE fecha_carga BETWEEN ? AND ? " +
+                "GROUP BY tipo_pago";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            // inicio.atStartOfDay() y fin.atTime(23, 59, 59) para incluir el día completo
+            stmt.setTimestamp(1, Timestamp.valueOf(inicio.atStartOfDay()));
+            stmt.setTimestamp(2, Timestamp.valueOf(fin.atTime(23, 59, 59)));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String tipoPago = rs.getString("tipo_pago");
+                    double totalPago = rs.getDouble("total_pago");
+
+                    // Solo agregamos datos si el total es positivo
+                    if (totalPago > 0) {
+                        data.put(tipoPago, totalPago);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener distribución de pagos: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return data;
     }
 }

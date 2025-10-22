@@ -2,6 +2,7 @@ app\controller\ClienteController.class
 app\controller\DetallePedidoController$2.class
 app\controller\VerHistorialPedidosController$3.class
 app\controller\RegistroController.class
+app\controller\InformesController.class
 app\dao\HistorialActividadDAO.class
 app\controller\IniciodeSesionController.class
 app\controller\CrearPedidoController.class
