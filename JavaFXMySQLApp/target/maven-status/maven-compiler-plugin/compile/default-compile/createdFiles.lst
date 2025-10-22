@@ -44,6 +44,7 @@ app\controller\VerHistorialPedidosController$FormattedDateTableCell.class
 app\controller\VerHistorialPedidosController$2.class
 app\controller\VerPedidosController$1.class
 app\controller\VerHistorialPedidosController$5.class
+app\dao\FacturaDAO.class
 app\controller\DetallePedidoController.class
 app\controller\VerHistorialPedidosController$4.class
 app\model\Persona.class

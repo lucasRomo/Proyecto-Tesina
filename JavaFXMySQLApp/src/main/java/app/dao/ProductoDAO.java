@@ -2,12 +2,17 @@ package app.dao;
 
 import app.model.Producto;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Data Access Object para la entidad Producto.
- * Gestiona la persistencia de los productos en la base de datos.
+ * Gestiona la persistencia de los productos en la base de datos y provee datos estadísticos.
  * Maneja el id_categoria como un campo NULLable, donde 0 en Java significa NULL en SQL.
  */
 public class ProductoDAO {
@@ -16,6 +21,8 @@ public class ProductoDAO {
     private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
     private static final String USER = "root";
     private static final String PASSWORD = "";
+
+    private static final Logger LOGGER = Logger.getLogger(ProductoDAO.class.getName());
 
     // Nombre de la tabla y columnas
     private static final String TABLE_NAME = "producto";
@@ -32,7 +39,11 @@ public class ProductoDAO {
      * @throws SQLException Si ocurre un error de SQL.
      */
     private Connection getConnection() throws SQLException {
-        // Asegúrate de tener el driver JDBC cargado en tu proyecto
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("Falta el driver de MySQL.", e);
+        }
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
@@ -256,5 +267,126 @@ public class ProductoDAO {
             System.err.println("Error al eliminar producto: " + e.getMessage());
         }
         return false;
+    }
+
+    // ----------------------------------------------------------------------------------
+    // MÉTODOS DE ESTADÍSTICAS (PARA InformesController) - CORREGIDOS
+    // ----------------------------------------------------------------------------------
+
+    /**
+     * Obtiene la suma de unidades vendidas (cantidad) por categoría de producto,
+     * filtrada por el rango de fechas de la FINALIZACIÓN del pedido.
+     * Retorna un Map<Nombre Categoría, Total Unidades>.
+     */
+    public Map<String, Integer> getUnidadesVendidasPorCategoria(LocalDate inicio, LocalDate fin) {
+        Map<String, Integer> data = new HashMap<>();
+
+        // Consulta SQL CORRECTA: Suma las cantidades (dp.cantidad) de productos en pedidos finalizados.
+        String sql = "SELECT c.nombre, SUM(dp.cantidad) AS total_unidades_vendidas " +
+                "FROM DetallePedido dp " +
+                "JOIN Producto p ON dp.id_producto = p.id_producto " +
+                "LEFT JOIN Categoria c ON p.id_categoria = c.id_categoria " + // Usamos LEFT JOIN para incluir productos sin categoría
+                "JOIN Pedido ped ON dp.id_pedido = ped.id_pedido " +
+                "WHERE ped.fecha_finalizacion BETWEEN ? AND ? " +
+                "GROUP BY c.nombre " +
+                "HAVING SUM(dp.cantidad) > 0 " + // Asegura que solo se muestren categorías con ventas > 0
+                "ORDER BY total_unidades_vendidas DESC";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            // inicio.atStartOfDay() y fin.atTime(23, 59, 59) para incluir el día completo
+            stmt.setTimestamp(1, Timestamp.valueOf(inicio.atStartOfDay()));
+            stmt.setTimestamp(2, Timestamp.valueOf(fin.atTime(23, 59, 59)));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String nombreCategoria = rs.getString("nombre");
+                    int totalUnidades = rs.getInt("total_unidades_vendidas");
+
+                    // Si nombreCategoria es NULL (producto sin categoría), lo etiquetamos
+                    if (nombreCategoria == null || nombreCategoria.trim().isEmpty()) {
+                        nombreCategoria = "Sin Categoría";
+                    }
+
+                    // La cláusula HAVING ya filtra los 0, pero lo mantenemos para el nombre nulo
+                    data.put(nombreCategoria, totalUnidades);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error al obtener unidades vendidas por categoría.", e);
+            System.err.println("Error al obtener unidades vendidas por categoría: " + e.getMessage());
+        }
+        return data;
+    }
+
+    /**
+     * Obtiene el total de ingresos (monto total) de los pedidos FINALIZADOS
+     * por rango de fecha.
+     *
+     * @param fechaDesde La fecha de inicio del rango.
+     * @param fechaHasta La fecha de fin del rango.
+     * @return El monto total de los pedidos finalizados en el rango.
+     */
+    public double getTotalIngresosPorRango(LocalDate fechaDesde, LocalDate fechaHasta) {
+        double totalIngresos = 0.0;
+
+        // La consulta suma el monto_total solo para pedidos finalizados en el rango de fecha_finalizacion
+        String sql = "SELECT SUM(monto_total) AS total " +
+                "FROM Pedido " +
+                "WHERE estado = 'Finalizado' AND fecha_finalizacion BETWEEN ? AND ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setTimestamp(1, Timestamp.valueOf(fechaDesde.atStartOfDay()));
+            pstmt.setTimestamp(2, Timestamp.valueOf(fechaHasta.atTime(23, 59, 59)));
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    totalIngresos = rs.getDouble("total");
+                }
+            }
+
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error al obtener ingresos totales por rango.", e);
+            System.err.println("Error en la consulta de ingresos totales: " + e.getMessage());
+        }
+        return totalIngresos;
+    }
+
+    /**
+     * Obtiene el total de pedidos por estado en un rango de fechas.
+     *
+     * @param fechaDesde La fecha de inicio del rango (usa fecha_creacion).
+     * @param fechaHasta La fecha de fin del rango (usa fecha_creacion).
+     * @return Un mapa donde la clave es el estado (String) y el valor es la cantidad de pedidos (Integer).
+     */
+    public Map<String, Integer> getPedidosPorEstadoPorRango(LocalDate fechaDesde, LocalDate fechaHasta) {
+        Map<String, Integer> resultados = new HashMap<>();
+
+        String sql = "SELECT estado, COUNT(id_pedido) AS total_pedidos " +
+                "FROM Pedido " +
+                "WHERE fecha_creacion BETWEEN ? AND ? " +
+                "GROUP BY estado";
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setTimestamp(1, Timestamp.valueOf(fechaDesde.atStartOfDay()));
+            pstmt.setTimestamp(2, Timestamp.valueOf(fechaHasta.atTime(23, 59, 59)));
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    String estado = rs.getString("estado");
+                    int total = rs.getInt("total_pedidos");
+                    resultados.put(estado, total);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error al obtener pedidos por estado por rango.", e);
+            System.err.println("Error en la consulta de pedidos por estado: " + e.getMessage());
+        }
+        return resultados;
     }
 }
