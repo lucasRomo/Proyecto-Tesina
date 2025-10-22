@@ -60,6 +60,11 @@
 /* ======================================================= */
 
 
+/* Estilo para asegurar que el texto de entrada sea negro */
+.input-negro {
+    /* Forzar el color de texto a negro */
+    -fx-text-fill: black;
+}
 /* Estilo para el fondo del VBox principal */
 .root {
     /* Mantener el estilo grid oscuro */

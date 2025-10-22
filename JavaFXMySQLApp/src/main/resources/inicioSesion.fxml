@@ -10,7 +10,7 @@
 
 <AnchorPane prefHeight="1000.0" prefWidth="1800.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.IniciodeSesionController">
     <stylesheets>
-        <URL value="@styles.css" />
+        <URL value="@inicio.css" />
     </stylesheets>
 
     <ImageView fitHeight="150.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true"
@@ -35,7 +35,7 @@
             </font>
         </Label>
 
-        <TextField fx:id="UsuarioField" maxWidth="300.0" promptText="Ingrese su Usuario">
+        <TextField fx:id="UsuarioField" maxWidth="300.0" promptText="Ingrese su Usuario" styleClass="input-negro">
             <font>
                 <Font size="14.0" />
             </font>
@@ -48,13 +48,13 @@
         </Label>
 
         <StackPane maxWidth="300.0">
-            <PasswordField fx:id="ContraseniaField" maxWidth="300.0" promptText="Ingrese su Contraseña" visible="true">
+            <PasswordField fx:id="ContraseniaField" maxWidth="300.0" promptText="Ingrese su Contraseña" visible="true" styleClass="input-negro">
                 <font>
                     <Font size="14.0" />
                 </font>
             </PasswordField>
 
-            <TextField fx:id="ContraseniaVisibleField" maxWidth="300.0" promptText="Ingrese su Contraseña" visible="false">
+            <TextField fx:id="ContraseniaVisibleField" maxWidth="300.0" promptText="Ingrese su Contraseña" visible="false" styleClass="input-negro">
                 <font>
                     <Font size="14.0" />
                 </font>
