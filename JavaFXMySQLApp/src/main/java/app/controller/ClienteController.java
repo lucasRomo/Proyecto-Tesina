@@ -29,7 +29,6 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -46,7 +45,6 @@ import java.util.List;
 // Aquí asumo que existe 'app.controller.RegistroController'
 // Si no existe, debes cambiar 'RegistroController' por el nombre real de tu controlador de registro
 // Ejemplo: import app.controller.RegistroController;
-
 import static app.controller.MenuController.loadScene;
 
 public class ClienteController {
@@ -69,7 +67,6 @@ public class ClienteController {
     @FXML private TableColumn<Cliente, String> condicionesPagoColumn;
     @FXML private TableColumn<Cliente, String> estadoColumn;
     @FXML private TableColumn<Cliente, Void> direccionColumn;
-
     @FXML private TextField filterField;
     @FXML private ChoiceBox<String> estadoChoiceBox;
 
@@ -87,21 +84,16 @@ public class ClienteController {
 
     private ObservableList<Cliente> masterData = FXCollections.observableArrayList();
     private FilteredList<Cliente> filteredData;
-
     // Set para rastrear todos los clientes que tienen cambios pendientes de guardar en DB
     private Set<Cliente> clientesPendientesDeGuardar = new HashSet<>();
-
     // Opciones fijas para Razón Social
     private static final ObservableList<String> RAZON_SOCIAL_OPCIONES = FXCollections.observableArrayList(
             "Responsable Inscripto", "Monotributista", "Persona"
     );
-
     private ObservableList<TipoDocumento> TIPOS_DOCUMENTO_OPCIONES = FXCollections.observableArrayList();
 
     private Cliente clienteOriginal;
     private int clienteOriginalIndex = -1;
-
-
     public ClienteController() {
         this.clienteDAO = new ClienteDAO();
         this.personaDAO = new PersonaDAO();
@@ -126,14 +118,12 @@ public class ClienteController {
     @FXML
     private void initialize() {
         clientesTableView.setEditable(true);
-
         clientesTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 clienteOriginal = new Cliente(newSelection);
                 clienteOriginalIndex = clientesTableView.getSelectionModel().getSelectedIndex();
             }
         });
-
         // ==========================================================
         // === VINCULACIÓN DEL ANCHO DE COLUMNAS PORCENTUAL ========
         // ==========================================================
@@ -149,17 +139,14 @@ public class ClienteController {
         condicionesPagoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.10));
         estadoColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.05));
         direccionColumn.prefWidthProperty().bind(clientesTableView.widthProperty().multiply(0.08));
-
         // --- Configuración de PropertyValueFactory ---
         nombreColumn.setCellValueFactory(cellData -> cellData.getValue().nombreProperty());
         apellidoColumn.setCellValueFactory(cellData -> cellData.getValue().apellidoProperty());
-
         tipoDocumentoColumn.setCellValueFactory(cellData -> {
             int id = cellData.getValue().getIdTipoDocumento();
             String nombre = obtenerNombreTipoDocumento(id);
             return new javafx.beans.property.SimpleStringProperty(nombre);
         });
-
         numeroDocumentoColumn.setCellValueFactory(cellData -> cellData.getValue().numeroDocumentoProperty());
         telefonoColumn.setCellValueFactory(cellData -> cellData.getValue().telefonoProperty());
         emailColumn.setCellValueFactory(cellData -> cellData.getValue().emailProperty());
@@ -186,7 +173,6 @@ public class ClienteController {
             clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
-
         // --- Columna Apellido ---
         apellidoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         apellidoColumn.setOnEditCommit(event -> {
@@ -200,7 +186,6 @@ public class ClienteController {
             clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
-
         // --- Columna Teléfono (AHORA OBLIGATORIO) ---
         // --- Columna Número Documento (Editable con validación) ---
         numeroDocumentoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -214,13 +199,8 @@ public class ClienteController {
                 clientesTableView.refresh();
                 return;
             }
-            if (!validarSoloNumeros(nuevoNumDoc)) {
-                mostrarAlerta("Advertencia", "El número de documento solo puede contener dígitos.", Alert.AlertType.WARNING);
-                clientesTableView.refresh();
-                return;
-            }
 
-            // Validar longitud y si existe para otro
+            // La validación de formato y unicidad se llama en el método
             if (!validarNumeroDocumento(cliente.getIdTipoDocumento(), nuevoNumDoc, cliente.getIdPersona())) {
                 clientesTableView.refresh();
                 return;
@@ -253,7 +233,8 @@ public class ClienteController {
 
             // Si pasa todas las validaciones
             cliente.setTelefono(nuevoTelefono);
-            cliente.setTelefono(nuevoTelefono.isEmpty() ? null : nuevoTelefono);
+            cliente.setTelefono(nuevoTelefono.isEmpty() ?
+                    null : nuevoTelefono);
             clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
@@ -278,11 +259,9 @@ public class ClienteController {
                 return;
             }
 
-            // Si pasa todas las validaciones
+            // Si pasa todas las validaciones (Se elimina la llamada a validarYGuardarEmail que causaba error)
             cliente.setEmail(nuevoEmail);
-            if (validarYGuardarEmail(cliente, nuevoEmail, emailOriginal)) {
-                clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO si la validación es exitosa
-            }
+            clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
 
@@ -302,24 +281,24 @@ public class ClienteController {
                 setGraphic(choiceBox); setText(null);
             }
             @Override
-            public void cancelEdit() { super.cancelEdit(); setGraphic(null); setText(getItem()); }
+            public void cancelEdit() { super.cancelEdit();
+                setGraphic(null); setText(getItem()); }
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) { setText(null); setGraphic(null); }
-                else if (isEditing()) { choiceBox.getSelectionModel().select(item); setGraphic(choiceBox); setText(null); }
-                else { setGraphic(null); setText(item); }
+                else if (isEditing()) { choiceBox.getSelectionModel().select(item);
+                    setGraphic(choiceBox); setText(null); }
+                else { setGraphic(null);
+                    setText(item); }
             }
         });
-
         razonSocialColumn.setOnEditCommit(event -> {
             Cliente cliente = event.getRowValue();
             String nuevaRazonSocial = event.getNewValue();
             if (nuevaRazonSocial == null || nuevaRazonSocial.trim().isEmpty()) {
                 mostrarAlerta("Advertencia", "La razón social no puede quedar vacía.", Alert.AlertType.WARNING);
                 clientesTableView.refresh(); return;
-                clientesTableView.refresh();
-                return;
             }
 
             cliente.setRazonSocial(nuevaRazonSocial);
@@ -327,7 +306,6 @@ public class ClienteController {
 
             clientesTableView.refresh();
         });
-
         // --- Columna Persona Contacto ---
         personaContactoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         personaContactoColumn.setOnEditCommit(event -> {
@@ -342,7 +320,6 @@ public class ClienteController {
             clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
-
         // --- Columna Condiciones Pago ---
         condicionesPagoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         condicionesPagoColumn.setOnEditCommit(event -> {
@@ -356,7 +333,6 @@ public class ClienteController {
             clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
-
         // --- Columna Estado (Guardado Inmediato) ---
         // --- Columna Estado (ChoiceBox) - SOLO ACTUALIZA MODELO Y REGISTRA CAMBIO ---
         estadoColumn.setCellFactory(column -> new TableCell<Cliente, String>() {
@@ -372,22 +348,28 @@ public class ClienteController {
                 setGraphic(choiceBox); setText(null);
             }
             @Override
-            public void cancelEdit() { super.cancelEdit(); setGraphic(null); setText(getItem()); applyCellStyle(getItem()); }
+            public void cancelEdit() { super.cancelEdit(); setGraphic(null); setText(getItem());
+                applyCellStyle(getItem()); }
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 getStyleClass().removeAll("activo-cell", "desactivado-cell");
-                if (empty || item == null) { setText(null); setGraphic(null); setStyle(null); }
-                else if (isEditing()) { choiceBox.getSelectionModel().select(item); setText(null); setGraphic(choiceBox); }
-                else { setGraphic(null); setText(item); applyCellStyle(item); }
+                if (empty || item == null) { setText(null); setGraphic(null); setStyle(null);
+                }
+                else if (isEditing()) { choiceBox.getSelectionModel().select(item);
+                    setText(null); setGraphic(choiceBox); }
+                else { setGraphic(null);
+                    setText(item); applyCellStyle(item); }
             }
             private void applyCellStyle(String item) {
-                if ("Activo".equalsIgnoreCase(item)) { getStyleClass().add("activo-cell"); setStyle("-fx-text-fill: black; -fx-font-weight: bold;"); }
-                else if ("Desactivado".equalsIgnoreCase(item)) { getStyleClass().add("desactivado-cell"); setStyle("-fx-text-fill: black; -fx-font-weight: bold;"); }
-                else { setStyle(null); }
+                if ("Activo".equalsIgnoreCase(item)) { getStyleClass().add("activo-cell");
+                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;"); }
+                else if ("Desactivado".equalsIgnoreCase(item)) { getStyleClass().add("desactivado-cell");
+                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;"); }
+                else { setStyle(null);
+                }
             }
         });
-
         estadoColumn.setOnEditCommit(event -> {
             Cliente cliente = event.getRowValue();
             String nuevoEstado = event.getNewValue();
@@ -404,7 +386,6 @@ public class ClienteController {
             clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();
         });
-
         // --- Columna Accion (Direccion) ---
         direccionColumn.setCellFactory(param -> new TableCell<Cliente, Void>() {
             private final Button btn = new Button("Direccion");
@@ -417,12 +398,11 @@ public class ClienteController {
             }
             @Override
             protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
+                super.updateItem(item,
+                        empty);
                 setGraphic(empty ? null : btn);
             }
         });
-
-
         // --- Configuración de filtros ---
         estadoChoiceBox.setItems(FXCollections.observableArrayList("Todos", "Activo", "Desactivado"));
         estadoChoiceBox.getSelectionModel().select("Todos");
@@ -435,7 +415,8 @@ public class ClienteController {
     // =========================================================================================
 
     /**
-     * RESTAURADO: Abre la ventana modal para registrar un nuevo cliente. (Usando la implementación que pasaste)
+     * RESTAURADO: Abre la ventana modal para registrar un nuevo cliente.
+     * (Usando la implementación que pasaste)
      */
     @FXML
     public void handleRegistrarClienteButton(ActionEvent event) {
@@ -485,7 +466,6 @@ public class ClienteController {
     @FXML
     private void handleModificarDocumentoModalButton(ActionEvent event) {
         Cliente selectedCliente = clientesTableView.getSelectionModel().getSelectedItem();
-
         if (selectedCliente == null) {
             mostrarAlerta("Advertencia", "Por favor, seleccione un cliente de la tabla para modificar su documento.", Alert.AlertType.WARNING);
             return;
@@ -529,7 +509,6 @@ public class ClienteController {
 
             // El refreshClientesTable() se mantiene al final para actualizar después del cierre del modal
             refreshClientesTable();
-
         } catch (IOException e) {
             e.printStackTrace();
             mostrarAlerta("Error de Carga", "No se pudo cargar el formulario de edición de documento (edicionDocumento.fxml).", Alert.AlertType.ERROR);
@@ -576,50 +555,6 @@ public class ClienteController {
     // =========================================================================================
     // === MÉTODOS DE GUARDADO Y REFRESH =======================================================
     // =========================================================================================
-
-    @FXML
-    public void handleModificarClienteButton(ActionEvent event) {
-        Cliente selectedCliente = clientesTableView.getSelectionModel().getSelectedItem();
-
-        if (selectedCliente != null) {
-            String emailEnModelo = selectedCliente.getEmail();
-
-            // 1. Validaciones
-            if (selectedCliente.getNombre().isEmpty() || selectedCliente.getApellido().isEmpty() || selectedCliente.getNumeroDocumento().isEmpty()) {
-                mostrarAlerta("Error de Validación", "Asegúrese de que los campos Nombre, Apellido y Número de Documento no estén vacíos.", Alert.AlertType.ERROR);
-                revertirCambios(selectedCliente);
-                return;
-            }
-
-            if (!validarSoloNumeros(selectedCliente.getNumeroDocumento())) {
-                mostrarAlerta("Error de Validación", "El Número de Documento solo puede contener dígitos.", Alert.AlertType.ERROR);
-                revertirCambios(selectedCliente);
-                return;
-            }
-
-            // Aquí se omiten las validaciones de duplicidad de documento/email por brevedad, asumiendo que están en DAO
-            // if (!validarNumeroDocumento(selectedCliente.getIdTipoDocumento(), selectedCliente.getNumeroDocumento(), selectedCliente.getIdPersona())) { revertirCambios(selectedCliente); return; }
-            if (emailEnModelo != null && !emailEnModelo.isEmpty() && !validarFormatoEmail(emailEnModelo)) {
-                mostrarAlerta("Error de Validación", "El formato del email ('" + emailEnModelo + "') es inválido.", Alert.AlertType.ERROR);
-                revertirCambios(selectedCliente);
-                return;
-            }
-            // if (emailEnModelo != null && !emailEnModelo.isEmpty() && personaDAO.verificarSiMailExisteParaOtro(emailEnModelo, selectedCliente.getIdPersona())) { mostrarAlerta(...); revertirCambios(selectedCliente); return; }
-
-            // 2. GUARDAR EN DB
-            boolean exito = clienteDAO.modificarCliente(selectedCliente);
-            if (exito) {
-                mostrarAlerta("Éxito", "Cliente modificado y guardado exitosamente en la base de datos.", Alert.AlertType.INFORMATION);
-                clienteOriginal = new Cliente(selectedCliente);
-            } else {
-                mostrarAlerta("Error", "No se pudo modificar el cliente en la base de datos.", Alert.AlertType.ERROR);
-                revertirCambios(selectedCliente);
-            }
-            clientesTableView.refresh();
-        } else {
-            mostrarAlerta("Advertencia", "Por favor, seleccione un cliente y realice las modificaciones en la tabla antes de guardar.", Alert.AlertType.WARNING);
-        }
-    }
 
     /**
      * Revierto los cambios visuales y en el modelo si la validación final falla.
@@ -681,7 +616,6 @@ public class ClienteController {
 
     private void updateFilteredList() {
         if (filteredData == null) return;
-
         filteredData.setPredicate(cliente -> {
             String searchText = filterField.getText() == null ? "" : filterField.getText().toLowerCase();
             String selectedStatus = estadoChoiceBox.getSelectionModel().getSelectedItem();
@@ -689,14 +623,16 @@ public class ClienteController {
             if (cliente == null || selectedStatus == null) return true;
 
             boolean matchesSearchText = searchText.isEmpty() ||
-                    (cliente.getNombre() != null && cliente.getNombre().toLowerCase().contains(searchText)) ||
+                    (cliente.getNombre() != null && cliente.getNombre().toLowerCase().contains(searchText))
+                    ||
                     (cliente.getApellido() != null && cliente.getApellido().toLowerCase().contains(searchText)) ||
                     (cliente.getNumeroDocumento() != null && cliente.getNumeroDocumento().toLowerCase().contains(searchText));
 
             boolean matchesStatus = selectedStatus.equals("Todos") ||
                     selectedStatus.equalsIgnoreCase(cliente.getEstado());
 
-            return matchesSearchText && matchesStatus;
+            return matchesSearchText &&
+                    matchesStatus;
         });
     }
 
@@ -708,7 +644,6 @@ public class ClienteController {
 
             // Verificamos si la clase existe antes de intentar llamarla (patrón de comprobación)
             Class.forName("app.controller.MenuController");
-
             // Asumiendo la navegación a la vista principal de ABMs
             MenuController.loadScene(
                     (Node) event.getSource(),
@@ -723,10 +658,7 @@ public class ClienteController {
         }
     }
 
-    @FXML
-    public void handleRefreshButton(ActionEvent event) {
-        refreshClientesTable();
-    }
+
 
     @FXML
     public void handleModificarClienteButton(ActionEvent event) {
@@ -749,12 +681,10 @@ public class ClienteController {
 
         // Creamos una copia para evitar ConcurrentModificationException al remover elementos
         Set<Cliente> clientesAGuardar = new HashSet<>(clientesPendientesDeGuardar);
-
         for (Cliente selectedCliente : clientesAGuardar) {
 
             try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
                 conn.setAutoCommit(false);
-
                 // 1. Obtener datos originales para el historial
                 Persona originalPersona = personaDAO.obtenerPersonaPorId(selectedCliente.getIdPersona(), conn);
                 Cliente originalCliente = clienteDAO.getClienteById(selectedCliente.getIdCliente(), conn);
@@ -766,7 +696,6 @@ public class ClienteController {
                 }
 
                 boolean exitoHistorial = true;
-
                 // 2. Comparar y registrar cambios en Historial
                 //    (Se mantiene la lógica de historial, ya que es una buena práctica)
                 if (!selectedCliente.getNombre().equals(originalPersona.getNombre())) {
@@ -790,7 +719,8 @@ public class ClienteController {
                     );
                 }
 
-                String originalTelefono = originalPersona.getTelefono() != null ? originalPersona.getTelefono() : "";
+                String originalTelefono = originalPersona.getTelefono() != null ?
+                        originalPersona.getTelefono() : "";
                 String newTelefono = selectedCliente.getTelefono() != null ? selectedCliente.getTelefono() : "";
                 if (!newTelefono.equals(originalTelefono)) {
                     exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
@@ -799,7 +729,8 @@ public class ClienteController {
                     );
                 }
 
-                String originalEmail = originalPersona.getEmail() != null ? originalPersona.getEmail() : "";
+                String originalEmail = originalPersona.getEmail() != null ?
+                        originalPersona.getEmail() : "";
                 String newEmail = selectedCliente.getEmail() != null ? selectedCliente.getEmail() : "";
                 if (!newEmail.equals(originalEmail)) {
                     exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
@@ -901,6 +832,32 @@ public class ClienteController {
     private boolean validarLongitudTelefono(String telefono) {
         int longitudTelefono = telefono.trim().length();
         return longitudTelefono >= 7 && longitudTelefono <= 11;
+    }
+
+    /**
+     * Valida la unicidad del número de documento.
+     * Requiere que el DAO tenga el método verificarSiDocumentoExisteParaOtro.
+     */
+    public boolean validarNumeroDocumento(int idTipoDocumento, String numeroDocumento, int idPersona) {
+        // La validación de formato (solo números) debe estar implementada en este punto.
+        if (!validarSoloNumeros(numeroDocumento)) {
+            mostrarAlerta("Advertencia", "El número de documento solo puede contener dígitos.", Alert.AlertType.WARNING);
+            return false;
+        }
+
+        // Validación de unicidad contra la BD, excluyendo el cliente actual
+        try {
+            // **IMPORTANTE**: Asegúrate de que PersonaDAO.verificarSiDocumentoExisteParaOtro exista
+            if (personaDAO.verificarSiDocumentoExisteParaOtro(idTipoDocumento, numeroDocumento, idPersona)) {
+                mostrarAlerta("Advertencia", "El número de documento ya está registrado para otro cliente con el mismo tipo.", Alert.AlertType.WARNING);
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            mostrarAlerta("Error de BD", "Ocurrió un error al validar la unicidad del documento. Error: " + e.getMessage(), Alert.AlertType.ERROR);
+            return false;
+        }
+        return true;
     }
 
     private boolean validarFormatoEmail(String email) {

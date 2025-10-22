@@ -523,20 +523,30 @@ public class StockController {
             }
         });
 
+        // Código corregido para estadoColumn.setOnEditCommit
         estadoColumn.setOnEditCommit(event -> {
-            Insumo insumoActual = event.getRowValue();
+            Insumo insumoActual = event.getRowValue(); // Esta es la variable correcta
             String nuevoEstado = event.getNewValue();
-            insumo.setEstado(nuevoEstado);
-            boolean exito = insumoDAO.modificarEstadoInsumo(insumo.getIdInsumo(), nuevoEstado);
+
+            // 1. Aplicamos el cambio al modelo en memoria (antes de la persistencia)
+            insumoActual.setEstado(nuevoEstado);
+
+            // 2. Intentamos persistir el cambio en la base de datos
+            // Se usa insumoActual.getIdInsumo() en lugar de insumo.getIdInsumo()
+            boolean exito = insumoDAO.modificarEstadoInsumo(insumoActual.getIdInsumo(), nuevoEstado);
+
             if (exito) {
                 mostrarAlerta("Éxito", "Estado del insumo actualizado.", Alert.AlertType.INFORMATION);
             } else {
                 mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
-                insumo.setEstado(event.getOldValue());
+                // Si falla, revertimos el estado en memoria al valor anterior
+                // Se usa insumoActual.setEstado() en lugar de insumo.setEstado()
+                insumoActual.setEstado(event.getOldValue());
             }
 
-            // APLICAR CAMBIO AL MODELO EN MEMORIA
-            insumoActual.setEstado(nuevoEstado);
+            // [LÍNEA ELIMINADA] La línea 'insumoActual.setEstado(nuevoEstado);' que estaba aquí se elimina
+            // para evitar que anule la reversión si la actualización falló.
+
             insumosTableView.refresh();
         });
 
@@ -811,20 +821,7 @@ public class StockController {
         }
     }
 
-    @FXML
-    public void handleModificarInsumoButton(ActionEvent event) {
-        Insumo selectedInsumo = insumosTableView.getSelectionModel().getSelectedItem();
-        if (selectedInsumo != null) {
-            boolean exito = insumoDAO.modificarInsumo(selectedInsumo);
-            if (exito) {
-                mostrarAlerta("Éxito", "Insumo modificado exitosamente.", Alert.AlertType.INFORMATION);
-            } else {
-                mostrarAlerta("Error", "No se pudo modificar el insumo en la base de datos.", Alert.AlertType.ERROR);
-            }
-        } else {
-            mostrarAlerta("Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.", Alert.AlertType.WARNING);
-        }
-    }
+
 
     @FXML
     public void handleRefreshButton(ActionEvent event) {

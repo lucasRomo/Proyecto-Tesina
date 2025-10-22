@@ -104,12 +104,13 @@ public class CrearPedidoController implements Initializable {
 
             String estado = estadoComboBox.getSelectionModel().getSelectedItem();
             String tipoPago = tipoPagoComboBox.getSelectionModel().getSelectedItem();
-            LocalDateTime fechaCreacion = LocalDateTime.now();
+            // NOTA: fechaCreacion se calcula dentro del constructor de 6 parámetros
+            // LocalDateTime fechaCreacion = LocalDateTime.now(); // Se puede eliminar esta línea
 
             LocalDateTime fechaEntregaEstimada = (fechaEntregaEstimadaPicker.getValue() != null)
                     ? fechaEntregaEstimadaPicker.getValue().atStartOfDay() : null;
 
-            LocalDateTime fechaFinalizacion = null;
+            // LocalDateTime fechaFinalizacion = null; // Lo maneja el constructor de 6 parámetros
 
             String instrucciones = instruccionesArea.getText();
             double montoTotal = Double.parseDouble(montoTotalField.getText());
@@ -118,21 +119,30 @@ public class CrearPedidoController implements Initializable {
                     : 0.0;
 
 
+            // ---------------------------------------------------------------------
+            // CÓDIGO CORREGIDO: Usando el constructor de 6 parámetros
+            // ---------------------------------------------------------------------
             Pedido nuevoPedido = new Pedido(
                     idCliente,
                     idEmpleado,
-                    fechaCreacion,
+                    tipoPago, // Parámetro 3: tipoPago
                     fechaEntregaEstimada,
-                    fechaFinalizacion,
-                    estado,
                     instrucciones,
-                    montoTotal,
-                    montoEntregado
+                    montoTotal
             );
+
+            // Aplicamos los valores que el constructor por defecto estableció o que deben ser sobreescritos.
+            // El constructor ya puso estado="Pendiente" y montoEntregado=0.0. Los actualizamos aquí:
+            if (!estado.equalsIgnoreCase(nuevoPedido.getEstado())) {
+                nuevoPedido.setEstado(estado);
+            }
+            if (montoEntregado != 0.0) {
+                nuevoPedido.setMontoEntregado(montoEntregado);
+            }
+            // ---------------------------------------------------------------------
 
             if (pedidoDAO.savePedido(nuevoPedido, tipoPago)) {
                 mostrarAlerta("Éxito", "Pedido guardado", "El nuevo pedido se ha guardado exitosamente junto con su asignación y comprobante de pago.", Alert.AlertType.INFORMATION);
-                // USAMOS EL MÉTODO CORREGIDO
                 volverAlMenuPedidos(event);
             } else {
                 mostrarAlerta("Error", "Error al guardar", "No se pudo guardar el pedido ni su comprobante de pago en la base de datos.", Alert.AlertType.ERROR);

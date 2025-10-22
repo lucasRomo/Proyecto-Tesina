@@ -2,6 +2,7 @@ package app.dao;
 
 import app.model.Pedido;
 import app.model.DetallePedido;
+import app.model.Empleado;
 import javafx.collections.ObservableList;
 
 import java.sql.Connection;
@@ -511,5 +512,43 @@ public class PedidoDAO {
     public boolean actualizarPedidos(ObservableList<Pedido> pedidos) {
         // Este método aún no tiene implementación.
         return false;
+    }
+
+    // ----------------------------------------------------------------------------------
+// MÉTODOS DE CONSULTA DE EMPLEADOS (CORREGIDOS)
+// ----------------------------------------------------------------------------------
+
+    /**
+     * Obtiene una lista de todos los empleados activos, devolviendo objetos Empleado.
+     * Esto es necesario para que el stream en VerPedidosController compile.
+     */
+    public List<Empleado> getEmpleadosEnPedidos() {
+        List<Empleado> empleados = new ArrayList<>();
+        // Consulta que junta Empleado con Persona para obtener nombre y apellido
+        String sql = "SELECT e.id_empleado, p.nombre, p.apellido " +
+                "FROM Empleado e " +
+                "JOIN Persona p ON e.id_persona = p.id_persona " +
+                "WHERE e.estado = 'Activo'"; // Solo empleados activos
+
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                // Mapeo a la clase Empleado usando el constructor vacío y setters
+                Empleado empleado = new Empleado();
+                empleado.setIdEmpleado(rs.getInt("id_empleado"));
+                empleado.setNombre(rs.getString("nombre"));
+                empleado.setApellido(rs.getString("apellido"));
+
+                // Los demás campos (fechaContratacion, cargo, etc.) quedan en null/default
+                // ya que no son necesarios para el filtro, pero el constructor por defecto lo permite.
+
+                empleados.add(empleado);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return empleados;
     }
 }

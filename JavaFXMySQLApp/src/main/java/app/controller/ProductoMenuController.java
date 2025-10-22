@@ -386,11 +386,12 @@ public class ProductoMenuController {
         Producto productoActual = productosTableView.getSelectionModel().getSelectedItem();
 
         if (productoActual == null) {
-            showAlert(Alert.AlertType.WARNING, "Advertencia", "Por favor, seleccione una fila antes de guardar.");
+            // Mensaje de advertencia claro, combinando ambos enfoques.
+            showAlert(Alert.AlertType.WARNING, "Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.");
             return;
         }
 
-        // Asegura que tenemos la copia original para comparar
+        // 1. Validación de la copia original para permitir la reversión.
         if (this.productoOriginal == null || productoActual.getIdProducto() != this.productoOriginal.getIdProducto()) {
             showAlert(Alert.AlertType.WARNING, "Advertencia", "El producto no está listo para guardar. Vuelva a seleccionar la fila.");
             return;
@@ -400,11 +401,11 @@ public class ProductoMenuController {
         boolean huboCambios = false;
 
         try {
-            // 1. Iniciar Transacción (solo para el HistorialActividadDAO)
+            // 2. Iniciar Transacción para el Historial de Actividad
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
             conn.setAutoCommit(false);
 
-            // --- 2. AUDITAR Y REGISTRAR CADA POSIBLE CAMBIO (Igual que en StockController) ---
+            // --- 3. AUDITAR Y REGISTRAR CADA POSIBLE CAMBIO ---
 
             // Cambio en Nombre
             if (!productoActual.getNombreProducto().equals(this.productoOriginal.getNombreProducto())) {
@@ -425,6 +426,7 @@ public class ProductoMenuController {
             }
 
             // Cambio en Stock
+            // La auditoría del stock se mantiene, aunque normalmente se maneja con movimientos de entrada/salida
             if (productoActual.getStock() != this.productoOriginal.getStock()) {
                 auditarCambio(conn, productoActual, "stock", this.productoOriginal.getStock(), productoActual.getStock());
                 huboCambios = true;
@@ -439,32 +441,44 @@ public class ProductoMenuController {
                 huboCambios = true;
             }
 
-            // --- 3. PERSISTIR LOS CAMBIOS SI LOS HUBO ---
+            // --- 4. PERSISTIR LOS CAMBIOS SI LOS HUBO ---
             if (huboCambios) {
-                // CLAVE: Llama al DAO sin pasar la conexión, replicando el patrón de StockController.
+                // Llama al DAO para actualizar el producto en la tabla 'Producto'.
+                // El DAO DEBE manejar la actualización de la tabla Producto.
                 boolean exitoActualizacion = productoDAO.updateProducto(productoActual);
 
                 if (exitoActualizacion) {
-                    conn.commit(); // Solo confirma la historia (el DAO ya guardó el Producto)
-                    showAlert(Alert.AlertType.INFORMATION, "Éxito", "Producto y registro de actividad actualizados.");
-                    this.productoOriginal = crearCopiaProducto(productoActual); // Actualiza la copia
+                    conn.commit(); // Confirma el registro de Historial (la actualización fue exitosa)
+                    showAlert(Alert.AlertType.INFORMATION, "Éxito", "Producto modificado exitosamente y registro de actividad guardado.");
+                    this.productoOriginal = crearCopiaProducto(productoActual); // Actualiza la copia de referencia
                 } else {
-                    conn.rollback(); // Deshace la historia si el DAO falló
-                    showAlert(Alert.AlertType.ERROR, "Error", "No se pudo actualizar el producto en la BD. ROLLBACK de historial realizado.");
+                    conn.rollback(); // Deshace la historia si la actualización del producto falló
+                    showAlert(Alert.AlertType.ERROR, "Error de Persistencia", "La actualización del producto falló. Se deshizo el registro de historial.");
                     revertirProductoAlOriginal(productoActual, this.productoOriginal); // Revertir en memoria
                 }
             } else {
-                conn.rollback();
+                // No hubo cambios detectados
+                conn.rollback(); // Rollback del historial vacío
                 showAlert(Alert.AlertType.WARNING, "Advertencia", "No se detectaron cambios para guardar.");
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
-            try { if (conn != null) conn.rollback(); } catch (SQLException rollbackEx) { /* Ignorar */ }
-            showAlert(Alert.AlertType.ERROR, "Error de BD", "Ocurrió un error en la base de datos: " + e.getMessage());
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                }
+            } catch (SQLException rollbackEx) { /* Ignorar */ }
+            showAlert(Alert.AlertType.ERROR, "Error de BD", "Ocurrió un error en la base de datos durante la transacción: " + e.getMessage());
             revertirProductoAlOriginal(productoActual, this.productoOriginal);
         } finally {
-            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (SQLException closeEx) { /* Ignorar */ }
-            productosTableView.refresh();
+            try {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (SQLException closeEx) { /* Ignorar */ }
+            productosTableView.refresh(); // Asegura la sincronización visual, incluyendo el refresco (similar a loadProductos)
         }
     }
 
@@ -580,31 +594,7 @@ public class ProductoMenuController {
     /**
      * LÓGICA CORREGIDA: Solo intenta modificar el producto seleccionado.
      */
-    @FXML
-    private void handleModificarProductoButton(ActionEvent event) {
-        // 1. Obtener el producto seleccionado
-        Producto selectedProducto = productosTableView.getSelectionModel().getSelectedItem();
 
-        if (selectedProducto == null) {
-            // Muestra la advertencia solicitada por el usuario
-            showAlert(Alert.AlertType.WARNING, "Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.");
-            return;
-        }
-
-        // 2. Intentar actualizar el producto en la BD (el DAO retorna true solo si hubo cambios)
-        boolean exito = productoDAO.updateProducto(selectedProducto);
-
-        if (exito) {
-            showAlert(Alert.AlertType.INFORMATION, "Éxito", "Producto modificado exitosamente.");
-        } else {
-            // Esto ocurre si el usuario seleccionó una fila, no hizo cambios reales
-            // o los datos eran idénticos a los de la BD.
-            showAlert(Alert.AlertType.WARNING, "Sin Cambios Detectados", "El producto seleccionado no ha sido modificado o los datos son idénticos a los actuales.");
-        }
-
-        // 3. Recargar la tabla para asegurar la sincronización y refrescar la vista
-        loadProductos();
-    }
 
     @FXML
     private void handleRefreshButton(ActionEvent event) {

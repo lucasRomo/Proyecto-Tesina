@@ -81,6 +81,8 @@ public class ComprobantePagoDAO {
      * @param rutaArchivo La ruta absoluta donde se guardó el archivo.
      * @return true si la actualización fue exitosa, false en caso contrario.
      */
+    // En ComprobantePagoDAO.java
+
     public boolean actualizarRutaComprobante(int idPedido, String rutaArchivo) {
         // Usamos el ID del pedido para encontrar el comprobante que necesita el archivo.
         String sql = "UPDATE ComprobantePago SET archivo = ? WHERE id_pedido = ?";
@@ -92,10 +94,17 @@ public class ComprobantePagoDAO {
             ps.setInt(2, idPedido);
 
             int filasAfectadas = ps.executeUpdate();
+
+            if (filasAfectadas == 0) {
+                // AÑADIDO: Muestra un mensaje si no se encontró el registro.
+                System.err.println("ADVERTENCIA: No se encontró el registro de ComprobantePago para el pedido ID: " + idPedido + ". La actualización falló.");
+            }
+
             return filasAfectadas > 0;
 
         } catch (SQLException e) {
-            System.err.println("Error al actualizar la ruta del comprobante para el pedido ID: " + idPedido);
+            // AÑADIDO: La traza de error es crucial para saber si es un problema de SQL, conexión o Data Truncation.
+            System.err.println("ERROR FATAL: Error al actualizar la ruta del comprobante para el pedido ID: " + idPedido);
             e.printStackTrace();
             return false;
         }
