@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * DAO (Data Access Object) para la entidad Pedido.
  * Se ha ajustado para incluir los datos de contacto del cliente (telefono, email)
- * en las consultas de pedidos.
+ * en las consultas de pedidos y la inserción del tipo_pago en ComprobantePago.
  */
 public class PedidoDAO {
 
@@ -39,24 +39,28 @@ public class PedidoDAO {
     }
 
     // ----------------------------------------------------------------------------------
-    // MÉTODOS DE CREACIÓN Y MODIFICACIÓN (Se mantienen sin cambios, solo se incluye aquí para contexto)
+    // MÉTODOS DE CREACIÓN Y MODIFICACIÓN
     // ----------------------------------------------------------------------------------
 
     /**
-     * Guarda un nuevo Pedido. La información de pago se maneja EXCLUSIVAMENTE
-     * en la tabla ComprobantePago en otro proceso.
+     * Guarda un nuevo Pedido y su información de pago asociada en ComprobantePago.
      * @param pedido El objeto Pedido a guardar.
+     * @param tipoPago El tipo de pago seleccionado (Ej: "Efectivo", "Transferencia").
      * @return true si la operación fue exitosa.
      */
     public boolean savePedido(Pedido pedido, String tipoPago) {
-        // ELIMINADA la columna metodo_pago del INSERT de la tabla Pedido
         String sqlPedido = "INSERT INTO Pedido (id_cliente, estado, fecha_creacion, fecha_entrega_estimada, instrucciones, monto_total, monto_entregado) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         String sqlAsignacion = "INSERT INTO AsignacionPedido (id_pedido, id_empleado, fecha_asignacion) VALUES (?, ?, ?)";
 
+        // *** CORRECCIÓN SQL: Se añade id_cliente y monto_pago. Se cambia fecha_comprobante por fecha_carga. ***
+        String sqlComprobante = "INSERT INTO ComprobantePago (id_pedido, id_cliente, tipo_pago, monto_pago, archivo, fecha_carga, estado_verificacion) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+
         Connection conn = null;
         PreparedStatement stmtPedido = null;
         PreparedStatement stmtAsignacion = null;
+        PreparedStatement stmtComprobante = null; // PreparedStatement para el comprobante
 
         try {
             conn = obtenerConexion();
@@ -113,6 +117,34 @@ public class PedidoDAO {
                 }
             }
 
+            // 3. Insertar en la tabla ComprobantePago
+            if (tipoPago != null && !tipoPago.isEmpty()) {
+                stmtComprobante = conn.prepareStatement(sqlComprobante);
+
+                // Parámetros para ComprobantePago
+                stmtComprobante.setInt(1, idPedidoGenerado);
+                stmtComprobante.setInt(2, pedido.getIdCliente()); // id_cliente (nuevo requerido)
+                stmtComprobante.setString(3, tipoPago);
+                stmtComprobante.setDouble(4, pedido.getMontoTotal()); // monto_pago (nuevo requerido)
+
+                // archivo (ruta)
+                stmtComprobante.setNull(5, Types.VARCHAR);
+
+                // fecha_carga (corregido de fecha_comprobante)
+                stmtComprobante.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
+
+                // estado_verificacion
+                stmtComprobante.setString(7, "Pendiente");
+
+                int affectedRowsComprobante = stmtComprobante.executeUpdate();
+                if (affectedRowsComprobante == 0) {
+                    // Si falla la inserción del comprobante, revertir todo.
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+
             conn.commit();
             return true;
 
@@ -129,6 +161,7 @@ public class PedidoDAO {
             return false;
         } finally {
             try {
+                if (stmtComprobante != null) stmtComprobante.close(); // Cerrar statement
                 if (stmtAsignacion != null) stmtAsignacion.close();
                 if (stmtPedido != null) stmtPedido.close();
                 if (conn != null) conn.close();
@@ -206,7 +239,7 @@ public class PedidoDAO {
 
 
     // ----------------------------------------------------------------------------------
-    // MÉTODOS DE CONSULTA (ACTUALIZADOS)
+    // MÉTODOS DE CONSULTA
     // ----------------------------------------------------------------------------------
 
     /**
@@ -345,7 +378,6 @@ public class PedidoDAO {
 
     /**
      * Helper para mapear un ResultSet a un objeto Pedido.
-     * AHORA CUMPLE CON LA FIRMA DEL CONSTRUCTOR COMPLETO DE Pedido.java
      */
     private Pedido mapResultSetToPedido(ResultSet rs) throws SQLException {
 
@@ -353,12 +385,8 @@ public class PedidoDAO {
         int idCliente = rs.getInt("id_cliente");
         String nombreCliente = rs.getString("nombre_cliente") + " " + rs.getString("apellido_cliente");
 
-        // ***************************************************************
-        // NUEVOS CAMPOS: Se extraen del ResultSet usando los alias de la columna Persona
         String telefonoCliente = rs.getString("telefono_cliente");
         String emailCliente = rs.getString("email_cliente");
-        // ***************************************************************
-
 
         int idEmpleadoResultado = rs.getInt("id_empleado");
         String nombreEmpleado = "";
@@ -393,13 +421,12 @@ public class PedidoDAO {
         double montoEntregado = rs.getDouble("monto_entregado");
 
         // LLAMADA AL CONSTRUCTOR AJUSTADA:
-        // Se añaden telefonoCliente y emailCliente después de nombreCliente.
         return new Pedido(
                 idPedido,
                 idCliente,
                 nombreCliente,
-                telefonoCliente, // <-- NUEVO
-                emailCliente,    // <-- NUEVO
+                telefonoCliente,
+                emailCliente,
                 idEmpleadoResultado,
                 nombreEmpleado,
                 estado,
