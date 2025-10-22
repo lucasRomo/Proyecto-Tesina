@@ -7,6 +7,12 @@ public class Pedido {
     private int idCliente;
     private int idEmpleado;
     private String nombreCliente;
+
+    // *** CAMPOS NUEVOS: Contacto del Cliente ***
+    private String telefonoCliente;
+    private String emailCliente;
+    // *****************************************
+
     private String nombreEmpleado;
 
     private LocalDateTime fechaCreacion;
@@ -38,19 +44,33 @@ public class Pedido {
         this.montoEntregado = montoEntregado;
         this.tipoPago = "N/A"; // Inicializado
         this.rutaComprobante = null; // Inicializado
+
+        // Inicializados para evitar NullPointer
+        this.telefonoCliente = null;
+        this.emailCliente = null;
     }
 
     /**
      * Constructor COMPLETO para cuando se recuperan Pedidos del DAO (Historial).
-     * Incluye 'tipoPago' y 'rutaComprobante'.
+     * Incluye 'tipoPago', 'rutaComprobante', y la información de contacto del Cliente.
      */
-    public Pedido(int idPedido, int idCliente, String nombreCliente, int idEmpleado, String nombreEmpleado,
+    public Pedido(int idPedido, int idCliente, String nombreCliente,
+                  // *** NUEVOS PARAMETROS EN EL CONSTRUCTOR ***
+                  String telefonoCliente, String emailCliente,
+                  // ******************************************
+                  int idEmpleado, String nombreEmpleado,
                   String estado, String tipoPago, LocalDateTime fechaCreacion, LocalDateTime fechaEntregaEstimada,
                   LocalDateTime fechaFinalizacion, String instrucciones, double montoTotal,
                   double montoEntregado, String rutaComprobante) {
         this.idPedido = idPedido;
         this.idCliente = idCliente;
         this.nombreCliente = nombreCliente;
+
+        // *** ASIGNACION DE NUEVOS CAMPOS ***
+        this.telefonoCliente = telefonoCliente;
+        this.emailCliente = emailCliente;
+        // ***********************************
+
         this.idEmpleado = idEmpleado;
         this.nombreEmpleado = nombreEmpleado;
         this.estado = estado;
@@ -77,6 +97,14 @@ public class Pedido {
 
     public String getNombreCliente() { return nombreCliente; }
     public void setNombreCliente(String nombreCliente) { this.nombreCliente = nombreCliente; }
+
+    // *** NUEVOS GETTERS Y SETTERS ***
+    public String getTelefonoCliente() { return telefonoCliente; }
+    public void setTelefonoCliente(String telefonoCliente) { this.telefonoCliente = telefonoCliente; }
+
+    public String getEmailCliente() { return emailCliente; }
+    public void setEmailCliente(String emailCliente) { this.emailCliente = emailCliente; }
+    // *********************************
 
     public String getNombreEmpleado() { return nombreEmpleado; }
     public void setNombreEmpleado(String nombreEmpleado) { this.nombreEmpleado = nombreEmpleado; }

@@ -18,9 +18,8 @@ import java.util.List;
 
 /**
  * DAO (Data Access Object) para la entidad Pedido.
- * Se ha ajustado para:
- * 1. ELIMINAR TODA REFERENCIA a 'metodo_pago' de la tabla Pedido.
- * 2. Obtener el 'tipo_pago' y la 'rutaComprobante' de la tabla 'ComprobantePago' mediante un JOIN en las consultas SELECT.
+ * Se ha ajustado para incluir los datos de contacto del cliente (telefono, email)
+ * en las consultas de pedidos.
  */
 public class PedidoDAO {
 
@@ -40,7 +39,7 @@ public class PedidoDAO {
     }
 
     // ----------------------------------------------------------------------------------
-    // MÉTODOS DE CREACIÓN Y MODIFICACIÓN (Mantener sin cambios)
+    // MÉTODOS DE CREACIÓN Y MODIFICACIÓN (Se mantienen sin cambios, solo se incluye aquí para contexto)
     // ----------------------------------------------------------------------------------
 
     /**
@@ -207,7 +206,7 @@ public class PedidoDAO {
 
 
     // ----------------------------------------------------------------------------------
-    // MÉTODOS DE CONSULTA
+    // MÉTODOS DE CONSULTA (ACTUALIZADOS)
     // ----------------------------------------------------------------------------------
 
     /**
@@ -219,10 +218,12 @@ public class PedidoDAO {
     public List<Pedido> getPedidosPorEmpleado(int idEmpleado) {
         List<Pedido> pedidos = new ArrayList<>();
 
+        // Se añaden clp.telefono y clp.email a la SELECT
         String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
                 "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
                 "cpr.tipo_pago, cpr.archivo, " + // <-- OBTENEMOS TIPO_PAGO Y EL ARCHIVO (RUTA)
                 "clp.nombre AS nombre_cliente, clp.apellido AS apellido_cliente, " +
+                "clp.telefono AS telefono_cliente, clp.email AS email_cliente, " + // <-- NUEVOS CAMPOS DE CONTACTO
                 "ap.id_empleado, emp.nombre AS nombre_empleado, emp.apellido AS apellido_empleado " +
                 "FROM Pedido p " +
                 "LEFT JOIN Cliente cl ON p.id_cliente = cl.id_cliente " +
@@ -263,10 +264,12 @@ public class PedidoDAO {
     public List<Pedido> getPedidosPorEstado(String estado) {
         List<Pedido> pedidos = new ArrayList<>();
 
+        // Se añaden clp.telefono y clp.email a la SELECT
         String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
                 "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
                 "cpr.tipo_pago, cpr.archivo, " + // <-- OBTENEMOS TIPO_PAGO Y EL ARCHIVO (RUTA)
                 "clp.nombre AS nombre_cliente, clp.apellido AS apellido_cliente, " +
+                "clp.telefono AS telefono_cliente, clp.email AS email_cliente, " + // <-- NUEVOS CAMPOS DE CONTACTO
                 "ap.id_empleado, emp.nombre AS nombre_empleado, emp.apellido AS apellido_empleado " +
                 "FROM Pedido p " +
                 "LEFT JOIN Cliente cl ON p.id_cliente = cl.id_cliente " +
@@ -342,13 +345,20 @@ public class PedidoDAO {
 
     /**
      * Helper para mapear un ResultSet a un objeto Pedido.
-     * Ahora mapea el 'tipo_pago' y la 'rutaComprobante'.
+     * AHORA CUMPLE CON LA FIRMA DEL CONSTRUCTOR COMPLETO DE Pedido.java
      */
     private Pedido mapResultSetToPedido(ResultSet rs) throws SQLException {
 
         int idPedido = rs.getInt("id_pedido");
         int idCliente = rs.getInt("id_cliente");
         String nombreCliente = rs.getString("nombre_cliente") + " " + rs.getString("apellido_cliente");
+
+        // ***************************************************************
+        // NUEVOS CAMPOS: Se extraen del ResultSet usando los alias de la columna Persona
+        String telefonoCliente = rs.getString("telefono_cliente");
+        String emailCliente = rs.getString("email_cliente");
+        // ***************************************************************
+
 
         int idEmpleadoResultado = rs.getInt("id_empleado");
         String nombreEmpleado = "";
@@ -367,10 +377,8 @@ public class PedidoDAO {
             tipoPago = "N/A";
         }
 
-        // *******************************************************************
-        // CAMBIO CLAVE: Extraer 'archivo' del ResultSet (la ruta)
+        // Extraer 'archivo' del ResultSet (la ruta)
         String rutaComprobante = rs.getString("archivo");
-        // *******************************************************************
 
         LocalDateTime fechaCreacion = rs.getTimestamp("fecha_creacion").toLocalDateTime();
 
@@ -384,10 +392,14 @@ public class PedidoDAO {
         double montoTotal = rs.getDouble("monto_total");
         double montoEntregado = rs.getDouble("monto_entregado");
 
+        // LLAMADA AL CONSTRUCTOR AJUSTADA:
+        // Se añaden telefonoCliente y emailCliente después de nombreCliente.
         return new Pedido(
                 idPedido,
                 idCliente,
                 nombreCliente,
+                telefonoCliente, // <-- NUEVO
+                emailCliente,    // <-- NUEVO
                 idEmpleadoResultado,
                 nombreEmpleado,
                 estado,
@@ -398,7 +410,7 @@ public class PedidoDAO {
                 instrucciones,
                 montoTotal,
                 montoEntregado,
-                rutaComprobante // <--- Aquí se pasa la nueva ruta del comprobante
+                rutaComprobante
         );
     }
 
@@ -416,7 +428,7 @@ public class PedidoDAO {
     }
 
     // ----------------------------------------------------------------------------------
-    // MÉTODOS DE UTILIDAD
+    // MÉTODOS DE UTILIDAD (Se mantienen sin cambios)
     // ----------------------------------------------------------------------------------
 
     public List<String> getAllClientesDisplay() {

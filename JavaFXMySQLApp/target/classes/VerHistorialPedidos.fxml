@@ -1,42 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<!-- Controlador corregido para coincidir con la clase Java: VerHistorialPedidosController -->
-<VBox alignment="TOP_CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerHistorialPedidosController">
+<!-- Aplicamos la hoja de estilos en el contenedor principal usando tu método -->
+
+<VBox alignment="TOP_CENTER" spacing="15.0" styleClass="root-container" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerHistorialPedidosController">
+
+    <stylesheets>
+        <!-- Asumiendo que style.css está en el mismo paquete/carpeta que el FXML -->
+        <URL value="@style.css" />
+    </stylesheets>
+
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label text="Historial de Pedidos Retirados" style="-fx-font-weight: bold;">
+    <!-- Título - Usamos tu estilo de clase "titulo-principal" -->
+    <Label styleClass="titulo-principal" text="Historial de Pedidos Retirados">
         <font>
             <Font size="24.0" />
         </font>
     </Label>
 
-    <!-- Área de Filtros -->
-    <HBox alignment="CENTER_LEFT" spacing="10.0" maxWidth="Infinity" style="-fx-padding: 10px; -fx-border-color: #ddd; -fx-border-radius: 5; -fx-background-color: #f9f9f9;">
-        <Label text="Filtrar por:" style="-fx-font-weight: bold;" />
-        <!-- fx:id coinciden con los campos del controlador Java -->
-        <ComboBox fx:id="clienteFilterComboBox" promptText="Seleccionar Cliente" HBox.hgrow="ALWAYS" />
-        <ComboBox fx:id="empleadoFilterComboBox" promptText="Seleccionar Empleado" HBox.hgrow="ALWAYS" />
-        <ComboBox fx:id="tipoPagoFilterComboBox" promptText="Seleccionar Tipo de Pago" HBox.hgrow="ALWAYS" />
-        <!-- Manejador de acción para limpiar los filtros -->
-        <Button text="Limpiar Filtros" onAction="#handleLimpiarFiltros" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-cursor: hand;" />
+    <!-- Área de Filtros - Aplicamos estilo de clase "filter-panel" -->
+    <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="10.0" styleClass="filter-panel">
+        <Label styleClass="label-bold" text="Filtrar por:" textFill="#fffdfd" />
+
+        <ComboBox fx:id="clienteFilterComboBox" promptText="Seleccionar Cliente" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
+        <ComboBox fx:id="empleadoFilterComboBox" promptText="Seleccionar Empleado" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
+        <ComboBox fx:id="tipoPagoFilterComboBox" promptText="Seleccionar Tipo de Pago" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
+
+        <!-- Botón Limpiar Filtros - Usamos estilo de clase "btn-danger" -->
+        <Button onAction="#handleLimpiarFiltros" styleClass="btn-danger" text="Limpiar Filtros" />
     </HBox>
 
-    <!-- Tabla de Pedidos -->
-    <TableView fx:id="pedidosTable" VBox.vgrow="ALWAYS" prefHeight="500.0">
+    <!-- Tabla de Pedidos - Aplicamos estilo de clase "data-table" -->
+    <TableView fx:id="pedidosTable" prefHeight="500.0" styleClass="data-table" VBox.vgrow="ALWAYS">
         <columns>
-            <!-- fx:id de Columnas corregidos para coincidir con el controlador -->
             <TableColumn fx:id="idPedidoColumn" prefWidth="75.0" text="ID" />
             <TableColumn fx:id="clienteColumn" prefWidth="150.0" text="Cliente" />
             <TableColumn fx:id="empleadoColumn" prefWidth="150.0" text="Empleado" />
@@ -44,20 +48,16 @@
             <TableColumn fx:id="tipoPagoColumn" prefWidth="100.0" text="Tipo de Pago" />
             <TableColumn fx:id="montoTotalColumn" prefWidth="100.0" text="Monto Total" />
             <TableColumn fx:id="montoEntregadoColumn" prefWidth="120.0" text="Monto Entregado" />
-            <!-- Mapea a fechaFinalizacion en el controlador -->
             <TableColumn fx:id="fechaEntregaEstimadaColumn" prefWidth="150.0" text="F. Finalización" />
             <TableColumn fx:id="instruccionesColumn" prefWidth="180.0" text="Instrucciones" />
-
-            <!-- NUEVA COLUMNA para el comprobante de pago (solo ver) -->
             <TableColumn fx:id="comprobantePagoColumn" prefWidth="130.0" text="Comprobante Pago" />
-
-            <!-- Columna para el botón Ticket, su contenido se genera en Java -->
             <TableColumn fx:id="accionesColumn" prefWidth="100.0" text="Ticket" />
         </columns>
     </TableView>
 
     <!-- Botón Volver -->
     <HBox alignment="CENTER_RIGHT" maxWidth="Infinity">
-        <Button text="Volver al Menú" onAction="#handleVolver" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-cursor: hand;" />
+        <!-- Botón Volver - Usamos estilo de clase "button-volver" (tu estilo) -->
+        <Button onAction="#handleVolver" styleClass="button-volver" text="Volver al Menú" />
     </HBox>
 </VBox>

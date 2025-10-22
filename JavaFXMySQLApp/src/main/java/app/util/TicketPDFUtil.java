@@ -17,7 +17,8 @@ import java.util.List;
 public class TicketPDFUtil {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    // Eliminamos el DATE_FORMATTER ya que no se usa para la fecha de entrega estimada
+    // private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     /**
      * Genera un ticket en formato PDF para un pedido específico y sus detalles.
@@ -37,7 +38,7 @@ public class TicketPDFUtil {
         Document document = new Document(pdf);
 
         // --- TÍTULO Y ENCABEZADO ---
-        document.add(new Paragraph("Mi Empresa - Ticket de Pedido")
+        document.add(new Paragraph("El Sur Centro de Copiado - Ticket de Pedido")
                 .setFontSize(16).setBold().setTextAlignment(TextAlignment.CENTER));
 
         document.add(new Paragraph("ID Pedido: " + pedido.getIdPedido())
@@ -52,15 +53,18 @@ public class TicketPDFUtil {
         document.add(new Paragraph("Cliente: " + pedido.getNombreCliente()));
         document.add(new Paragraph("Empleado: " + pedido.getNombreEmpleado()));
 
-        if (pedido.getFechaEntregaEstimada() != null) {
+        // --- ELIMINACIÓN DE LA FECHA DE ENTREGA ESTIMADA ---
+        /* if (pedido.getFechaEntregaEstimada() != null) {
             document.add(new Paragraph("Entrega Estimada: " + pedido.getFechaEntregaEstimada().format(DATE_FORMATTER)));
         }
+        */
 
         document.add(new Paragraph("\n--- Productos/Servicios ---\n")
                 .setFontSize(10).setItalic().setTextAlignment(TextAlignment.LEFT));
 
         // --- TABLA DE DETALLES ---
-        float[] columnWidths = {2, 5, 2, 3}; // Ancho relativo de 4 columnas
+        // Anchos de columnas: Cantidad(2), Descripción(5), P. Unitario(2), Subtotal(3)
+        float[] columnWidths = {2, 5, 2, 3};
         Table table = new Table(UnitValue.createPercentArray(columnWidths)).useAllAvailableWidth();
 
         // Encabezados de la tabla
@@ -71,8 +75,16 @@ public class TicketPDFUtil {
 
         // Filas de detalles
         for (DetallePedido detalle : detalles) {
+            // Celda 1: Cantidad
             table.addCell(new Paragraph(String.valueOf(detalle.getCantidad())));
+
+            // Celda 2: Descripción
+            table.addCell(new Paragraph(detalle.getDescripcion()));
+
+            // Celda 3: Precio Unitario
             table.addCell(new Paragraph(String.format("$%.2f", detalle.getPrecioUnitario())).setTextAlignment(TextAlignment.RIGHT));
+
+            // Celda 4: Subtotal
             table.addCell(new Paragraph(String.format("$%.2f", detalle.getSubtotal())).setTextAlignment(TextAlignment.RIGHT));
         }
 

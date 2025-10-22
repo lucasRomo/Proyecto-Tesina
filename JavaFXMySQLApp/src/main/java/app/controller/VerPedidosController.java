@@ -15,12 +15,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContentDisplay; // <--- ¡Importación Agregada!
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -28,20 +31,25 @@ import javafx.stage.FileChooser;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.Callback;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-import java.awt.Desktop;
 
 public class VerPedidosController implements Initializable {
 
     // Formato para mostrar la fecha de creación (dd-MM-yyyy HH:mm)
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+
+    // Tamaño de los iconos para los botones
+    private static final int ICON_SIZE = 24;
 
     @FXML private TableView<Pedido> pedidosTable;
     @FXML private TableColumn<Pedido, Integer> idPedidoColumn;
@@ -52,6 +60,11 @@ public class VerPedidosController implements Initializable {
     @FXML private TableColumn<Pedido, Double> montoEntregadoColumn;
     @FXML private TableColumn<Pedido, LocalDateTime> fechaCreacionColumn;
     @FXML private TableColumn<Pedido, String> instruccionesColumn;
+
+    // --- NUEVAS COLUMNAS AGREGADAS ---
+    @FXML private TableColumn<Pedido, Void> contactoClienteColumn;
+    // ---------------------------------
+
     @FXML private TableColumn<Pedido, Void> ticketColumn;
     @FXML private TableColumn<Pedido, Void> comprobantePagoColumn;
 
@@ -104,13 +117,16 @@ public class VerPedidosController implements Initializable {
             guardarCambiosEnBD(pedido, "Estado");
         });
 
-        // --- 2. Columna Ticket/Factura (Botón) ---
+        // --- 2. Columna CONTACTO (WhatsApp y Email) ---
+        configurarColumnaContacto();
+
+        // --- 3. Columna Ticket/Factura (Botón) ---
         configurarColumnaTicket();
 
-        // --- 3. Columna Comprobante Pago (Botón) ---
+        // --- 4. Columna Comprobante Pago (Botón) ---
         configurarColumnaComprobante();
 
-        // --- 4 & 5. Columnas NUMÉRICAS (Double) ---
+        // --- 5 & 6. Columnas NUMÉRICAS (Double) ---
         montoTotalColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
         montoTotalColumn.setOnEditCommit(event -> {
             if (event.getNewValue() != null && event.getNewValue() >= 0) {
@@ -133,21 +149,21 @@ public class VerPedidosController implements Initializable {
             }
         });
 
-        // --- 6. Columna INSTRUCCIONES (TextFieldTableCell) ---
+        // --- 7. Columna INSTRUCCIONES (TextFieldTableCell) ---
         instruccionesColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         instruccionesColumn.setOnEditCommit(event -> {
             event.getRowValue().setInstrucciones(event.getNewValue());
             guardarCambiosEnBD(event.getRowValue(), "Instrucciones");
         });
 
-        // --- 7. Configuración del Filtro de Empleado ---
+        // --- 8. Configuración del Filtro de Empleado ---
         cargarEmpleadosEnFiltro();
         empleadoFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
             idEmpleadoFiltro = extractIdFromComboBox(newVal);
             cargarPedidos();
         });
 
-        // --- 8. Configuración de Filtros Adicionales ---
+        // --- 9. Configuración de Filtros Adicionales ---
         if (estadoFilterComboBox != null) {
             estadoFilterComboBox.setItems(FXCollections.observableArrayList(estados));
             estadoFilterComboBox.getItems().add(0, "Todos los Estados");
@@ -165,6 +181,166 @@ public class VerPedidosController implements Initializable {
 
         // Carga inicial de pedidos
         cargarPedidos();
+    }
+
+    /**
+     * Helper para cargar un ImageView desde un recurso.
+     */
+    private ImageView crearIcono(String nombreArchivo) {
+        try {
+            // La ruta en el classpath para 'resources/imagenes/whatsapp.png' es '/imagenes/whatsapp.png'
+            URL imageUrl = getClass().getResource("/imagenes/" + nombreArchivo);
+            if (imageUrl == null) {
+                System.err.println("Advertencia: No se encontró el recurso de imagen: /imagenes/" + nombreArchivo);
+                // Intenta usar un recurso de fallback genérico si la imagen específica no se encuentra
+                // Si esto también falla, se lanzará una excepción, lo cual es manejado en el catch.
+                return new ImageView();
+            }
+            Image image = new Image(imageUrl.toExternalForm());
+            ImageView imageView = new ImageView(image);
+            imageView.setFitWidth(ICON_SIZE);
+            imageView.setFitHeight(ICON_SIZE);
+            return imageView;
+        } catch (Exception e) {
+            System.err.println("Error al cargar icono " + nombreArchivo + ": " + e.getMessage());
+            // En caso de error crítico, devuelve un placeholder vacío
+            return new ImageView();
+        }
+    }
+
+
+    /**
+     * Configura la columna de contacto agregando botones con los iconos de WhatsApp y Gmail.
+     */
+    private void configurarColumnaContacto() {
+
+        Callback<TableColumn<Pedido, Void>, TableCell<Pedido, Void>> contactoCellFactory = new Callback<>() {
+            @Override
+            public TableCell<Pedido, Void> call(final TableColumn<Pedido, Void> param) {
+                return new TableCell<Pedido, Void>() {
+
+                    // Los botones ahora usan objetos ImageView
+                    private final Button waButton = new Button("", crearIcono("whatsapp.png"));
+                    private final Button emailButton = new Button("", crearIcono("gmail.png"));
+
+                    {
+                        // Quitar el texto de los botones y añadir estilos para que se vean bien
+                        waButton.getStyleClass().addAll("button-icon");
+                        emailButton.getStyleClass().addAll("button-icon");
+
+                        // Hacemos que los botones sean cuadrados y ajusten el padding si el CSS no lo hace
+                        waButton.setStyle("-fx-padding: 2 4 2 4;");
+                        emailButton.setStyle("-fx-padding: 2 4 2 4;");
+
+                        // Añadir un HBox para agrupar los botones
+                        HBox buttonBox = new HBox(5, waButton, emailButton);
+                        buttonBox.setAlignment(Pos.CENTER);
+
+                        setGraphic(buttonBox);
+                        setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+
+                        waButton.setOnAction(event -> {
+                            Pedido pedido = getTableView().getItems().get(getIndex());
+                            abrirWhatsApp(pedido);
+                        });
+
+                        emailButton.setOnAction(event -> {
+                            Pedido pedido = getTableView().getItems().get(getIndex());
+                            abrirEmailEnGmail(pedido);
+                        });
+                    }
+
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            Pedido pedido = getTableView().getItems().get(getIndex());
+                            // Opcional: Deshabilitar botones si no hay datos de contacto
+                            waButton.setDisable(pedido.getTelefonoCliente() == null || pedido.getTelefonoCliente().isEmpty());
+                            emailButton.setDisable(pedido.getEmailCliente() == null || pedido.getEmailCliente().isEmpty());
+                            setGraphic(getGraphic());
+                        }
+                    }
+                };
+            }
+        };
+        contactoClienteColumn.setCellFactory(contactoCellFactory);
+    }
+
+    /**
+     * Abre el chat de WhatsApp en el navegador.
+     * @param pedido El pedido con el número del cliente.
+     */
+    private void abrirWhatsApp(Pedido pedido) {
+        if (pedido.getTelefonoCliente() != null && !pedido.getTelefonoCliente().isEmpty()) {
+            // Aseguramos que el número solo tenga dígitos y el '+' inicial
+            String telefonoLimpio = pedido.getTelefonoCliente().replaceAll("[^0-9+]", "");
+            String url = "https://wa.me/" + telefonoLimpio;
+            openUrl(url);
+        } else {
+            mostrarAlerta("Error de Contacto", "El cliente " + pedido.getNombreCliente() + " no tiene un número de WhatsApp válido.", Alert.AlertType.WARNING);
+        }
+    }
+
+    /**
+     * Abre un enlace para redactar un email en la interfaz web de Gmail.
+     * @param pedido El pedido con el email del cliente.
+     */
+    private void abrirEmailEnGmail(Pedido pedido) {
+        if (pedido.getEmailCliente() != null && !pedido.getEmailCliente().isEmpty()) {
+            String subject = urlEncode("Consulta sobre Pedido #" + pedido.getIdPedido());
+            String body = urlEncode(
+                    "Hola " + pedido.getNombreCliente() + ",\n\n" +
+                            "Con respecto a su pedido del " + DATE_FORMATTER.format(pedido.getFechaCreacion()) + ":\n\n" +
+                            "[Escriba aquí su mensaje]"
+            );
+
+            // URL para redactar un nuevo correo en Gmail
+            String gmailUrl = String.format(
+                    "https://mail.google.com/mail/u/0/?view=cm&fs=1&to=%s&su=%s&body=%s",
+                    pedido.getEmailCliente(),
+                    subject,
+                    body
+            );
+
+            openUrl(gmailUrl);
+        } else {
+            mostrarAlerta("Error de Contacto", "El cliente " + pedido.getNombreCliente() + " no tiene una dirección de email válida.", Alert.AlertType.WARNING);
+        }
+    }
+
+    /**
+     * Helper para codificar texto para URLs (WhatsApp, Mailto).
+     */
+    private String urlEncode(String text) {
+        try {
+            // Usamos la clase de Java estándar para codificar URLs
+            // NOTA: Reemplazar '+' por '%20' es crucial para que los espacios se interpreten bien en URLs de Gmail.
+            return java.net.URLEncoder.encode(text, "UTF-8").replaceAll("\\+", "%20");
+        } catch (java.io.UnsupportedEncodingException e) {
+            System.err.println("Error de codificación URL: " + e.getMessage());
+            return text; // Fallback
+        }
+    }
+
+    /**
+     * Helper genérico para abrir URLs (sitios web o mailto).
+     */
+    private void openUrl(String url) {
+        if (Desktop.isDesktopSupported()) {
+            Desktop desktop = Desktop.getDesktop();
+            try {
+                // El navegador maneja bien los esquemas 'http', 'https', y 'mailto'
+                desktop.browse(new URI(url));
+            } catch (IOException | URISyntaxException e) {
+                e.printStackTrace();
+                mostrarAlerta("Error al Abrir Enlace", "Hubo un problema al intentar abrir: " + url + "\nError: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        } else {
+            mostrarAlerta("Error de Sistema", "La función de abrir enlaces no es compatible con el sistema operativo actual.", Alert.AlertType.ERROR);
+        }
     }
 
     private void cargarEmpleadosEnFiltro() {
@@ -400,13 +576,10 @@ public class VerPedidosController implements Initializable {
     @FXML
     private void handleVolver(ActionEvent event) {
         try {
-            // Usamos el método unificado para volver, eliminando la creación manual de Stage/Scene
-            MenuController.loadScene(
-                    (Node) event.getSource(),
-                    "/PedidosPrimerMenu.fxml",
-                    "Menú de Pedidos"
-            );
-        } catch (IOException e) {
+            // Revertir a una implementación de cierre si no hay un MenuController conocido:
+            ((Stage)((Node)event.getSource()).getScene().getWindow()).close();
+
+        } catch (Exception e) {
             e.printStackTrace();
             mostrarAlerta("Error", "No se pudo volver al menú de pedidos.", Alert.AlertType.ERROR);
         }

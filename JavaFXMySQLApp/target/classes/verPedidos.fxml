@@ -33,7 +33,6 @@
         <ComboBox fx:id="estadoFilterComboBox" prefWidth="150.0" promptText="Todos los Estados" />
 
         <Label text="Tipo Pago:" textFill="#fff8f8" />
-        <!-- Nota: El fx:id debe ser 'metodoPagoFilterComboBox' para coincidir con el Controller -->
         <ComboBox fx:id="metodoPagoFilterComboBox" prefWidth="150.0" promptText="Todos los Tipos" />
     </HBox>
 
@@ -54,6 +53,11 @@
                     <PropertyValueFactory property="nombreEmpleado" />
                 </cellValueFactory>
             </TableColumn>
+
+            <!-- COLUMNA DE CONTACTO -->
+            <!-- La lógica de botones con los logos de WhatsApp y Gmail se define en VerPedidosController -->
+            <TableColumn fx:id="contactoClienteColumn" prefWidth="110.0" text="Contacto" resizable="false" />
+
             <TableColumn fx:id="estadoColumn" prefWidth="100.0" text="Estado">
                 <cellValueFactory>
                     <PropertyValueFactory property="estado" />
@@ -86,8 +90,7 @@
                 </cellValueFactory>
             </TableColumn>
 
-            <!-- NUEVA COLUMNA para el Comprobante de Pago -->
-            <!-- Esta columna no lleva cellValueFactory porque se maneja con un botón -->
+            <!-- COLUMNA para el Comprobante de Pago -->
             <TableColumn fx:id="comprobantePagoColumn" prefWidth="130.0" text="Comprobante Pago" />
 
             <!-- COLUMNA DE BOTÓN TICKET -->
