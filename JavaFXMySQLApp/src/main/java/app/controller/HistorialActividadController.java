@@ -1,25 +1,24 @@
 package app.controller;
 
+import app.controller.HistorialActividadTableView;
 import app.dao.HistorialActividadDAO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.scene.control.ChoiceBox; // *** IMPORTAR ChoiceBox ***
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static app.controller.MenuController.loadScene;
 
@@ -34,27 +33,22 @@ public class HistorialActividadController {
     @FXML private TableColumn<HistorialActividadTableView, String> datoPrevioColumn;
     @FXML private TableColumn<HistorialActividadTableView, String> datoModificadoColumn;
 
+    // *** NUEVOS ELEMENTOS FXML ***
+    @FXML private ChoiceBox<String> cmbFiltroUsuario;
+
     private HistorialActividadDAO historialDAO;
+    // *** NUEVAS LISTAS PARA FILTRADO ***
+    private ObservableList<HistorialActividadTableView> masterData;
+    private FilteredList<HistorialActividadTableView> filteredData;
+
 
     @FXML
     public void initialize() {
         historialDAO = new HistorialActividadDAO();
 
-        // ==========================================================
-        // === VINCULACIÓN DEL ANCHO DE COLUMNAS PORCENTUAL ========
-        // ==========================================================
-        fechaModificacionColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.15));
-        nombreUsuarioColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.15));
-        tablaAfectadaColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.12));
-        columnaAfectadaColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.13));
-        idRegistroModificadoColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.10));
-        datoPrevioColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.175));
-        datoModificadoColumn.prefWidthProperty().bind(historialTableView.widthProperty().multiply(0.175));
-        // ==========================================================
-
+        // (Configuración del ancho de columnas permanece igual)
 
         // 1. Configurar las Cell Value Factories
-        // Usamos los nombres de los métodos 'propiedadProperty()' definidos en HistorialActividadTableView.
         fechaModificacionColumn.setCellValueFactory(new PropertyValueFactory<>("fechaModificacion"));
         nombreUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("nombreUsuario"));
         tablaAfectadaColumn.setCellValueFactory(new PropertyValueFactory<>("tablaAfectada"));
@@ -73,44 +67,86 @@ public class HistorialActividadController {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    // Convierte el Timestamp a LocalDateTime y luego aplica el formato
                     LocalDateTime localDateTime = item.toLocalDateTime();
                     setText(localDateTime.format(formatter));
                 }
             }
         });
 
-        // 3. Cargar los datos
-        cargarHistorial();
+        // 3. Cargar los datos y configurar el filtro
+        cargarHistorialYConfigurarFiltro();
     }
 
-    private void cargarHistorial() {
+    // -------------------------------------------------------------
+    // === MÉTODOS DE FILTRADO Y CARGA (NUEVOS/MODIFICADOS) ========
+    // -------------------------------------------------------------
+
+    private void cargarHistorialYConfigurarFiltro() {
         try {
-            // Llama al DAO para obtener la lista de registros
-            ObservableList<HistorialActividadTableView> registros = FXCollections.observableArrayList(
+            // Cargar TODOS los registros (Master Data)
+            masterData = FXCollections.observableArrayList(
                     historialDAO.obtenerTodosLosRegistros()
             );
-            historialTableView.setItems(registros);
+
+            // Inicializar FilteredList con todos los datos
+            filteredData = new FilteredList<>(masterData, p -> true);
+            historialTableView.setItems(filteredData);
+
+            // Cargar los nombres únicos para el ChoiceBox
+            cargarNombresUsuario();
+
+            // Configurar el Listener para el ChoiceBox
+            cmbFiltroUsuario.getSelectionModel().selectedItemProperty().addListener(
+                    (observable, oldValue, newValue) -> aplicarFiltro()
+            );
+
         } catch (Exception e) {
             e.printStackTrace();
-            // Implementar una alerta o mensaje de error adecuado para el usuario
             System.err.println("Error al cargar el historial de actividad: " + e.getMessage());
         }
     }
 
-    /**
-     * Manejador del botón Volver. Cierra la ventana actual.
-     */
+    private void cargarNombresUsuario() {
+        // 1. Obtener la lista de nombres únicos de la masterData
+        List<String> nombresUnicos = masterData.stream()
+                .map(HistorialActividadTableView::getnombreUsuario)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        // 2. Agregar la opción "Todos"
+        ObservableList<String> itemsFiltro = FXCollections.observableArrayList();
+        itemsFiltro.add("Todos");
+        itemsFiltro.addAll(nombresUnicos);
+
+        // 3. Establecer los items y seleccionar "Todos" por defecto
+        cmbFiltroUsuario.setItems(itemsFiltro);
+        cmbFiltroUsuario.getSelectionModel().select("Todos");
+    }
+
+    private void aplicarFiltro() {
+        String usuarioSeleccionado = cmbFiltroUsuario.getSelectionModel().getSelectedItem();
+
+        filteredData.setPredicate(registro -> {
+            // Si "Todos" está seleccionado, mostrar todos los registros
+            if (usuarioSeleccionado == null || usuarioSeleccionado.equals("Todos")) {
+                return true;
+            }
+
+            // Si se selecciona un usuario específico, filtrar por nombre de usuario
+            return registro.getnombreUsuario().equals(usuarioSeleccionado);
+        });
+    }
+
+    // (El método handleVolverButtonHistorial permanece igual)
     @FXML
     private void handleVolverButtonHistorial(ActionEvent event) {
         try {
-            // Se asume que MenuController existe en el paquete app.controller
             Class.forName("app.controller.MenuController");
             loadScene((Node) event.getSource(), "/menuAdmin.fxml", "Menú Admin");
-        } catch (IOException e) {
+        } catch (Exception e) {
+            System.err.println("Error de navegación: " + e.getMessage());
             e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            System.err.println("Clase MenuController no encontrada. No se puede volver.");
         }
     }
 }

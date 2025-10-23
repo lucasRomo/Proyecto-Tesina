@@ -2,6 +2,7 @@ package app.controller;
 
 import app.dao.CategoriaDAO;
 import app.dao.ProductoDAO;
+import app.dao.HistorialActividadDAO;
 import app.model.Categoria;
 import app.model.Producto;
 import javafx.beans.property.SimpleStringProperty;
@@ -94,6 +95,7 @@ public class ProductoMenuController {
 
     private final ProductoDAO productoDAO = new ProductoDAO();
     private final CategoriaDAO categoriaDAO = new CategoriaDAO();
+    private final HistorialActividadDAO historialDAO = new HistorialActividadDAO();
     private ObservableList<Producto> masterData;
     private FilteredList<Producto> filteredData;
     private Map<Integer, String> categoriaNamesMap;
@@ -419,23 +421,83 @@ public class ProductoMenuController {
         Producto selectedProducto = productosTableView.getSelectionModel().getSelectedItem();
 
         if (selectedProducto == null) {
-            // Muestra la advertencia solicitada por el usuario
             showAlert(Alert.AlertType.WARNING, "Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.");
             return;
         }
 
-        // 2. Intentar actualizar el producto en la BD (el DAO retorna true solo si hubo cambios)
-        boolean exito = productoDAO.updateProducto(selectedProducto);
+        Producto productoOriginal = null;
+        try {
+            // **CLAVE:** Obtener el estado ORIGINAL del producto desde la DB antes de la modificación.
+            productoOriginal = productoDAO.getProductoById(selectedProducto.getIdProducto());
 
-        if (exito) {
-            showAlert(Alert.AlertType.INFORMATION, "Éxito", "Producto modificado exitosamente.");
-        } else {
-            // Esto ocurre si el usuario seleccionó una fila, no hizo cambios reales
-            // o los datos eran idénticos a los de la BD.
-            showAlert(Alert.AlertType.WARNING, "Sin Cambios Detectados", "El producto seleccionado no ha sido modificado o los datos son idénticos a los actuales.");
+            if (productoOriginal == null) {
+                showAlert(Alert.AlertType.ERROR, "Error de Datos", "No se encontraron datos originales para el producto ID: " + selectedProducto.getIdProducto() + ". No se pudo guardar.");
+                loadProductos();
+                return;
+            }
+
+            // 2. Intentar actualizar el producto en la BD (el DAO retorna true solo si hubo cambios)
+            boolean exito = productoDAO.updateProducto(selectedProducto);
+
+            if (exito) {
+                // 3. REGISTRAR ACTIVIDAD - solo si la modificación fue exitosa en la DB
+                int loggedInUserId = app.controller.SessionManager.getInstance().getLoggedInUserId(); // Asume que SessionManager está disponible
+
+                // --- Comparar y Registrar Nombre ---
+                if (!productoOriginal.getNombreProducto().equals(selectedProducto.getNombreProducto())) {
+                    historialDAO.insertarRegistro(
+                            loggedInUserId, "Producto", "nombreProducto", selectedProducto.getIdProducto(),
+                            productoOriginal.getNombreProducto(), selectedProducto.getNombreProducto()
+                    );
+                }
+
+                // --- Comparar y Registrar Descripción ---
+                if (!productoOriginal.getDescripcion().equals(selectedProducto.getDescripcion())) {
+                    historialDAO.insertarRegistro(
+                            loggedInUserId, "Producto", "descripcion", selectedProducto.getIdProducto(),
+                            productoOriginal.getDescripcion(), selectedProducto.getDescripcion()
+                    );
+                }
+
+                // --- Comparar y Registrar Precio ---
+                if (productoOriginal.getPrecio() != selectedProducto.getPrecio()) {
+                    historialDAO.insertarRegistro(
+                            loggedInUserId, "Producto", "precio", selectedProducto.getIdProducto(),
+                            String.valueOf(productoOriginal.getPrecio()), String.valueOf(selectedProducto.getPrecio())
+                    );
+                }
+
+                // --- Comparar y Registrar Stock ---
+                if (productoOriginal.getStock() != selectedProducto.getStock()) {
+                    historialDAO.insertarRegistro(
+                            loggedInUserId, "Producto", "stock", selectedProducto.getIdProducto(),
+                            String.valueOf(productoOriginal.getStock()), String.valueOf(selectedProducto.getStock())
+                    );
+                }
+
+                // --- Comparar y Registrar Categoría ---
+                if (productoOriginal.getIdCategoria() != selectedProducto.getIdCategoria()) {
+                    // Obtener los nombres de las categorías para un historial más legible
+                    String nombreCatOriginal = categoriaNamesMap.getOrDefault(productoOriginal.getIdCategoria(), "N/A");
+                    String nombreCatNuevo = categoriaNamesMap.getOrDefault(selectedProducto.getIdCategoria(), "N/A");
+
+                    historialDAO.insertarRegistro(
+                            loggedInUserId, "Producto", "idCategoria", selectedProducto.getIdProducto(),
+                            nombreCatOriginal, nombreCatNuevo
+                    );
+                }
+
+                showAlert(Alert.AlertType.INFORMATION, "Éxito", "Producto modificado y registrado en el historial exitosamente.");
+            } else {
+                showAlert(Alert.AlertType.WARNING, "Sin Cambios Detectados", "El producto seleccionado no ha sido modificado o los datos son idénticos a los actuales.");
+            }
+
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error de Base de Datos", "Ocurrió un error al intentar modificar el producto: " + e.getMessage());
+            e.printStackTrace();
         }
 
-        // 3. Recargar la tabla para asegurar la sincronización y refrescar la vista
+        // 4. Recargar la tabla para asegurar la sincronización y refrescar la vista
         loadProductos();
     }
 

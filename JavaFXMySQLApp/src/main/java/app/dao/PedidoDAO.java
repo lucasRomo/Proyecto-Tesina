@@ -243,6 +243,42 @@ public class PedidoDAO {
     // MÉTODOS DE CONSULTA
     // ----------------------------------------------------------------------------------
 
+    public Pedido getPedidoById(int idPedido) {
+        Pedido pedido = null;
+        String sql = "SELECT p.id_pedido, p.id_cliente, p.fecha_creacion, p.fecha_entrega_estimada, p.fecha_finalizacion, " +
+                "p.estado, p.instrucciones, p.monto_total, p.monto_entregado, " +
+                "cpr.tipo_pago, cpr.archivo, " +
+                "clp.nombre AS nombre_cliente, clp.apellido AS apellido_cliente, " +
+                "clp.telefono AS telefono_cliente, clp.email AS email_cliente, " +
+                "ap.id_empleado, emp.nombre AS nombre_empleado, emp.apellido AS apellido_empleado " +
+                "FROM Pedido p " +
+                "LEFT JOIN Cliente cl ON p.id_cliente = cl.id_cliente " +
+                "LEFT JOIN Persona clp ON cl.id_persona = clp.id_persona " +
+                "LEFT JOIN AsignacionPedido ap ON p.id_pedido = ap.id_pedido " +
+                "LEFT JOIN Empleado e ON ap.id_empleado = e.id_empleado " +
+                "LEFT JOIN Persona emp ON e.id_persona = emp.id_persona " +
+                "LEFT JOIN ComprobantePago cpr ON p.id_pedido = cpr.id_pedido " +
+                "WHERE p.id_pedido = ?"; // <-- Condición para un solo pedido
+
+        try (Connection conn = obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idPedido);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    pedido = mapResultSetToPedido(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener el pedido con ID " + idPedido + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+        return pedido;
+    }
+
+
+
     /**
      * Obtiene una lista de todos los pedidos ACTIVOS (estado <> 'Retirado'),
      * haciendo JOIN con ComprobantePago para obtener el tipo_pago y la ruta.

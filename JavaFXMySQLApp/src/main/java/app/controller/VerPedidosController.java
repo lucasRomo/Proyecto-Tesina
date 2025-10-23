@@ -1,5 +1,6 @@
 package app.controller;
 
+import app.dao.HistorialActividadDAO;
 import app.dao.PedidoDAO;
 import app.model.Cliente;
 import app.model.Pedido;
@@ -73,8 +74,9 @@ public class VerPedidosController implements Initializable {
     @FXML private ComboBox<String> metodoPagoFilterComboBox;
 
     private final PedidoDAO pedidoDAO = new PedidoDAO();
-    // Instancia del servicio de comprobantes
     private final ComprobanteService comprobanteService = new ComprobanteService();
+    private final HistorialActividadDAO historialDAO = new HistorialActividadDAO();
+
     private int idEmpleadoFiltro = 0; // 0 significa 'Todos los Empleados'
 
     @Override
@@ -609,18 +611,87 @@ public class VerPedidosController implements Initializable {
      * @param campoEditado Nombre del campo modificado para logging/alertas.
      */
     private void guardarCambiosEnBD(Pedido pedido, String campoEditado) {
-        // La lógica del comprobante ya no pasa por aquí.
         if (campoEditado.equalsIgnoreCase("Ruta Comprobante")) {
-            // Este caso ya no debería ocurrir si usamos el ComprobanteService
             System.out.println("Advertencia: El campo 'Ruta Comprobante' no debería actualizarse directamente desde PedidoDAO.");
             return;
         }
 
-        boolean exito = pedidoDAO.modificarPedido(pedido);
+        Pedido originalPedido = null;
+        try {
+            // 🚨 PASO 1: OBTENER EL VALOR ORIGINAL DE LA BASE DE DATOS
+            // Requiere que PedidoDAO tenga un método para obtener el Pedido completo por su ID.
+            originalPedido = pedidoDAO.getPedidoById(pedido.getIdPedido());
+            if (originalPedido == null) {
+                mostrarAlerta("Error Interno", "No se encontraron datos originales para el pedido ID: " + pedido.getIdPedido() + ". No se pudo guardar.", Alert.AlertType.ERROR);
+                pedidosTable.refresh();
+                return;
+            }
+        } catch (Exception e) {
+            mostrarAlerta("Error de BD", "Error al obtener datos originales del pedido: " + e.getMessage(), Alert.AlertType.ERROR);
+            e.printStackTrace();
+            pedidosTable.refresh();
+            return;
+        }
 
-        if (exito) {
+        // 🚨 PASO 2: REALIZAR EL UPDATE EN LA BASE DE DATOS
+        boolean exitoUpdate = pedidoDAO.modificarPedido(pedido);
+
+        if (exitoUpdate) {
+            // 🚨 PASO 3: REGISTRAR CAMBIOS EN EL HISTORIAL DE FORMA DETALLADA
+            try {
+                int loggedInUserId = app.controller.SessionManager.getInstance().getLoggedInUserId();
+                boolean exitoHistorial = true;
+
+                // --- Comparar Estado ---
+                if (!pedido.getEstado().equals(originalPedido.getEstado())) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Pedido", "estado", pedido.getIdPedido(),
+                            originalPedido.getEstado(), pedido.getEstado()
+                    );
+                }
+
+                // --- Comparar Monto Total ---
+                // (Se usa Double.compare para manejar valores Double correctamente)
+                if (Double.compare(pedido.getMontoTotal(), originalPedido.getMontoTotal()) != 0) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Pedido", "monto_total", pedido.getIdPedido(),
+                            String.valueOf(originalPedido.getMontoTotal()), String.valueOf(pedido.getMontoTotal())
+                    );
+                }
+
+                // --- Comparar Monto Entregado ---
+                if (Double.compare(pedido.getMontoEntregado(), originalPedido.getMontoEntregado()) != 0) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Pedido", "monto_entregado", pedido.getIdPedido(),
+                            String.valueOf(originalPedido.getMontoEntregado()), String.valueOf(pedido.getMontoEntregado())
+                    );
+                }
+
+                // --- Comparar Instrucciones ---
+                // Se normalizan nulos a cadenas vacías para una comparación segura
+                String originalInstrucciones = originalPedido.getInstrucciones() != null ? originalPedido.getInstrucciones() : "";
+                String nuevoInstrucciones = pedido.getInstrucciones() != null ? pedido.getInstrucciones() : "";
+
+                if (!nuevoInstrucciones.equals(originalInstrucciones)) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            loggedInUserId, "Pedido", "instrucciones", pedido.getIdPedido(),
+                            originalInstrucciones, nuevoInstrucciones
+                    );
+                }
+
+                // Nota: La columna 'tipoPago' no es editable en la tabla, por lo que no se incluye aquí.
+
+                if (!exitoHistorial) {
+                    System.err.println("Advertencia: No todos los registros de historial fueron insertados correctamente para Pedido ID: " + pedido.getIdPedido());
+                }
+
+            } catch (Exception e) {
+                System.err.println("Error FATAL al registrar en el historial para Pedido ID: " + pedido.getIdPedido());
+                e.printStackTrace();
+            }
+            // ------------------------------------------
+
             System.out.println("Pedido ID " + pedido.getIdPedido() + " actualizado. Campo modificado: " + campoEditado);
-
             if ("Retirado".equalsIgnoreCase(pedido.getEstado())) {
                 cargarPedidos();
             } else {

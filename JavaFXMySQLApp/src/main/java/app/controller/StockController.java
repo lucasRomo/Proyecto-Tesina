@@ -2,6 +2,8 @@ package app.controller;
 
 import app.dao.InsumoDAO;
 import app.dao.TipoProveedorDAO;
+import app.dao.HistorialActividadDAO;
+import java.sql.Connection;
 import app.model.Insumo;
 import app.model.TipoProveedor;
 import javafx.collections.FXCollections;
@@ -15,6 +17,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.GridPane;
@@ -50,10 +53,12 @@ public class StockController {
     private ObservableList<Insumo> masterData = FXCollections.observableArrayList();
     private FilteredList<Insumo> filteredData;
     private List<TipoProveedor> tiposProveedor;
+    private HistorialActividadDAO historialDAO;
 
     public StockController() {
         this.insumoDAO = new InsumoDAO();
         this.tipoProveedorDAO = new TipoProveedorDAO();
+        this.historialDAO = new HistorialActividadDAO();
     }
 
     @FXML
@@ -156,32 +161,65 @@ public class StockController {
         });
 
         // OnEditCommit para idTipoProveedorColumn (MANTENIDO)
+        List<String> descripcionesTipos = tiposProveedor.stream()
+                .map(TipoProveedor::getDescripcion)
+                .collect(Collectors.toList());
+
+        idTipoProveedorColumn.setCellFactory(ComboBoxTableCell.forTableColumn(FXCollections.observableArrayList(descripcionesTipos)));
+
         idTipoProveedorColumn.setOnEditCommit(event -> {
             String nuevaDescripcion = event.getNewValue();
-            Insumo insumo = event.getRowValue();
-            try {
-                TipoProveedor nuevoTipo = tipoProveedorDAO.getTipoProveedorByDescription(nuevaDescripcion);
-                if (nuevoTipo != null) {
-                    // Validar si realmente hay un cambio para evitar el re-guardado innecesario
-                    if (insumo.getIdTipoProveedor() != nuevoTipo.getId()) {
-                        insumo.setIdTipoProveedor(nuevoTipo.getId());
-                        if (insumoDAO.modificarInsumo(insumo)) {
-                            mostrarAlerta("Éxito", "Tipo de proveedor actualizado exitosamente.", Alert.AlertType.INFORMATION);
-                        } else {
-                            mostrarAlerta("Error", "No se pudo actualizar el tipo de proveedor en la base de datos.", Alert.AlertType.ERROR);
-                            // Revertir el modelo al valor original si falla la BD
-                            insumosTableView.refresh();
-                        }
-                    }
-                } else {
+            Insumo insumoModificado = event.getRowValue();
+            int valorOriginalId = insumoModificado.getIdTipoProveedor();
+
+            try (Connection conn = insumoDAO.getConnection()) {
+                // CORREGIDO: Buscar el objeto TipoProveedor por su descripción
+                TipoProveedor nuevoTipo = tiposProveedor.stream()
+                        .filter(t -> t.getDescripcion().equals(nuevaDescripcion))
+                        .findFirst()
+                        .orElse(null);
+
+                if (nuevoTipo == null) {
                     mostrarAlerta("Error", "Tipo de proveedor no encontrado.", Alert.AlertType.ERROR);
-                    // Revertir el modelo al valor original si es inválido
                     insumosTableView.refresh();
+                    return;
                 }
-            } catch (SQLException e) {
+
+                if (valorOriginalId == nuevoTipo.getId()) {
+                    return; // No hubo cambio
+                }
+
+                Insumo insumoOriginalDB = insumoDAO.getInsumoById(insumoModificado.getIdInsumo(), conn);
+
+                if (insumoOriginalDB == null) throw new SQLException("Datos originales del insumo no encontrados.");
+
+                String descripcionPrevia = insumoOriginalDB.getDescripcion(); // Obtener la descripción previa de la BD
+
+                // Aplicar el cambio de ID al modelo (para el guardado)
+                insumoModificado.setIdTipoProveedor(nuevoTipo.getId());
+
+                boolean exito = insumoDAO.modificarInsumo(insumoModificado);
+
+                if (exito) {
+                    historialDAO.insertarRegistro(
+                            SessionManager.getInstance().getLoggedInUserId(),
+                            "Insumo",
+                            "id_tipo_proveedor",
+                            insumoModificado.getIdInsumo(),
+                            descripcionPrevia,
+                            nuevaDescripcion
+                    );
+                    mostrarAlerta("Éxito", "Tipo de proveedor actualizado y logueado.", Alert.AlertType.INFORMATION);
+                } else {
+                    // Revertir el modelo si falla la DB
+                    insumoModificado.setIdTipoProveedor(valorOriginalId);
+                    mostrarAlerta("Error", "No se pudo actualizar el tipo de proveedor en la base de datos.", Alert.AlertType.ERROR);
+                }
+            } catch (Exception e) {
+                insumoModificado.setIdTipoProveedor(valorOriginalId);
                 e.printStackTrace();
-                mostrarAlerta("Error de BD", "Ocurrió un error al actualizar el tipo de proveedor.", Alert.AlertType.ERROR);
-                // Revertir el modelo al valor original si falla la BD
+                mostrarAlerta("Error de BD", "Ocurrió un error al actualizar el tipo de proveedor: " + e.getMessage(), Alert.AlertType.ERROR);
+            } finally {
                 insumosTableView.refresh();
             }
         });
@@ -194,7 +232,42 @@ public class StockController {
                 insumosTableView.refresh();
                 return;
             }
-            event.getRowValue().setNombreInsumo(event.getNewValue());
+
+            Insumo insumoModificado = event.getRowValue();
+            String valorOriginalVista = event.getOldValue();
+
+            try (Connection conn = insumoDAO.getConnection()) { // <-- USO DE CONEXIÓN
+                Insumo insumoOriginalDB = insumoDAO.getInsumoById(insumoModificado.getIdInsumo(), conn); // <-- OBTENER ORIGINAL
+
+                if (insumoOriginalDB == null) throw new SQLException("Datos originales del insumo no encontrados.");
+
+                insumoModificado.setNombreInsumo(event.getNewValue()); // Aplicar el cambio al modelo
+
+                boolean exito = insumoDAO.modificarInsumo(insumoModificado);
+
+                if (exito) {
+                    if (!insumoOriginalDB.getNombreInsumo().equals(insumoModificado.getNombreInsumo())) {
+                        historialDAO.insertarRegistro(
+                                SessionManager.getInstance().getLoggedInUserId(),
+                                "Insumo",
+                                "nombre",
+                                insumoModificado.getIdInsumo(),
+                                insumoOriginalDB.getNombreInsumo(),
+                                insumoModificado.getNombreInsumo()
+                        );
+                    }
+                    mostrarAlerta("Éxito", "Nombre del insumo modificado y guardado.", Alert.AlertType.INFORMATION);
+                } else {
+                    insumoModificado.setNombreInsumo(valorOriginalVista);
+                    mostrarAlerta("Error", "Fallo al guardar la modificación del nombre en la base de datos.", Alert.AlertType.ERROR);
+                }
+            } catch (Exception e) {
+                insumoModificado.setNombreInsumo(valorOriginalVista);
+                e.printStackTrace();
+                mostrarAlerta("Error de BD", "Ocurrió un error al intentar modificar el nombre: " + e.getMessage(), Alert.AlertType.ERROR);
+            } finally {
+                insumosTableView.refresh();
+            }
         });
 
         descripcionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -204,7 +277,42 @@ public class StockController {
                 insumosTableView.refresh();
                 return;
             }
-            event.getRowValue().setDescripcion(event.getNewValue());
+
+            Insumo insumoModificado = event.getRowValue();
+            String valorOriginalVista = event.getOldValue();
+
+            try (Connection conn = insumoDAO.getConnection()) { // <-- USO DE CONEXIÓN
+                Insumo insumoOriginalDB = insumoDAO.getInsumoById(insumoModificado.getIdInsumo(), conn); // <-- OBTENER ORIGINAL
+
+                if (insumoOriginalDB == null) throw new SQLException("Datos originales del insumo no encontrados.");
+
+                insumoModificado.setDescripcion(event.getNewValue());
+
+                boolean exito = insumoDAO.modificarInsumo(insumoModificado);
+
+                if (exito) {
+                    if (!insumoOriginalDB.getDescripcion().equals(insumoModificado.getDescripcion())) {
+                        historialDAO.insertarRegistro(
+                                SessionManager.getInstance().getLoggedInUserId(),
+                                "Insumo",
+                                "descripcion",
+                                insumoModificado.getIdInsumo(),
+                                insumoOriginalDB.getDescripcion(),
+                                insumoModificado.getDescripcion()
+                        );
+                    }
+                    mostrarAlerta("Éxito", "Descripción del insumo modificada y guardada.", Alert.AlertType.INFORMATION);
+                } else {
+                    insumoModificado.setDescripcion(valorOriginalVista);
+                    mostrarAlerta("Error", "Fallo al guardar la modificación de la descripción en la base de datos.", Alert.AlertType.ERROR);
+                }
+            } catch (Exception e) {
+                insumoModificado.setDescripcion(valorOriginalVista);
+                e.printStackTrace();
+                mostrarAlerta("Error de BD", "Ocurrió un error al intentar modificar la descripción: " + e.getMessage(), Alert.AlertType.ERROR);
+            } finally {
+                insumosTableView.refresh();
+            }
         });
 
         // OnEditCommit para stockMinimoColumn (MANTENIDO)
@@ -257,6 +365,53 @@ public class StockController {
                         setGraphic(null);
                     }
                 }
+            }
+        });
+
+        stockMinimoColumn.setOnEditCommit(event -> {
+            Number nuevoValor = event.getNewValue();
+
+            if (nuevoValor == null || nuevoValor.intValue() < 0) {
+                // El conversor ya muestra una alerta, pero se asegura la cancelación aquí
+                insumosTableView.refresh();
+                return;
+            }
+
+            Insumo insumoModificado = event.getRowValue();
+            Number stockMinimoOriginal = event.getOldValue();
+
+            try (Connection conn = insumoDAO.getConnection()) {
+                Insumo insumoOriginalDB = insumoDAO.getInsumoById(insumoModificado.getIdInsumo(), conn);
+
+                if (insumoOriginalDB == null) throw new SQLException("Datos originales del insumo no encontrados.");
+
+                // Actualizar el modelo antes de guardar (ya lo hizo el conversor, pero es buena práctica)
+                insumoModificado.setStockMinimo(nuevoValor.intValue());
+
+                boolean exito = insumoDAO.modificarInsumo(insumoModificado);
+
+                if (exito) {
+                    if (insumoOriginalDB.getStockMinimo() != nuevoValor.intValue()) {
+                        historialDAO.insertarRegistro(
+                                SessionManager.getInstance().getLoggedInUserId(),
+                                "Insumo",
+                                "stock_minimo",
+                                insumoModificado.getIdInsumo(),
+                                String.valueOf(insumoOriginalDB.getStockMinimo()),
+                                String.valueOf(nuevoValor.intValue())
+                        );
+                    }
+                    mostrarAlerta("Éxito", "Stock mínimo modificado y guardado.", Alert.AlertType.INFORMATION);
+                } else {
+                    insumoModificado.setStockMinimo(stockMinimoOriginal.intValue());
+                    mostrarAlerta("Error", "Fallo al guardar la modificación del stock mínimo.", Alert.AlertType.ERROR);
+                }
+            } catch (Exception e) {
+                insumoModificado.setStockMinimo(stockMinimoOriginal.intValue());
+                e.printStackTrace();
+                mostrarAlerta("Error de BD", "Ocurrió un error al intentar modificar el stock mínimo: " + e.getMessage(), Alert.AlertType.ERROR);
+            } finally {
+                insumosTableView.refresh();
             }
         });
 
@@ -315,38 +470,59 @@ public class StockController {
         });
 
         stockActualColumn.setOnEditCommit(event -> {
-            Insumo insumo = event.getRowValue();
-            Number nuevoStock = event.getNewValue();
+            Number nuevoValor = event.getNewValue();
 
-            if (nuevoStock == null) {
+            if (nuevoValor == null || nuevoValor.intValue() < 0) {
+                // El conversor ya muestra una alerta, pero se asegura la cancelación aquí
                 insumosTableView.refresh();
                 return;
             }
 
-            int stockActual = nuevoStock.intValue();
-            insumo.setStockActual(stockActual);
+            Insumo insumoModificado = event.getRowValue();
+            Number stockActualOriginal = event.getOldValue();
+            int stockActual = nuevoValor.intValue();
 
-            // Intentar modificar en la base de datos
-            boolean exito = insumoDAO.modificarInsumo(insumo);
+            try (Connection conn = insumoDAO.getConnection()) {
+                Insumo insumoOriginalDB = insumoDAO.getInsumoById(insumoModificado.getIdInsumo(), conn);
 
-            if (exito) {
-                // Validación y Alerta después de la modificación exitosa
-                int stockMinimo = insumo.getStockMinimo();
-                if (stockActual == 0) {
-                    mostrarAlerta("¡Stock Agotado! 🚫", "El insumo '" + insumo.getNombreInsumo() + "' se quedó sin stock.", Alert.AlertType.ERROR);
-                } else if (stockActual <= stockMinimo) {
-                    mostrarAlerta("¡Stock Crítico! ⚠️", "El insumo '" + insumo.getNombreInsumo() + "' ha alcanzado o superado el stock mínimo (" + stockMinimo + ").", Alert.AlertType.WARNING);
+                if (insumoOriginalDB == null) throw new SQLException("Datos originales del insumo no encontrados.");
+
+                // Actualizar el modelo antes de guardar
+                insumoModificado.setStockActual(stockActual);
+
+                boolean exito = insumoDAO.modificarInsumo(insumoModificado);
+
+                if (exito) {
+                    if (insumoOriginalDB.getStockActual() != stockActual) {
+                        historialDAO.insertarRegistro(
+                                SessionManager.getInstance().getLoggedInUserId(),
+                                "Insumo",
+                                "stock_actual",
+                                insumoModificado.getIdInsumo(),
+                                String.valueOf(insumoOriginalDB.getStockActual()),
+                                String.valueOf(stockActual)
+                        );
+                    }
+                    // Validación y Alerta
+                    int stockMinimo = insumoModificado.getStockMinimo();
+                    if (stockActual == 0) {
+                        mostrarAlerta("¡Stock Agotado! 🚫", "El insumo '" + insumoModificado.getNombreInsumo() + "' se quedó sin stock.", Alert.AlertType.ERROR);
+                    } else if (stockActual <= stockMinimo) {
+                        mostrarAlerta("¡Stock Crítico! ⚠️", "El insumo '" + insumoModificado.getNombreInsumo() + "' ha alcanzado o superado el stock mínimo (" + stockMinimo + ").", Alert.AlertType.WARNING);
+                    }
                 } else {
-                    // Opcional: Alerta de éxito si el stock se repone
-                    // mostrarAlerta("Éxito", "Stock de " + insumo.getNombreInsumo() + " actualizado correctamente.", Alert.AlertType.INFORMATION);
+                    insumoModificado.setStockActual(stockActualOriginal.intValue());
+                    mostrarAlerta("Error", "No se pudo actualizar el stock en la base de datos.", Alert.AlertType.ERROR);
                 }
-            } else {
-                mostrarAlerta("Error", "No se pudo actualizar el stock en la base de datos.", Alert.AlertType.ERROR);
-                // Revertir el valor si la BD falla
-                insumo.setStockActual(event.getOldValue().intValue());
+            } catch (Exception e) {
+                insumoModificado.setStockActual(stockActualOriginal.intValue());
+                e.printStackTrace();
+                mostrarAlerta("Error de BD", "Ocurrió un error al intentar modificar el stock: " + e.getMessage(), Alert.AlertType.ERROR);
+            } finally {
+                insumosTableView.refresh();
             }
-            insumosTableView.refresh();
         });
+
         // ====================================================================
 
         // LÓGICA DE ESTILO DE ESTADO (MANTENIDA)
@@ -417,17 +593,44 @@ public class StockController {
         });
 
         estadoColumn.setOnEditCommit(event -> {
-            Insumo insumo = event.getRowValue();
+            Insumo insumoModificado = event.getRowValue();
             String nuevoEstado = event.getNewValue();
-            insumo.setEstado(nuevoEstado);
-            boolean exito = insumoDAO.modificarEstadoInsumo(insumo.getIdInsumo(), nuevoEstado);
-            if (exito) {
-                mostrarAlerta("Éxito", "Estado del insumo actualizado.", Alert.AlertType.INFORMATION);
-            } else {
-                mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
-                insumo.setEstado(event.getOldValue());
+            String estadoOriginal = event.getOldValue(); // Valor de la vista
+
+            try (Connection conn = insumoDAO.getConnection()) { // <-- USO DE CONEXIÓN
+                Insumo insumoOriginalDB = insumoDAO.getInsumoById(insumoModificado.getIdInsumo(), conn); // <-- OBTENER ORIGINAL
+
+                if (insumoOriginalDB == null) throw new SQLException("Datos originales del insumo no encontrados.");
+
+                insumoModificado.setEstado(nuevoEstado); // Aplicar el cambio al modelo
+
+                // Usamos modificarEstadoInsumo ya que es un método más directo
+                boolean exito = insumoDAO.modificarEstadoInsumo(insumoModificado.getIdInsumo(), nuevoEstado);
+
+                if (exito) {
+                    // REGISTRAR ACTIVIDAD
+                    if (!insumoOriginalDB.getEstado().equals(insumoModificado.getEstado())) {
+                        historialDAO.insertarRegistro(
+                                SessionManager.getInstance().getLoggedInUserId(),
+                                "Insumo",
+                                "estado",
+                                insumoModificado.getIdInsumo(),
+                                insumoOriginalDB.getEstado(),
+                                insumoModificado.getEstado()
+                        );
+                    }
+                    mostrarAlerta("Éxito", "Estado del insumo actualizado y logueado.", Alert.AlertType.INFORMATION);
+                } else {
+                    insumoModificado.setEstado(estadoOriginal);
+                    mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
+                }
+            } catch (Exception e) {
+                insumoModificado.setEstado(estadoOriginal);
+                e.printStackTrace();
+                mostrarAlerta("Error de BD", "Ocurrió un error al intentar modificar el estado: " + e.getMessage(), Alert.AlertType.ERROR);
+            } finally {
+                insumosTableView.refresh();
             }
-            insumosTableView.refresh();
         });
 
 

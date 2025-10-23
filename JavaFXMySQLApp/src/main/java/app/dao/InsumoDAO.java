@@ -40,6 +40,35 @@ public class InsumoDAO {
         return insumos;
     }
 
+    public Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
+
+
+    public Insumo getInsumoById(int idInsumo, Connection conn) throws SQLException {
+        String query = "SELECT * FROM Insumo WHERE id_insumo = ?";
+
+        // Usamos la conexión que nos llega por parámetro (conn)
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, idInsumo);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Insumo(
+                            rs.getInt("id_insumo"),
+                            rs.getString("nombre_insumo"),
+                            rs.getString("descripcion"),
+                            rs.getInt("stock_minimo"),
+                            rs.getInt("stock_actual"),
+                            rs.getString("estado"),
+                            rs.getInt("id_tipo_proveedor")
+                    );
+                }
+            }
+        }
+        return null; // Retorna null si no se encuentra o hay error.
+    }
+
+
     public boolean modificarInsumo(Insumo insumo) {
         String query = "UPDATE Insumo SET nombre_insumo = ?, descripcion = ?, stock_minimo = ?, stock_actual = ?, id_tipo_proveedor = ? WHERE id_insumo = ?";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);

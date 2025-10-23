@@ -89,5 +89,31 @@ public class HistorialActividadTableView {
     public Timestamp getFechaModificacion() {
         return fechaModificacion.get();
     }
+
+    public String getnombreUsuario() {
+        return nombreUsuario.get();
+    }
+
+    public String getTablaAfectada() {
+        return tablaAfectada.get();
+    }
+
+    public String getColumnaAfectada() {
+        return columnaAfectada.get();
+    }
+
+    public int getIdRegistroModificado() {
+        return idRegistroModificado.get();
+    }
+
+    public String getDatoPrevio() {
+        return datoPrevio.get();
+    }
+
+    public String getDatoModificado() {
+        return datoModificado.get();
+    }
+
+
     // ... otros getters simples
 }

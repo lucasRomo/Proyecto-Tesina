@@ -419,17 +419,40 @@ public class ClienteController {
             String nuevoEstado = event.getNewValue();
             String estadoOriginal = event.getOldValue();
 
+            // 💡 IMPORTANTE: Reemplaza con tu método para obtener el ID del usuario logueado
+            int loggedInUserId = app.controller.SessionManager.getInstance().getLoggedInUserId();
+
             // Se utiliza el método modificarEstadoCliente que confirmaste en tu DAO
             boolean exito = clienteDAO.modificarEstadoCliente(cliente.getIdCliente(), nuevoEstado);
 
             if (exito) {
                 cliente.setEstado(nuevoEstado); // Actualiza el modelo en memoria
+
+                // 🚀 AÑADIR REGISTRO EN EL HISTORIAL INMEDIATAMENTE
+                try {
+                    // Asumiendo que historialDAO tiene un método simple para registrar la actividad.
+                    // Si tu historialDAO.insertarRegistro requiere conexión, necesitarás adaptarlo.
+                    // Para mantener la consistencia con tu patrón:
+                    historialDAO.insertarRegistro(
+                            loggedInUserId,
+                            "Cliente",
+                            "estado",
+                            cliente.getIdCliente(), // Usar el ID del cliente
+                            estadoOriginal,
+                            nuevoEstado
+                            // La conexión no es necesaria si el DAO maneja su propia conexión para esta operación.
+                    );
+                } catch (Exception e) {
+                    System.err.println("Advertencia: Fallo al registrar el cambio de estado en el historial.");
+                    e.printStackTrace();
+                    // Continuar, ya que el cambio de estado en la tabla Cliente fue exitoso.
+                }
+
                 mostrarAlerta("Éxito", "Estado del cliente actualizado.", Alert.AlertType.INFORMATION);
             } else {
                 mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
                 cliente.setEstado(estadoOriginal); // Revierte el cambio en memoria
             }
-            // Asegúrate de usar el nombre correcto de tu TableView (clientesTable o clientesTableView)
             clientesTableView.refresh();
         });
 

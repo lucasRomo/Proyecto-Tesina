@@ -42,6 +42,16 @@ public class ProveedorDAO {
         return false;
     }
 
+    public Connection getConnection() throws SQLException {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("ERROR: No se encontró el driver JDBC de MySQL.");
+            throw new SQLException("Falta el driver JDBC", e);
+        }
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
+
 
     public ObservableList<Proveedor> getAllProveedores() {
         ObservableList<Proveedor> proveedores = FXCollections.observableArrayList();
@@ -171,8 +181,10 @@ public class ProveedorDAO {
     }
 
     public Proveedor getProveedorById(int idProveedor, Connection conn) throws SQLException {
-        String sql = "SELECT * FROM Proveedor WHERE id_proveedor = ?";
-        // Usamos la conexión (conn) que se pasa como parámetro, NO creamos una nueva.
+        String sql = "SELECT p.*, tp.descripcion AS tipo_descripcion FROM Proveedor p " +
+                "JOIN TipoProveedor tp ON p.id_tipo_proveedor = tp.id_tipo_proveedor " +
+                "WHERE p.id_proveedor = ?";
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idProveedor);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -184,9 +196,8 @@ public class ProveedorDAO {
                             rs.getString("mail"),
                             rs.getString("estado"),
                             rs.getInt("id_direccion"),
-                            rs.getInt("id_tipo_proveedor")
-                            // Nota: La descripción del tipo de proveedor no es necesaria para obtener el estado original,
-                            // ya que se buscará aparte para el historial si cambia el ID.
+                            rs.getInt("id_tipo_proveedor"),
+                            rs.getString("tipo_descripcion") // <-- AÑADIR ESTO AL CONSTRUCTOR
                     );
                 }
             }

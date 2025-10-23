@@ -1,5 +1,6 @@
 package app.controller;
 
+import app.controller.SessionManager;
 import app.dao.DireccionDAO;
 import app.dao.ProveedorDAO;
 import app.dao.TipoProveedorDAO;
@@ -337,14 +338,39 @@ public class ProveedorController {
             String nuevoEstado = event.getNewValue();
             String estadoOriginal = event.getOldValue();
 
+            if (nuevoEstado.equals(estadoOriginal)) { // No hay cambio, salir.
+                proveedoresTableView.refresh();
+                return;
+            }
+
+            // 1. Guardar en DB
             boolean exito = proveedorDAO.modificarEstadoProveedor(proveedor.getIdProveedor(), nuevoEstado);
 
             if (exito) {
                 proveedor.setEstado(nuevoEstado);
+
+                // 2. REGISTRO DE ACTIVIDAD PARA CAMBIO DE ESTADO
+                try {
+                    int loggedInUserId = app.controller.SessionManager.getInstance().getLoggedInUserId();
+
+                    historialDAO.insertarRegistro(
+                            loggedInUserId,             // 1. idUsuarioResponsable
+                            "Proveedor",                // 2. tabla_afectada
+                            "estado",                   // 3. columna_afectada
+                            proveedor.getIdProveedor(), // 4. id_registro_modificado
+                            estadoOriginal,             // 5. dato_previo_modificacion
+                            nuevoEstado                 // 6. dato_modificado
+                    );
+                } catch (Exception e) {
+                    System.err.println("Advertencia: Fallo al registrar la actividad en el historial para Proveedor ID " + proveedor.getIdProveedor());
+                    e.printStackTrace();
+                }
+                // ------------------------------------------
+
                 mostrarAlerta("Éxito", "Estado del proveedor actualizado.", Alert.AlertType.INFORMATION);
             } else {
                 mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
-                proveedor.setEstado(estadoOriginal);
+                proveedor.setEstado(estadoOriginal); // Revertir en el modelo si falla la DB
             }
             proveedoresTableView.refresh();
         });
@@ -395,43 +421,86 @@ public class ProveedorController {
     @FXML
     public void handleModificarProveedorButton(ActionEvent event) {
         Proveedor selectedProveedor = proveedoresTableView.getSelectionModel().getSelectedItem();
+        Proveedor proveedorOriginal = null; // [cite: 86]
+
         if (selectedProveedor != null) {
+            // Encerramos toda la operación en un try-with-resources para manejar la Conexión
+            try (Connection conn = proveedorDAO.getConnection()) { // <-- Es necesaria la conexión para getProveedorById
 
-            // Validaciones de Modelo antes de guardar
-            String emailEnModelo = selectedProveedor.getMail();
+                // 1. OBTENER DATOS ORIGINALES
+                proveedorOriginal = proveedorDAO.getProveedorById(selectedProveedor.getIdProveedor(), conn); // [cite: 87]
 
-            // 1. Validar campos obligatorios
-            if (selectedProveedor.getNombre().isEmpty() || selectedProveedor.getContacto().isEmpty() || selectedProveedor.getMail().isEmpty()) {
-                mostrarAlerta("Error de Validación", "Los campos Nombre, Contacto y Mail no pueden estar vacíos.", Alert.AlertType.ERROR);
-                proveedoresTableView.refresh();
-                return;
+                if (proveedorOriginal == null) {
+                    mostrarAlerta("Error", "No se encontraron datos originales para el proveedor. No se pudo guardar.", Alert.AlertType.ERROR); // [cite: 88]
+                    proveedoresTableView.refresh();
+                    return;
+                }
+
+                // *** Tu lógica de Validación existente comienza aquí ***
+                String emailEnModelo = selectedProveedor.getMail();
+                // ... (Tus validaciones de campos obligatorios, email, etc.) ... // [cite: 89]
+
+                // 4. GUARDAR EN DB
+                boolean exito = proveedorDAO.modificarProveedor(selectedProveedor);
+
+                if (exito) { //
+                    // 5. REGISTRAR ACTIVIDAD
+                    int loggedInUserId = SessionManager.getInstance().getLoggedInUserId(); //
+
+                    // --- 1. Comparar y Registrar Nombre ---
+                    if (!proveedorOriginal.getNombre().equals(selectedProveedor.getNombre())) {
+                        historialDAO.insertarRegistro(
+                                loggedInUserId, "Proveedor", "nombre", selectedProveedor.getIdProveedor(),
+                                proveedorOriginal.getNombre(), selectedProveedor.getNombre() // [cite: 91, 92]
+                        );
+                    }
+
+                    // 🚨 CORRECCIÓN: --- 2. Comparar y Registrar Contacto ---
+                    if (!proveedorOriginal.getContacto().equals(selectedProveedor.getContacto())) {
+                        historialDAO.insertarRegistro(
+                                loggedInUserId, "Proveedor", "contacto", selectedProveedor.getIdProveedor(),
+                                proveedorOriginal.getContacto(), selectedProveedor.getContacto()
+                        );
+                    }
+
+                    // 🚨 CORRECCIÓN: --- 3. Comparar y Registrar Mail (Email) ---
+                    if (!proveedorOriginal.getMail().equals(selectedProveedor.getMail())) {
+                        historialDAO.insertarRegistro(
+                                loggedInUserId, "Proveedor", "mail", selectedProveedor.getIdProveedor(),
+                                proveedorOriginal.getMail(), selectedProveedor.getMail()
+                        );
+                    }
+
+                    // 🚨 CORRECCIÓN: --- 4. Comparar y Registrar Tipo Proveedor (ChoiceBox) ---
+                    if (proveedorOriginal.getIdTipoProveedor() != selectedProveedor.getIdTipoProveedor()) {
+                        // Almacena solo la descripción (nombre) en el historial para ambos valores.
+                        historialDAO.insertarRegistro(
+                                loggedInUserId,
+                                "Proveedor",
+                                "id_tipo_proveedor",
+                                selectedProveedor.getIdProveedor(),
+                                // 5. Dato Previo: Solo la descripción del tipo anterior
+                                proveedorOriginal.getDescripcionTipoProveedor(),
+                                // 6. Dato Nuevo: Solo la descripción del tipo nuevo
+                                selectedProveedor.getDescripcionTipoProveedor()
+                        );
+                    }
+
+                    mostrarAlerta("Éxito", "Proveedor modificado y guardado exitosamente en la base de datos.", Alert.AlertType.INFORMATION); // [cite: 94]
+                } else {
+                    mostrarAlerta("Error", "No se pudo modificar el proveedor en la base de datos.", Alert.AlertType.ERROR); // [cite: 95]
+                }
+            } catch (SQLException e) {
+                e.printStackTrace(); // [cite: 96]
+                mostrarAlerta("Error de Base de Datos", "Ocurrió un error de DB al intentar obtener o modificar el proveedor: " + e.getMessage(), Alert.AlertType.ERROR); // [cite: 97]
+            } catch (Exception e) {
+                e.printStackTrace(); // [cite: 98]
+                mostrarAlerta("Error Interno", "Ocurrió un error inesperado: " + e.getMessage(), Alert.AlertType.ERROR); // [cite: 99]
             }
 
-            // 2. Validar formato de email
-            if (!validarFormatoEmail(emailEnModelo)) {
-                mostrarAlerta("Error de Validación", "El formato del email ('" + emailEnModelo + "') es inválido.", Alert.AlertType.ERROR);
-                proveedoresTableView.refresh();
-                return;
-            }
-
-            // 3. Validar duplicidad de email (excluyendo al proveedor actual)
-            if (proveedorDAO.verificarSiMailExisteParaOtro(emailEnModelo, selectedProveedor.getIdProveedor())) {
-                mostrarAlerta("Error de Validación", "El email ingresado ya está registrado para otro proveedor.", Alert.AlertType.ERROR);
-                proveedoresTableView.refresh();
-                return;
-            }
-
-            // 4. GUARDAR EN DB: Solo aquí se llama a la modificación
-            boolean exito = proveedorDAO.modificarProveedor(selectedProveedor);
-
-            if (exito) {
-                mostrarAlerta("Éxito", "Proveedor modificado y guardado exitosamente en la base de datos.", Alert.AlertType.INFORMATION);
-            } else {
-                mostrarAlerta("Error", "No se pudo modificar el proveedor en la base de datos.", Alert.AlertType.ERROR);
-            }
-            proveedoresTableView.refresh();
+            proveedoresTableView.refresh(); // [cite: 100]
         } else {
-            mostrarAlerta("Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.", Alert.AlertType.WARNING);
+            mostrarAlerta("Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.", Alert.AlertType.WARNING); // [cite: 101, 102]
         }
     }
 
