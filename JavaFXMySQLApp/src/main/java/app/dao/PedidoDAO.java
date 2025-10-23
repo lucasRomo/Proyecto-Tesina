@@ -413,6 +413,90 @@ public class PedidoDAO {
     }
 
 
+    public double getTotalVentasPorRango(java.time.LocalDate inicio, java.time.LocalDate fin) {
+        String sql = "SELECT SUM(monto_total) FROM Pedido WHERE fecha_creacion >= ? AND fecha_creacion < ?";
+        double total = 0.0;
+
+        try (Connection conn = obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            // Fecha de inicio (00:00:00 del día 'inicio')
+            ps.setTimestamp(1, java.sql.Timestamp.valueOf(inicio.atStartOfDay()));
+
+            // Fecha de fin (00:00:00 del día siguiente a 'fin' para incluir todo el día 'fin')
+            ps.setTimestamp(2, java.sql.Timestamp.valueOf(fin.plusDays(1).atStartOfDay()));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    total = rs.getDouble(1);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener el total de ventas de pedidos: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return total;
+    }
+
+    /**
+     * Cuenta el número total de pedidos creados en un rango de fechas.
+     */
+    public int getTotalPedidosPorRango(java.time.LocalDate inicio, java.time.LocalDate fin) {
+        String sql = "SELECT COUNT(*) FROM Pedido WHERE fecha_creacion >= ? AND fecha_creacion < ?";
+        int count = 0;
+
+        try (Connection conn = obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setTimestamp(1, java.sql.Timestamp.valueOf(inicio.atStartOfDay()));
+            ps.setTimestamp(2, java.sql.Timestamp.valueOf(fin.plusDays(1).atStartOfDay()));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al contar pedidos por rango: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    /**
+     * Obtiene las ventas diarias (monto_total) de pedidos en un rango de fechas.
+     */
+    public java.util.Map<java.time.LocalDate, Double> getVentasDiariasPorRango(java.time.LocalDate inicio, java.time.LocalDate fin) {
+        java.util.Map<java.time.LocalDate, Double> ventasPorDia = new java.util.HashMap<>();
+
+        String sql = "SELECT DATE(fecha_creacion) AS dia, SUM(monto_total) AS total_dia " +
+                "FROM Pedido " +
+                "WHERE fecha_creacion >= ? AND fecha_creacion < ? " +
+                "GROUP BY dia ORDER BY dia";
+
+        try (Connection conn = obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setTimestamp(1, java.sql.Timestamp.valueOf(inicio.atStartOfDay()));
+            ps.setTimestamp(2, java.sql.Timestamp.valueOf(fin.plusDays(1).atStartOfDay()));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // Importante: leer la columna de tipo DATE como LocalDate
+                    java.time.LocalDate dia = rs.getDate("dia").toLocalDate();
+                    double total = rs.getDouble("total_dia");
+                    ventasPorDia.put(dia, total);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener ventas diarias de pedidos: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return ventasPorDia;
+    }
+
+
+
     /**
      * Helper para mapear un ResultSet a un objeto Pedido.
      */
@@ -586,5 +670,53 @@ public class PedidoDAO {
             e.printStackTrace();
         }
         return empleados;
+    }
+
+    /**
+     * Cuenta el número de pedidos con estado 'Retirado' asignados a un empleado
+     * en un rango de fechas, basándose en la fecha de finalización.
+     *
+     * @param idEmpleado El ID del empleado.
+     * @param inicio La fecha de inicio del rango (inclusive).
+     * @param fin La fecha de fin del rango (inclusive).
+     * @return El número de pedidos retirados.
+     */
+    public int contarPedidosRetiradosPorEmpleado(int idEmpleado, java.time.LocalDate inicio, java.time.LocalDate fin) {
+        // La consulta ahora usa '<' y compara contra el día siguiente al final (fin.plusDays(1)).
+        String sql = "SELECT COUNT(p.id_pedido) " +
+                "FROM Pedido p " +
+                "JOIN AsignacionPedido ap ON p.id_pedido = ap.id_pedido " +
+                "WHERE p.estado = 'Retirado' " +
+                "AND ap.id_empleado = ? " +
+                "AND p.fecha_finalizacion >= ? " +
+                "AND p.fecha_finalizacion < ?"; // <--- CAMBIO CLAVE: Cambiamos <= por <
+
+        int count = 0;
+
+        try (Connection conn = obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            // 1. Asignar el ID del empleado.
+            ps.setInt(1, idEmpleado);
+
+            // 2. Asignar la fecha de inicio (desde la medianoche de ese día).
+            ps.setTimestamp(2, java.sql.Timestamp.valueOf(inicio.atStartOfDay()));
+
+            // 3. Asignar la fecha de FIN: Usamos el día siguiente (fin.plusDays(1))
+            //    y el operador '<' para incluir todas las horas del día 'fin'.
+            java.time.LocalDate diaSiguiente = fin.plusDays(1);
+            ps.setTimestamp(3, java.sql.Timestamp.valueOf(diaSiguiente.atStartOfDay())); // <--- CAMBIO CLAVE
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt(1);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al contar pedidos retirados por empleado: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return count;
     }
 }

@@ -1,9 +1,6 @@
 package app.controller;
 
-import app.dao.ComprobantePagoDAO;
-import app.dao.FacturaDAO;
-import app.dao.ProductoDAO;
-import app.dao.EmpleadoDAO;
+import app.dao.*;
 import app.model.Empleado;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,8 +12,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip; // <-- Importación necesaria para Tooltip
-import javafx.scene.input.MouseEvent; // <-- Importación necesaria para manejar eventos del mouse
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -25,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap; // <-- Importación necesaria para el mapa de conteos
+import java.util.HashMap;
 
 public class InformesController {
 
@@ -34,9 +31,10 @@ public class InformesController {
     private final ComprobantePagoDAO comprobantePagoDAO = new ComprobantePagoDAO();
     private final ProductoDAO productoDAO = new ProductoDAO();
     private final EmpleadoDAO empleadoDAO = new EmpleadoDAO();
+    private final PedidoDAO pedidoDAO = new PedidoDAO();
 
     // Variable para almacenar el conteo de pagos (Necesario para el Tooltip)
-    private Map<String, Integer> conteoPagosPorRango = new HashMap<>(); // <-- Nuevo mapa para el conteo
+    private Map<String, Integer> conteoPagosPorRango = new HashMap<>();
 
     // Formato para la moneda
     private final DecimalFormat currencyFormatter = new DecimalFormat("$ #,##0.00");
@@ -48,10 +46,12 @@ public class InformesController {
     @FXML private CategoryAxis xAxisVentas;
     @FXML private NumberAxis yAxisVentas;
     @FXML private Label lblTotalVentas;
-    @FXML private Label lblFacturasEmitidas;
+    @FXML private Label lblFacturasEmitidas; // Se mantiene, pero quizás represente pedidos finalizados
 
-    // FXML fields para la métrica de Empleados (Nuevos campos para el filtro)
+    // FXML fields para la métrica de Empleados
     @FXML private ChoiceBox<Empleado> cbEmpleado;
+    // ¡CAMBIO DE NOMBRE! Sugerencia: Cambiar el nombre del campo FXML de 'lblFacturasEmpleado' en el .fxml
+    // Por ahora, solo cambio la lógica interna y el texto.
     @FXML private Label lblFacturasEmpleado;
 
     // FXML fields para la Fila Inferior
@@ -65,6 +65,8 @@ public class InformesController {
 
     @FXML
     public void initialize() {
+        // ... (resto del método initialize, no necesita cambios)
+
         // 1. Configurar ejes y rangos iniciales
         LocalDate hoy = LocalDate.now();
         dpFechaFin.setValue(hoy);
@@ -77,11 +79,11 @@ public class InformesController {
         yAxisUnidades.setLabel("Unidades Vendidas");
 
         if (barChartCategorias != null) {
-            barChartCategorias.setLegendVisible(false); // <-- ¡ESTE ES EL CAMBIO!
+            barChartCategorias.setLegendVisible(false);
         }
 
         if (lineChartVentas != null) {
-            lineChartVentas.setLegendVisible(false); // <-- ¡ESTE ES EL CAMBIO!
+            lineChartVentas.setLegendVisible(false);
         }
 
         // Listener que actualiza la métrica del empleado al cambiar la fecha
@@ -96,7 +98,8 @@ public class InformesController {
             cbEmpleado.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
                 // Al seleccionar un empleado o al cambiar el rango de fechas, actualizamos la métrica
                 if (newValue != null && dpFechaInicio.getValue() != null && dpFechaFin.getValue() != null) {
-                    actualizarFacturasPorEmpleado(newValue, dpFechaInicio.getValue(), dpFechaFin.getValue());
+                    // ¡CAMBIO CLAVE AQUÍ!
+                    actualizarPedidosRetiradosPorEmpleado(newValue, dpFechaInicio.getValue(), dpFechaFin.getValue());
                 } else {
                     lblFacturasEmpleado.setText("0");
                 }
@@ -117,9 +120,8 @@ public class InformesController {
         LocalDate fin = dpFechaFin.getValue();
 
         if (selectedEmpleado != null && inicio != null && fin != null) {
-            actualizarFacturasPorEmpleado(selectedEmpleado, inicio, fin);
+            actualizarPedidosRetiradosPorEmpleado(selectedEmpleado, inicio, fin); // <-- Llamada al nuevo método
         } else if (lblFacturasEmpleado != null) {
-            // Si falta algún valor, resetear el contador
             lblFacturasEmpleado.setText("0");
         }
     }
@@ -143,35 +145,45 @@ public class InformesController {
     }
 
     /**
-     * Lógica para contar facturas emitidas por un empleado en un rango de fechas.
+     * Lógica para contar pedidos con estado 'retirados' emitidos por un empleado en un rango de fechas.
+     * ⚠️ NOTA: DEBES IMPLEMENTAR EL MÉTODO 'contarPedidosRetiradosPorEmpleado' en FacturaDAO (o PedidoDAO).
      */
-    private void actualizarFacturasPorEmpleado(Empleado empleado, LocalDate inicio, LocalDate fin) {
+    private void actualizarPedidosRetiradosPorEmpleado(Empleado empleado, LocalDate inicio, LocalDate fin) {
         if (lblFacturasEmpleado == null) return;
 
         int idEmpleado = empleado.getIdEmpleado();
-        int count = facturaDAO.contarFacturasPorEmpleado(idEmpleado, inicio, fin);
+        // CAMBIO CLAVE: Usar PedidoDAO.contarPedidosRetiradosPorEmpleado
+        int count = pedidoDAO.contarPedidosRetiradosPorEmpleado(idEmpleado, inicio, fin);
 
+        // Opcional: Cambiar el texto de la etiqueta a "Pedidos Retirados" en lugar de "Facturas"
         lblFacturasEmpleado.setText(String.valueOf(count));
     }
 
+
+    // El resto del código se mantiene igual...
+    // ... loadVentasDataReal, loadDistribucionDataReal, loadCategoriasDataReal,
+    // ... setupBarChartTooltips, setupPieChartTooltips, handleGenerarGraficoButton,
+    // ... handleVolverButtonInformes, mostrarAlerta
 
     /**
      * Carga datos de ventas en el LineChart y actualiza las Métricas Clave.
      */
     private void loadVentasDataReal(LocalDate inicio, LocalDate fin) {
-        double totalVentas = facturaDAO.getTotalVentasPorRango(inicio, fin);
-        int totalFacturas = facturaDAO.getTotalFacturasPorRango(inicio, fin);
-        Map<LocalDate, Double> ventasPorDia = facturaDAO.getVentasDiariasPorRango(inicio, fin);
+        // 1. OBTENER DATOS DESDE PEDIDODAO
+        double totalVentas = pedidoDAO.getTotalVentasPorRango(inicio, fin);
+        int totalPedidos = pedidoDAO.getTotalPedidosPorRango(inicio, fin); // Cambiado a conteo de pedidos
+        Map<LocalDate, Double> ventasPorDia = pedidoDAO.getVentasDiariasPorRango(inicio, fin);
 
-        // 1. Actualizar Métricas Clave
+        // 2. Actualizar Métricas Clave
         if (lblTotalVentas != null) {
             lblTotalVentas.setText(currencyFormatter.format(totalVentas));
         }
         if (lblFacturasEmitidas != null) {
-            lblFacturasEmitidas.setText(String.valueOf(totalFacturas));
+            // La etiqueta lblFacturasEmitidas ahora muestra el total de pedidos
+            lblFacturasEmitidas.setText(String.valueOf(totalPedidos));
         }
 
-        // 2. Cargar LineChart (Ventas Diarias)
+        // 3. Cargar LineChart (Ventas Diarias)
         XYChart.Series<String, Number> seriesVentas = new XYChart.Series<>();
         seriesVentas.setName("Ventas Diarias");
 
@@ -188,7 +200,7 @@ public class InformesController {
 
         lineChartVentas.getData().clear();
         lineChartVentas.getData().add(seriesVentas);
-        lineChartVentas.setTitle("Tendencia de Ventas (" + inicio + " al " + fin + ")");
+        lineChartVentas.setTitle("Tendencia de Ventas (Pedidos) (" + inicio + " al " + fin + ")"); // Título actualizado
     }
 
     /**
@@ -222,6 +234,9 @@ public class InformesController {
         pieChartVentas.setData(pieChartData);
         pieChartVentas.setTitle("Distribución por Método de Pago");
     }
+
+
+
 
     /**
      * Carga las unidades vendidas por categoría en el BarChart.
@@ -355,7 +370,8 @@ public class InformesController {
         // Actualizar métrica de empleado si hay uno seleccionado
         Empleado selectedEmpleado = cbEmpleado.getSelectionModel().getSelectedItem();
         if (selectedEmpleado != null) {
-            actualizarFacturasPorEmpleado(selectedEmpleado, inicio, fin);
+            // ¡CAMBIO CLAVE AQUÍ!
+            actualizarPedidosRetiradosPorEmpleado(selectedEmpleado, inicio, fin);
         }
 
         // Solo mostrar alerta si fue disparado por el botón (no en initialize)

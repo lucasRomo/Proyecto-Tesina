@@ -70,7 +70,7 @@
                                 </Label>
                             </VBox>
                             <VBox alignment="CENTER_LEFT" prefHeight="117.0" prefWidth="380.0" spacing="10.0">
-                                <Label style="-fx-text-fill: white;" styleClass="metric-label" text="Facturas Emitidas en Total:">
+                                <Label style="-fx-text-fill: white;" styleClass="metric-label" text="Pedidos Entregados:">
                                     <font><Font size="16.0" /></font>
                                 </Label>
                                 <Label fx:id="lblFacturasEmitidas" style="-fx-text-fill: white;" styleClass="metric-value" text="0">
@@ -81,7 +81,7 @@
                             <!-- NUEVA SECCIÓN: Facturas por Empleado -->
                             <VBox alignment="CENTER_LEFT" prefHeight="139.0" prefWidth="380.0" spacing="10.0" VBox.vgrow="ALWAYS">
                                 <children>
-                                    <Label style="-fx-text-fill: white;" styleClass="metric-label" text="Facturas Emitidas Por:">
+                                    <Label style="-fx-text-fill: white;" styleClass="metric-label" text="Pedidos Completados Por:">
                                         <font><Font size="16.0" /></font>
                                     </Label>
                                     <!-- ChoiceBox para seleccionar al empleado -->
