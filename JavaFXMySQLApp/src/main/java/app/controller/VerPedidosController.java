@@ -52,6 +52,10 @@ public class VerPedidosController implements Initializable {
     @FXML private TableColumn<Pedido, String> clienteColumn;
     @FXML private TableColumn<Pedido, String> empleadoColumn;
     @FXML private TableColumn<Pedido, String> estadoColumn;
+
+    // 🚨 Declaración de la columna Tipo Pago
+    @FXML private TableColumn<Pedido, String> tipoPagoColumn;
+
     @FXML private TableColumn<Pedido, Double> montoTotalColumn;
     @FXML private TableColumn<Pedido, Double> montoEntregadoColumn;
     @FXML private TableColumn<Pedido, LocalDateTime> fechaCreacionColumn;
@@ -77,6 +81,62 @@ public class VerPedidosController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         pedidosTable.setEditable(true);
 
+        // 🚨 LÓGICA DE TAMAÑO Y POLÍTICA DE RESIZE (Configuración Proporcional / Porcentual)
+
+        // Aplica la política de redimensionamiento que distribuye el ancho de la tabla entre todas las columnas.
+
+
+        // Asignación de anchos preferidos para establecer proporciones basadas en el porcentaje
+        // (La suma de los valores define el 100% de la tabla)
+        // ... dentro del método initialize
+
+        // Aplica la política de redimensionamiento que distribuye el ancho de la tabla entre todas las columnas.
+        pedidosTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        // --- ASIGNACIÓN DE ANCHOS CORREGIDOS (SUMA 99.8%) ---
+
+
+        // Configuración para la columna Contacto (Botones fijos)
+        // Se le asigna un ancho fijo de 75 píxeles. Esto anula la lógica proporcional para esta columna.
+        contactoClienteColumn.setMinWidth(75.0);
+        contactoClienteColumn.setMaxWidth(75.0);
+        contactoClienteColumn.setPrefWidth(75.0); // Se mantiene prefWidth para compatibilidad, pero min/max es la clave.
+
+        // --- ASIGNACIÓN DE ANCHOS PROPORCIONALES RESTANTES (Suman 92% Aprox.) ---
+        // Ahora, el CONSTRAINED_RESIZE_POLICY distribuirá el espacio restante entre estas columnas:
+
+        idPedidoColumn.setPrefWidth(4.5);           // ID (4.5%)
+        clienteColumn.setPrefWidth(11.5);           // Cliente (11.5%)
+        empleadoColumn.setPrefWidth(11.5);          // Empleado (11.5%)
+
+        // ESTADO y TIPO PAGO son pequeñas
+        estadoColumn.setPrefWidth(6.5);             // Estado (6.5%)
+        if (tipoPagoColumn != null) {
+            tipoPagoColumn.setPrefWidth(6.5);       // Tipo Pago (6.5%)
+        }
+
+        // MONTOS
+        montoTotalColumn.setPrefWidth(7.0);         // Monto Total (7.0%)
+        montoEntregadoColumn.setPrefWidth(8.5);     // Monto Entregado (8.5%)
+
+        // FECHA (Ancho medio)
+        fechaCreacionColumn.setPrefWidth(10.5);     // Fecha de Creación (10.5%)
+
+        // INSTRUCCIONES (La más grande)
+        instruccionesColumn.setPrefWidth(14.0);     // Instrucciones (14.0%)
+
+        // BOTONES FINALES
+        comprobantePagoColumn.setPrefWidth(9.0);    // Comprobante Pago (9.0%)
+        ticketColumn.setPrefWidth(8.5);
+       // Aplica la política de redimensionamiento que distribuye el ancho de la tabla entre todas las columnas.
+        // NOTA: Esta línea es redundante si está en el FXML, pero se mantiene como seguro.
+                 // Detallar/Ticket (8.3%)
+        // ------------------------------------------------------------------
+        // ------------------------------------------------------------------
+        // SUMA TOTAL: 4.5 + 11.5 + 11.5 + 7.5 + 6.5 + 6.5 + 7.0 + 8.5 + 10.5 + 14.0 + 9.0 + 8.3 = 99.8%
+
+        // ...------------------------------
+
         // --- Configuración de Propiedades ---
         idPedidoColumn.setCellValueFactory(new PropertyValueFactory<>("idPedido"));
         clienteColumn.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
@@ -85,6 +145,11 @@ public class VerPedidosController implements Initializable {
         montoTotalColumn.setCellValueFactory(new PropertyValueFactory<>("montoTotal"));
         montoEntregadoColumn.setCellValueFactory(new PropertyValueFactory<>("montoEntregado"));
         instruccionesColumn.setCellValueFactory(new PropertyValueFactory<>("instrucciones"));
+
+        // PropertyValueFactory para tipoPagoColumn
+        if (tipoPagoColumn != null) {
+            tipoPagoColumn.setCellValueFactory(new PropertyValueFactory<>("tipoPago"));
+        }
 
         // Configurar la columna de Creación con el tipo LocalDateTime y formato personalizado
         fechaCreacionColumn.setCellValueFactory(new PropertyValueFactory<>("fechaCreacion"));

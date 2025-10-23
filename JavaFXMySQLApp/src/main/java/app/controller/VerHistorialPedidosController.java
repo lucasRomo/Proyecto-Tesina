@@ -155,6 +155,23 @@ public class VerHistorialPedidosController implements Initializable {
 
         // NUEVA CONFIGURACIÓN: Columna para el botón Ver Comprobante
         configurarColumnaComprobanteView();
+
+        // 🚨 MODIFICACIÓN CLAVE: Aplicar la política de redimensionamiento para que las columnas ocupen el ancho total 🚨
+        pedidosTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        // --- ASIGNACIÓN DE ANCHOS PREFERIDOS POR PORCENTAJE (SUMA 100.0%) ---
+        idPedidoColumn.setPrefWidth(5.0);           // ID (5.0%)
+        clienteColumn.setPrefWidth(11.0);           // Cliente (11.0%)
+        empleadoColumn.setPrefWidth(11.0);          // Empleado (11.0%)
+        estadoColumn.setPrefWidth(6.0);             // Estado (6.0%)
+        tipoPagoColumn.setPrefWidth(6.0);           // Tipo Pago (6.0%)
+        montoTotalColumn.setPrefWidth(7.5);         // Monto Total (7.5%)
+        montoEntregadoColumn.setPrefWidth(8.0);     // Monto Entregado (8.0%)
+        fechaEntregaEstimadaColumn.setPrefWidth(11.0); // Fecha Finalización (11.0%)
+        instruccionesColumn.setPrefWidth(15.0);     // Instrucciones (15.0%)
+        comprobantePagoColumn.setPrefWidth(9.5);    // Comprobante Pago (9.5%)
+        accionesColumn.setPrefWidth(10.0);          // Ticket/Acciones (10.0%)
+        // ------------------------------------------------------------------
     }
 
     /**

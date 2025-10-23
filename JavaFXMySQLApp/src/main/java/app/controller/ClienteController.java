@@ -334,58 +334,106 @@ public class ClienteController {
             clientesTableView.refresh();
         });
         // --- Columna Estado (Guardado Inmediato) ---
-        // --- Columna Estado (ChoiceBox) - SOLO ACTUALIZA MODELO Y REGISTRA CAMBIO ---
+        // 1. Configuración de la PropertyValueFactory (Asumiendo que Cliente tiene getEstado())
+        estadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
+        estadoColumn.setEditable(true);
+
+// --- Columna Estado (ChoiceBox Correcto) ---
         estadoColumn.setCellFactory(column -> new TableCell<Cliente, String>() {
-            private final ChoiceBox<String> choiceBox = new ChoiceBox<>(FXCollections.observableArrayList("Activo", "Desactivado"));
-            {
-                choiceBox.setOnAction(event -> { if (isEditing()) { commitEdit(choiceBox.getSelectionModel().getSelectedItem()); cancelEdit(); } });
-            }
+            // Definimos el ChoiceBox sin items iniciales, se cargan en startEdit().
+            private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
+
             @Override
             public void startEdit() {
-                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable() || isEmpty()) return;
+                // Validación estricta antes de iniciar la edición
+                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable() || isEmpty()) {
+                    return;
+                }
                 super.startEdit();
+
+                // 🚨 CLAVE: Configuramos items y la acción de guardado AQUI (en startEdit)
+                choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
                 choiceBox.getSelectionModel().select(getItem());
-                setGraphic(choiceBox); setText(null);
+
+                // 🚨 SOLUCIÓN: Usar setOnAction para guardar inmediatamente al seleccionar.
+                // Esto replica el comportamiento que funciona en tu columna de Proveedor.
+                choiceBox.setOnAction(event -> {
+                    String nuevoValor = choiceBox.getSelectionModel().getSelectedItem();
+                    if (nuevoValor != null) {
+                        commitEdit(nuevoValor);
+                    }
+                });
+
+                setGraphic(choiceBox);
+                setText(null);
             }
+
             @Override
-            public void cancelEdit() { super.cancelEdit(); setGraphic(null); setText(getItem());
-                applyCellStyle(getItem()); }
+            public void cancelEdit() {
+                super.cancelEdit();
+                setGraphic(null);
+                setText(getItem());
+                applyCellStyle(getItem());
+            }
+
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 getStyleClass().removeAll("activo-cell", "desactivado-cell");
-                if (empty || item == null) { setText(null); setGraphic(null); setStyle(null);
+
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setStyle(null);
+                } else {
+                    if (isEditing()) {
+                        // Si la celda está en edición, se asegura de mostrar el ChoiceBox
+                        choiceBox.getSelectionModel().select(item);
+                        setText(null);
+                        setGraphic(choiceBox);
+                    } else {
+                        // Si no está en edición, muestra el texto y aplica el estilo
+                        setGraphic(null);
+                        setText(item);
+                        applyCellStyle(item);
+                    }
                 }
-                else if (isEditing()) { choiceBox.getSelectionModel().select(item);
-                    setText(null); setGraphic(choiceBox); }
-                else { setGraphic(null);
-                    setText(item); applyCellStyle(item); }
             }
+
             private void applyCellStyle(String item) {
-                if ("Activo".equalsIgnoreCase(item)) { getStyleClass().add("activo-cell");
-                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;"); }
-                else if ("Desactivado".equalsIgnoreCase(item)) { getStyleClass().add("desactivado-cell");
-                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;"); }
-                else { setStyle(null);
+                if ("Activo".equalsIgnoreCase(item)) {
+                    getStyleClass().add("activo-cell");
+                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
+                } else if ("Desactivado".equalsIgnoreCase(item)) {
+                    getStyleClass().add("desactivado-cell");
+                    setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
+                } else {
+                    setStyle(null);
                 }
             }
         });
+
+// --- Lógica de Guardado (usa el método correcto de tu ClienteDAO) ---
         estadoColumn.setOnEditCommit(event -> {
             Cliente cliente = event.getRowValue();
             String nuevoEstado = event.getNewValue();
             String estadoOriginal = event.getOldValue();
-            cliente.setEstado(nuevoEstado);
 
+            // Se utiliza el método modificarEstadoCliente que confirmaste en tu DAO
             boolean exito = clienteDAO.modificarEstadoCliente(cliente.getIdCliente(), nuevoEstado);
+
             if (exito) {
+                cliente.setEstado(nuevoEstado); // Actualiza el modelo en memoria
                 mostrarAlerta("Éxito", "Estado del cliente actualizado.", Alert.AlertType.INFORMATION);
             } else {
                 mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
-                cliente.setEstado(estadoOriginal);
+                cliente.setEstado(estadoOriginal); // Revierte el cambio en memoria
             }
-            clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
+            // Asegúrate de usar el nombre correcto de tu TableView (clientesTable o clientesTableView)
             clientesTableView.refresh();
         });
+
+
         // --- Columna Accion (Direccion) ---
         direccionColumn.setCellFactory(param -> new TableCell<Cliente, Void>() {
             private final Button btn = new Button("Direccion");

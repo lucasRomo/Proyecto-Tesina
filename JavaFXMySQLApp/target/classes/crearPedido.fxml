@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<?import java.net.URL?>
 <VBox alignment="TOP_CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.CrearPedidoController">
     <stylesheets>
         <URL value="@styleRegistro.css" />
@@ -64,8 +64,8 @@
     </GridPane>
 
     <HBox alignment="CENTER" spacing="10.0">
-        <Button onAction="#handleGuardar" prefWidth="150" text="Guardar Pedido" />
-        <Button onAction="#handleCancelar" prefWidth="150" text="Cancelar" />
+        <Button onAction="#handleGuardar" prefHeight="45.0" prefWidth="174.0" text="Guardar Pedido" />
+        <Button onAction="#handleCancelar" prefWidth="150" styleClass="cancel-button" text="Cancelar" />
     </HBox>
 
 </VBox>

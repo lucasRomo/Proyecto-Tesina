@@ -2,11 +2,6 @@ package app.controller;
 
 import app.dao.CategoriaDAO;
 import app.dao.ProductoDAO;
-import app.dao.HistorialActividadDAO;
-import app.controller.SessionManager; // Asumiendo que esta clase existe
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import app.model.Categoria;
 import app.model.Producto;
 import javafx.beans.property.SimpleStringProperty;
@@ -27,9 +22,12 @@ import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import javafx.geometry.Rectangle2D;
 
+
+import javafx.stage.Screen;
+import javafx.geometry.Rectangle2D;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -37,19 +35,14 @@ import java.util.stream.Collectors;
 
 public class ProductoMenuController {
 
-    // CONFIGURACIÓN DE CONEXIÓN (Debe coincidir con la de StockController)
-    private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
-    private static final String USER = "root";
-    private static final String PASSWORD = "";
-
     // =========================================================================
-    // CLASES CONVERTIDORAS AUXILIARES
+    // CLASES CONVERTIDORAS AUXILIARES ANIDADAS Y ESTÁTICAS
     // =========================================================================
 
     private static class SafeDoubleStringConverter extends StringConverter<Double> {
         @Override
         public String toString(Double object) {
-            return object != null ? String.format("%.2f", object) : "";
+            return object != null ? object.toString() : "";
         }
 
         @Override
@@ -58,8 +51,7 @@ public class ProductoMenuController {
                 return null;
             }
             try {
-                String cleanString = string.trim().replace(',', '.');
-                return Double.parseDouble(cleanString);
+                return Double.parseDouble(string.trim());
             } catch (NumberFormatException e) {
                 return null;
             }
@@ -85,7 +77,6 @@ public class ProductoMenuController {
         }
     }
 
-
     // =========================================================================
     // ELEMENTOS FXML Y DAOs
     // =========================================================================
@@ -103,386 +94,210 @@ public class ProductoMenuController {
 
     private final ProductoDAO productoDAO = new ProductoDAO();
     private final CategoriaDAO categoriaDAO = new CategoriaDAO();
-    private final HistorialActividadDAO historialDAO = new HistorialActividadDAO();
     private ObservableList<Producto> masterData;
     private FilteredList<Producto> filteredData;
-    private Map<Integer, String> categoriaNamesMap; // Mapa ID -> Nombre
-    private Map<String, Integer> categoriaIdsMap;   // Mapa Nombre -> ID
+    private Map<Integer, String> categoriaNamesMap;
 
     private ObservableList<Categoria> categoriaFilterList;
     private ObservableList<String> categoriaNamesObservableList;
 
-    // CLAVE: Variable para guardar el estado original antes de la edición de CELDA
-    private Producto productoOriginal;
 
     @FXML
     public void initialize() {
         productosTableView.setEditable(true);
 
         categoriaNamesMap = categoriaDAO.getCategoriaNamesMap();
-        // Generar mapa inverso Nombre -> ID
-        categoriaIdsMap = categoriaNamesMap.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-
         loadCategoriaLists();
 
         setupColumns();
         loadProductos();
         setupFilter();
-
-        // Listener para guardar la copia original al SELECCIONAR la fila (Respaldo)
-        productosTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                this.productoOriginal = crearCopiaProducto(newVal);
-            }
-        });
     }
-
-    // =========================================================================
-    // UTILIDADES DE AUDITORÍA Y CONTROL
-    // =========================================================================
-
-    private Producto crearCopiaProducto(Producto original) {
-        if (original == null) return null;
-
-        // CLAVE: Usar el constructor que recibe TODOS los argumentos,
-        // que es el que inicializa correctamente las JavaFX Properties (final).
-        Producto copia = new Producto(
-                original.getIdProducto(),
-                original.getNombreProducto(),
-                original.getDescripcion(),
-                original.getPrecio(),
-                original.getStock(),
-                original.getIdCategoria()
-        );
-
-        return copia;
-    }
-
-    private void revertirProductoAlOriginal(Producto actual, Producto original) {
-        if (actual == null || original == null) return;
-        if (actual.getIdProducto() != original.getIdProducto()) return;
-
-        actual.setNombreProducto(original.getNombreProducto());
-        actual.setDescripcion(original.getDescripcion());
-        actual.setPrecio(original.getPrecio());
-        actual.setStock(original.getStock());
-        actual.setIdCategoria(original.getIdCategoria());
-        productosTableView.refresh();
-    }
-
-    private String getCategoriaNombre(int id) {
-        return categoriaNamesMap.getOrDefault(id, "-- Sin Categoría --");
-    }
-
-    /**
-     * Registra el cambio en Historial. No hace Commit.
-     */
-    private void auditarCambio(Connection conn, Producto productoActual, String columna, Object valorOriginal, Object valorNuevo) throws SQLException {
-        String originalStr = (valorOriginal != null) ? valorOriginal.toString() : "";
-        String nuevoStr = (valorNuevo != null) ? valorNuevo.toString() : "";
-
-        boolean exitoRegistro = historialDAO.insertarRegistro(
-                SessionManager.getInstance().getLoggedInUserId(),
-                "Producto",
-                columna,
-                productoActual.getIdProducto(),
-                originalStr,
-                nuevoStr,
-                conn
-        );
-
-        if (!exitoRegistro) {
-            // Si falla el registro, lanzamos una excepción para provocar el ROLLBACK de Historial
-            throw new SQLException("Fallo al registrar la actividad para la columna: " + columna);
-        }
-    }
-
 
     // --------------------------------------------------------------------------
     // LÓGICA DE CARGA Y CONFIGURACIÓN DE COLUMNAS
     // --------------------------------------------------------------------------
 
     private void loadCategoriaLists() {
-        // ... (Lógica para cargar listas de categorías) ...
         List<Categoria> categoriasDB = categoriaDAO.getAllCategorias();
 
-        List<String> names = categoriasDB.stream()
-                .map(Categoria::getNombre)
-                .collect(Collectors.toList());
+        // =========================================================
+        // 1. CORRECCIÓN DEL MAPA (CRUCIAL para setCellValueFactory)
+        // =========================================================
+        // Limpiamos y rellenamos el mapa para que contenga todas las categorías (incluida la nueva)
+        if (categoriaNamesMap == null) {
+            categoriaNamesMap = new HashMap<>(); // Inicializar si es null
+        }
+        categoriaNamesMap.clear();
 
         Categoria sinCategoria = new Categoria(0, "-- Sin Categoría --", "");
 
-        names.add(0, sinCategoria.getNombre());
-        categoriaNamesObservableList = FXCollections.observableArrayList(names);
-
+        // 🚨 CLAVE: Llenar el mapa con ID y Nombre para la visualización de la grilla
         categoriaNamesMap.put(0, sinCategoria.getNombre());
-        categoriaIdsMap.put(sinCategoria.getNombre(), 0);
+        for (Categoria c : categoriasDB) {
+            categoriaNamesMap.put(c.getIdCategoria(), c.getNombre());
+        }
 
-        categoriaFilterList = FXCollections.observableArrayList(categoriasDB);
+        // =========================================================
+        // 2. CORRECCIÓN DE LA LISTA OBSERVABLE (CRUCIAL para ComboBoxTableCell)
+        // =========================================================
+        // Usamos clear() y addAll() para mantener la misma referencia,
+        // que es la que usa ComboBoxTableCell.forTableColumn(...).
+        if (categoriaNamesObservableList == null) {
+            categoriaNamesObservableList = FXCollections.observableArrayList(); // Inicializar si es null
+        }
+        categoriaNamesObservableList.clear();
+
+        // Rellenamos con la opción "Sin Categoría" y luego los nombres reales
+        categoriaNamesObservableList.add(sinCategoria.getNombre());
+
+        List<String> realNames = categoriasDB.stream()
+                .map(Categoria::getNombre)
+                .collect(Collectors.toList());
+
+        categoriaNamesObservableList.addAll(realNames);
+
+
+        // =========================================================
+        // 3. Manejo de la lista de FILTRO (Simplificado y corregido)
+        // =========================================================
+        if (categoriaFilterList == null) {
+            categoriaFilterList = FXCollections.observableArrayList();
+        }
+        categoriaFilterList.clear();
 
         Categoria todos = new Categoria(-1, "Todos", "");
-        categoriaFilterList.add(0, todos);
+        Categoria sinCategoriaFilter = new Categoria(0, "-- Sin Categoría --", "");
 
-        if (!categoriaFilterList.stream().anyMatch(c -> c.getIdCategoria() == 0)) {
-            categoriaFilterList.add(1, sinCategoria);
-        } else {
-            int indexSinCategoria = -1;
-            for (int i = 0; i < categoriaFilterList.size(); i++) {
-                if (categoriaFilterList.get(i).getIdCategoria() == 0) {
-                    indexSinCategoria = i;
-                    break;
-                }
-            }
-            if (indexSinCategoria != 1 && indexSinCategoria != -1) {
-                Categoria temp = categoriaFilterList.remove(indexSinCategoria);
-                categoriaFilterList.add(1, temp);
-            } else if (indexSinCategoria == -1) {
-                categoriaFilterList.add(1, sinCategoria);
-            }
-        }
+        categoriaFilterList.add(todos);
+        categoriaFilterList.add(sinCategoriaFilter);
+        categoriaFilterList.addAll(categoriasDB);
+
+        // Eliminamos la lógica compleja de reordenamiento al final,
+        // ya que al limpiar y agregar en el orden deseado, se garantiza la posición.
     }
 
 
     private void setupColumns() {
-        // ==========================================================
-        // === VINCULACIÓN DEL ANCHO DE COLUMNAS PORCENTUAL ========
-        // ==========================================================
-        idProductoColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.05));
-        nombreProductoColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.20));
-        descripcionColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.30));
-        precioColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.15));
-        stockColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.10));
-        categoriaNombreColumn.prefWidthProperty().bind(productosTableView.widthProperty().multiply(0.20));
-        // ==========================================================
-
-
         idProductoColumn.setCellValueFactory(cellData -> cellData.getValue().idProductoProperty().asObject());
 
-        // NOMBRE
         nombreProductoColumn.setCellValueFactory(cellData -> cellData.getValue().nombreProductoProperty());
         nombreProductoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        nombreProductoColumn.setOnEditCommit(this::handleNameEditCommit);
+        nombreProductoColumn.setOnEditCommit(event ->
+                handleNameEditCommit(event.getTableView().getItems().get(event.getTablePosition().getRow()), event.getNewValue())
+        );
 
-        // DESCRIPCIÓN
         descripcionColumn.setCellValueFactory(cellData -> cellData.getValue().descripcionProperty());
         descripcionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        descripcionColumn.setOnEditCommit(this::handleDescriptionEditCommit);
+        descripcionColumn.setOnEditCommit(event ->
+                handleDescriptionEditCommit(event.getTableView().getItems().get(event.getTablePosition().getRow()), event.getNewValue())
+        );
 
-        // PRECIO
         precioColumn.setCellValueFactory(cellData -> cellData.getValue().precioProperty().asObject());
         precioColumn.setCellFactory(TextFieldTableCell.forTableColumn(new SafeDoubleStringConverter()));
-        precioColumn.setOnEditCommit(this::handlePriceEditCommit);
+        precioColumn.setOnEditCommit(event ->
+                handlePriceEditCommit(event.getTableView().getItems().get(event.getTablePosition().getRow()), event.getNewValue())
+        );
 
-        // STOCK
         stockColumn.setCellValueFactory(cellData -> cellData.getValue().stockProperty().asObject());
         stockColumn.setCellFactory(TextFieldTableCell.forTableColumn(new SafeIntegerStringConverter()));
-        stockColumn.setOnEditCommit(this::handleStockEditCommit);
+        stockColumn.setOnEditCommit(event ->
+                handleStockEditCommit(event.getTableView().getItems().get(event.getTablePosition().getRow()), event.getNewValue())
+        );
 
-        // CATEGORÍA
         categoriaNombreColumn.setCellValueFactory(cellData -> {
             int idCategoria = cellData.getValue().getIdCategoria();
-            String nombre = getCategoriaNombre(idCategoria);
+            String nombre = categoriaNamesMap.getOrDefault(idCategoria, "-- Sin Categoría --");
             return new SimpleStringProperty(nombre);
         });
+
         categoriaNombreColumn.setCellFactory(ComboBoxTableCell.forTableColumn(categoriaNamesObservableList));
-        categoriaNombreColumn.setOnEditCommit(this::handleCategoryEditCommit);
+
+        categoriaNombreColumn.setOnEditCommit(event ->
+                handleCategoryEditCommit(event.getTableView().getItems().get(event.getTablePosition().getRow()), event.getNewValue())
+        );
     }
 
     // --------------------------------------------------------------------------
-    // MANEJO DE EDICIÓN (SOLO ACTUALIZA EL MODELO EN MEMORIA)
+    // MANEJO DE EDICIÓN Y VALIDACIONES
     // --------------------------------------------------------------------------
 
-    private void handleNameEditCommit(TableColumn.CellEditEvent<Producto, String> event) {
-        Producto productoActual = event.getRowValue();
-        String nuevoValor = event.getNewValue().trim();
-
-        if (nuevoValor.isEmpty()) {
+    private void handleNameEditCommit(Producto producto, String newValue) {
+        String trimmedValue = newValue.trim();
+        if (trimmedValue.isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "Error de Validación", "El nombre del producto no puede estar vacío.");
             productosTableView.refresh();
             return;
         }
-        if (event.getOldValue().equals(nuevoValor)) { return; }
 
-        if (productoDAO.isNombreProductoDuplicated(nuevoValor, productoActual.getIdProducto())) {
-            showAlert(Alert.AlertType.ERROR, "Error de Validación", "Ya existe un producto con el nombre: " + nuevoValor);
+        if (!trimmedValue.equals(producto.getNombreProducto()) && productoDAO.isNombreProductoDuplicated(trimmedValue, producto.getIdProducto())) {
+            showAlert(Alert.AlertType.ERROR, "Error de Validación", "Ya existe un producto con el nombre: " + trimmedValue);
             productosTableView.refresh();
             return;
         }
 
-        // 1. Actualiza solo la propiedad en memoria
-        productoActual.setNombreProducto(nuevoValor);
-        productosTableView.refresh();
+        producto.setNombreProducto(trimmedValue);
+        applyChangeToModel(producto);
     }
 
-    private void handleDescriptionEditCommit(TableColumn.CellEditEvent<Producto, String> event) {
-        Producto productoActual = event.getRowValue();
-        String nuevoValor = event.getNewValue() != null ? event.getNewValue().trim() : "";
-        String valorOriginal = event.getOldValue() != null ? event.getOldValue() : "";
-
-        if (valorOriginal.equals(nuevoValor)) { return; }
-
-        // 1. Actualiza solo la propiedad en memoria
-        productoActual.setDescripcion(nuevoValor);
-        productosTableView.refresh();
+    private void handleDescriptionEditCommit(Producto producto, String newValue) {
+        producto.setDescripcion(newValue != null ? newValue.trim() : "");
+        applyChangeToModel(producto);
     }
 
-    private void handlePriceEditCommit(TableColumn.CellEditEvent<Producto, Double> event) {
-        Producto productoActual = event.getRowValue();
-        Double nuevoValor = event.getNewValue();
-        Double valorOriginal = event.getOldValue();
+    private void handlePriceEditCommit(Producto producto, Double newValue) {
+        if (newValue == null) {
+            showAlert(Alert.AlertType.ERROR, "Error de Validación", "El precio no puede estar vacío y debe ser un valor numérico positivo (ej: 12.50).");
+            productosTableView.refresh();
+            return;
+        }
 
-        if (nuevoValor == null || nuevoValor <= 0) {
+        if (newValue <= 0) {
             showAlert(Alert.AlertType.ERROR, "Error de Validación", "El precio debe ser un valor positivo.");
             productosTableView.refresh();
             return;
         }
-        if (Double.compare(valorOriginal, nuevoValor) == 0) { return; }
 
-        // 1. Actualiza solo la propiedad en memoria
-        productoActual.setPrecio(nuevoValor);
-        productosTableView.refresh();
+        producto.setPrecio(newValue);
+        applyChangeToModel(producto);
     }
 
-    private void handleStockEditCommit(TableColumn.CellEditEvent<Producto, Integer> event) {
-        Producto productoActual = event.getRowValue();
-        Integer nuevoValor = event.getNewValue();
-        Integer valorOriginal = event.getOldValue();
+    private void handleStockEditCommit(Producto producto, Integer newValue) {
+        if (newValue == null) {
+            showAlert(Alert.AlertType.ERROR, "Error de Validación", "El stock no puede estar vacío y debe ser un número entero no negativo.");
+            productosTableView.refresh();
+            return;
+        }
 
-        if (nuevoValor == null || nuevoValor < 0) {
+        if (newValue < 0) {
             showAlert(Alert.AlertType.ERROR, "Error de Validación", "El stock no puede ser negativo.");
             productosTableView.refresh();
             return;
         }
-        if (valorOriginal.intValue() == nuevoValor.intValue()) { return; }
 
-        // 1. Actualiza solo la propiedad en memoria
-        productoActual.setStock(nuevoValor);
+        producto.setStock(newValue);
+        applyChangeToModel(producto);
+    }
+
+    private void handleCategoryEditCommit(Producto producto, String newCategoryName) {
+        int newIdCategoria = categoriaNamesMap.entrySet().stream()
+                .filter(entry -> entry.getValue().equals(newCategoryName))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(0);
+
+        producto.setIdCategoria(newIdCategoria);
+        applyChangeToModel(producto);
+    }
+
+    private void applyChangeToModel(Producto producto) {
+        // En el enfoque de edición en línea, este refresh es vital
         productosTableView.refresh();
     }
 
-    private void handleCategoryEditCommit(TableColumn.CellEditEvent<Producto, String> event) {
-        Producto productoActual = event.getRowValue();
-        String newCategoryName = event.getNewValue();
-        String oldCategoryName = event.getOldValue();
-
-        if (oldCategoryName.equals(newCategoryName)) { return; }
-
-        // Obtener el ID de la nueva categoría y actualizar en memoria
-        int newIdCategoria = categoriaIdsMap.getOrDefault(newCategoryName, 0);
-
-        // 1. Actualiza solo la propiedad en memoria (ID de categoría)
-        productoActual.setIdCategoria(newIdCategoria);
-        productosTableView.refresh();
-    }
-
-
-    // =========================================================================
-    // LÓGICA DE PERSISTENCIA Y AUDITORÍA (CENTRALIZADA EN EL BOTÓN)
-    // =========================================================================
-
-    @FXML
-    private void handleModificarProductoButton(ActionEvent event) {
-        Producto productoActual = productosTableView.getSelectionModel().getSelectedItem();
-
-        if (productoActual == null) {
-            // Mensaje de advertencia claro, combinando ambos enfoques.
-            showAlert(Alert.AlertType.WARNING, "Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.");
-            return;
-        }
-
-        // 1. Validación de la copia original para permitir la reversión.
-        if (this.productoOriginal == null || productoActual.getIdProducto() != this.productoOriginal.getIdProducto()) {
-            showAlert(Alert.AlertType.WARNING, "Advertencia", "El producto no está listo para guardar. Vuelva a seleccionar la fila.");
-            return;
-        }
-
-        Connection conn = null;
-        boolean huboCambios = false;
-
-        try {
-            // 2. Iniciar Transacción para el Historial de Actividad
-            conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            conn.setAutoCommit(false);
-
-            // --- 3. AUDITAR Y REGISTRAR CADA POSIBLE CAMBIO ---
-
-            // Cambio en Nombre
-            if (!productoActual.getNombreProducto().equals(this.productoOriginal.getNombreProducto())) {
-                auditarCambio(conn, productoActual, "nombreProducto", this.productoOriginal.getNombreProducto(), productoActual.getNombreProducto());
-                huboCambios = true;
-            }
-
-            // Cambio en Descripción
-            if (!productoActual.getDescripcion().equals(this.productoOriginal.getDescripcion())) {
-                auditarCambio(conn, productoActual, "descripcion", this.productoOriginal.getDescripcion(), productoActual.getDescripcion());
-                huboCambios = true;
-            }
-
-            // Cambio en Precio
-            if (Double.compare(productoActual.getPrecio(), this.productoOriginal.getPrecio()) != 0) {
-                auditarCambio(conn, productoActual, "precio", this.productoOriginal.getPrecio(), productoActual.getPrecio());
-                huboCambios = true;
-            }
-
-            // Cambio en Stock
-            // La auditoría del stock se mantiene, aunque normalmente se maneja con movimientos de entrada/salida
-            if (productoActual.getStock() != this.productoOriginal.getStock()) {
-                auditarCambio(conn, productoActual, "stock", this.productoOriginal.getStock(), productoActual.getStock());
-                huboCambios = true;
-            }
-
-            // Cambio en Categoría
-            if (productoActual.getIdCategoria() != this.productoOriginal.getIdCategoria()) {
-                String nombreOriginal = getCategoriaNombre(this.productoOriginal.getIdCategoria());
-                String nombreNuevo = getCategoriaNombre(productoActual.getIdCategoria());
-
-                auditarCambio(conn, productoActual, "categoria", nombreOriginal, nombreNuevo);
-                huboCambios = true;
-            }
-
-            // --- 4. PERSISTIR LOS CAMBIOS SI LOS HUBO ---
-            if (huboCambios) {
-                // Llama al DAO para actualizar el producto en la tabla 'Producto'.
-                // El DAO DEBE manejar la actualización de la tabla Producto.
-                boolean exitoActualizacion = productoDAO.updateProducto(productoActual);
-
-                if (exitoActualizacion) {
-                    conn.commit(); // Confirma el registro de Historial (la actualización fue exitosa)
-                    showAlert(Alert.AlertType.INFORMATION, "Éxito", "Producto modificado exitosamente y registro de actividad guardado.");
-                    this.productoOriginal = crearCopiaProducto(productoActual); // Actualiza la copia de referencia
-                } else {
-                    conn.rollback(); // Deshace la historia si la actualización del producto falló
-                    showAlert(Alert.AlertType.ERROR, "Error de Persistencia", "La actualización del producto falló. Se deshizo el registro de historial.");
-                    revertirProductoAlOriginal(productoActual, this.productoOriginal); // Revertir en memoria
-                }
-            } else {
-                // No hubo cambios detectados
-                conn.rollback(); // Rollback del historial vacío
-                showAlert(Alert.AlertType.WARNING, "Advertencia", "No se detectaron cambios para guardar.");
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            try {
-                if (conn != null) {
-                    conn.rollback();
-                }
-            } catch (SQLException rollbackEx) { /* Ignorar */ }
-            showAlert(Alert.AlertType.ERROR, "Error de BD", "Ocurrió un error en la base de datos durante la transacción: " + e.getMessage());
-            revertirProductoAlOriginal(productoActual, this.productoOriginal);
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                }
-            } catch (SQLException closeEx) { /* Ignorar */ }
-            productosTableView.refresh(); // Asegura la sincronización visual, incluyendo el refresco (similar a loadProductos)
-        }
-    }
-
-    // ... (El resto de métodos: loadProductos, handleRefreshButton, handleVolverButton, etc.) ...
+    // --------------------------------------------------------------------------
+    // LÓGICA DE DATOS Y FILTRO
+    // --------------------------------------------------------------------------
 
     private void loadProductos() {
         masterData = FXCollections.observableArrayList(productoDAO.getAllProductos());
@@ -495,6 +310,8 @@ public class ProductoMenuController {
         sortedData.comparatorProperty().bind(productosTableView.comparatorProperty());
         productosTableView.setItems(sortedData);
     }
+
+
 
     private void setupFilter() {
         cmbCategoriaFilter.setItems(categoriaFilterList);
@@ -544,6 +361,8 @@ public class ProductoMenuController {
     // MANEJO DE BOTONES Y NAVEGACIÓN
     // --------------------------------------------------------------------------
 
+    // En app.controller.ProductoMenuController.java
+
     @FXML
     private void handleRegistrarProductoButton(ActionEvent event) {
         try {
@@ -561,29 +380,29 @@ public class ProductoMenuController {
             double screenHeight = screenBounds.getHeight();
 
             // 4. Aplicar el dimensionamiento solicitado:
-            // A. Establecer el ALTO al 100% de la pantalla
             newStage.setHeight(screenHeight);
-
-            // B. Adaptar el ANCHO al contenido del FXML
-            // sizeToScene calcula el ancho mínimo requerido por el layout del FXML.
             newStage.sizeToScene();
 
             // 5. Configurar el modo (modal) y mostrar
             newStage.setTitle("Registro de Nuevo Producto");
             newStage.initModality(Modality.APPLICATION_MODAL);
             newStage.initOwner(((Node) event.getSource()).getScene().getWindow());
-
-            // Opcional: Centrar en pantalla
-            newStage.centerOnScreen();
-
-            // Se elimina setResizable(false) para permitir que el alto se ajuste.
-            // newStage.setResizable(false);
-
             newStage.setResizable(false);
+
             // Mostrar la nueva ventana y esperar a que se cierre (modal)
             newStage.showAndWait();
 
-            // 6. Recargar la tabla al volver
+            // 🚨 MODIFICACIÓN CLAVE: Sincronizar categorías y productos 🚨
+
+            // 6. Recargar la lista de categorías (y el mapa categoriaNamesMap)
+            // Esto es necesario para que la nueva categoría esté disponible.
+            loadCategoriaLists();
+
+            // 7. Actualizar el ComboBox de filtro con la nueva lista
+            // Esto es vital porque loadCategoriaLists() reasigna la lista.
+            cmbCategoriaFilter.setItems(categoriaFilterList);
+
+            // 8. Recargar la tabla de productos, que ahora usará el mapa actualizado
             loadProductos();
 
         } catch (IOException e) {
@@ -594,7 +413,31 @@ public class ProductoMenuController {
     /**
      * LÓGICA CORREGIDA: Solo intenta modificar el producto seleccionado.
      */
+    @FXML
+    private void handleModificarProductoButton(ActionEvent event) {
+        // 1. Obtener el producto seleccionado
+        Producto selectedProducto = productosTableView.getSelectionModel().getSelectedItem();
 
+        if (selectedProducto == null) {
+            // Muestra la advertencia solicitada por el usuario
+            showAlert(Alert.AlertType.WARNING, "Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.");
+            return;
+        }
+
+        // 2. Intentar actualizar el producto en la BD (el DAO retorna true solo si hubo cambios)
+        boolean exito = productoDAO.updateProducto(selectedProducto);
+
+        if (exito) {
+            showAlert(Alert.AlertType.INFORMATION, "Éxito", "Producto modificado exitosamente.");
+        } else {
+            // Esto ocurre si el usuario seleccionó una fila, no hizo cambios reales
+            // o los datos eran idénticos a los de la BD.
+            showAlert(Alert.AlertType.WARNING, "Sin Cambios Detectados", "El producto seleccionado no ha sido modificado o los datos son idénticos a los actuales.");
+        }
+
+        // 3. Recargar la tabla para asegurar la sincronización y refrescar la vista
+        loadProductos();
+    }
 
     @FXML
     private void handleRefreshButton(ActionEvent event) {
@@ -602,7 +445,6 @@ public class ProductoMenuController {
         loadCategoriaLists();
         filterField.setText("");
         cmbCategoriaFilter.getSelectionModel().select(0);
-        this.productoOriginal = null;
     }
 
     @FXML
@@ -610,8 +452,6 @@ public class ProductoMenuController {
         try {
             // Se utiliza el método estático unificado para asegurar la navegación
             // y que la nueva vista ocupe toda la ventana maximizada.
-            // Se asume que MenuController existe en el paquete app.controller
-            Class.forName("app.controller.MenuController");
             MenuController.loadScene(
                     (Node) event.getSource(),
                     "/menuAbmStock.fxml",
@@ -620,8 +460,6 @@ public class ProductoMenuController {
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Error de Navegación", "No se pudo cargar la vista de Menu Abm Stock.");
             e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            showAlert(Alert.AlertType.ERROR, "Error de Navegación", "Clase MenuController no encontrada. No se puede volver.");
         }
     }
 

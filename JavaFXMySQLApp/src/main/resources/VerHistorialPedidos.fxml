@@ -6,12 +6,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<!-- Aplicamos la hoja de estilos en el contenedor principal usando tu método -->
-
 <VBox alignment="TOP_CENTER" spacing="15.0" styleClass="root-container" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.VerHistorialPedidosController">
 
     <stylesheets>
-        <!-- Asumiendo que style.css está en el mismo paquete/carpeta que el FXML -->
         <URL value="@style.css" />
     </stylesheets>
 
@@ -19,14 +16,12 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <!-- Título - Usamos tu estilo de clase "titulo-principal" -->
     <Label styleClass="titulo-principal" text="Historial de Pedidos Retirados">
         <font>
             <Font size="24.0" />
         </font>
     </Label>
 
-    <!-- Área de Filtros - Aplicamos estilo de clase "filter-panel" -->
     <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="10.0" styleClass="filter-panel">
         <Label styleClass="label-bold" text="Filtrar por:" textFill="#fffdfd" />
 
@@ -34,30 +29,29 @@
         <ComboBox fx:id="empleadoFilterComboBox" promptText="Seleccionar Empleado" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
         <ComboBox fx:id="tipoPagoFilterComboBox" promptText="Seleccionar Tipo de Pago" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
 
-        <!-- Botón Limpiar Filtros - Usamos estilo de clase "btn-danger" -->
         <Button onAction="#handleLimpiarFiltros" styleClass="btn-danger" text="Limpiar Filtros" />
     </HBox>
 
-    <!-- Tabla de Pedidos - Aplicamos estilo de clase "data-table" -->
     <TableView fx:id="pedidosTable" prefHeight="500.0" styleClass="data-table" VBox.vgrow="ALWAYS">
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
         <columns>
-            <TableColumn fx:id="idPedidoColumn" prefWidth="75.0" text="ID" />
-            <TableColumn fx:id="clienteColumn" prefWidth="150.0" text="Cliente" />
-            <TableColumn fx:id="empleadoColumn" prefWidth="150.0" text="Empleado" />
-            <TableColumn fx:id="estadoColumn" prefWidth="100.0" text="Estado" />
-            <TableColumn fx:id="tipoPagoColumn" prefWidth="100.0" text="Tipo de Pago" />
-            <TableColumn fx:id="montoTotalColumn" prefWidth="100.0" text="Monto Total" />
-            <TableColumn fx:id="montoEntregadoColumn" prefWidth="120.0" text="Monto Entregado" />
-            <TableColumn fx:id="fechaEntregaEstimadaColumn" prefWidth="150.0" text="F. Finalización" />
-            <TableColumn fx:id="instruccionesColumn" prefWidth="180.0" text="Instrucciones" />
-            <TableColumn fx:id="comprobantePagoColumn" prefWidth="130.0" text="Comprobante Pago" />
-            <TableColumn fx:id="accionesColumn" prefWidth="100.0" text="Ticket" />
+            <TableColumn fx:id="idPedidoColumn" text="ID" />
+            <TableColumn fx:id="clienteColumn" text="Cliente" />
+            <TableColumn fx:id="empleadoColumn" text="Empleado" />
+            <TableColumn fx:id="estadoColumn" text="Estado" />
+            <TableColumn fx:id="tipoPagoColumn" text="Tipo de Pago" />
+            <TableColumn fx:id="montoTotalColumn" text="Monto Total" />
+            <TableColumn fx:id="montoEntregadoColumn" text="Monto Entregado" />
+            <TableColumn fx:id="fechaEntregaEstimadaColumn" text="F. Finalización" />
+            <TableColumn fx:id="instruccionesColumn" text="Instrucciones" />
+            <TableColumn fx:id="comprobantePagoColumn" text="Comprobante Pago" />
+            <TableColumn fx:id="accionesColumn" text="Ticket" />
         </columns>
     </TableView>
 
-    <!-- Botón Volver -->
     <HBox alignment="CENTER_RIGHT" maxWidth="Infinity">
-        <!-- Botón Volver - Usamos estilo de clase "button-volver" (tu estilo) -->
         <Button onAction="#handleVolver" styleClass="button-volver" text="Volver al Menú" />
     </HBox>
 </VBox>

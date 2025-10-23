@@ -2,13 +2,6 @@ package app.controller;
 
 import app.dao.InsumoDAO;
 import app.dao.TipoProveedorDAO;
-// AGREGADO: Importaciones requeridas para Auditoría y Transacción
-import app.dao.HistorialActividadDAO;
-import app.controller.SessionManager; // Necesario para la auditoría
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-// FIN AGREGADO
 import app.model.Insumo;
 import app.model.TipoProveedor;
 import javafx.collections.FXCollections;
@@ -34,15 +27,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javafx.stage.Screen;
 import javafx.geometry.Rectangle2D;
-import javafx.beans.property.SimpleStringProperty;
-
 
 public class StockController {
-
-    // CONFIGURACIÓN DE CONEXIÓN
-    private static final String URL = "jdbc:mysql://localhost:3306/proyectotesina";
-    private static final String USER = "root";
-    private static final String PASSWORD = "";
 
     @FXML private TableView<Insumo> insumosTableView;
     @FXML private TableColumn<Insumo, Number> idInsumoColumn;
@@ -56,101 +42,23 @@ public class StockController {
 
     @FXML private TextField filterField;
     @FXML private ChoiceBox<String> estadoChoiceBox;
+    // Nuevo botón inyectado
     @FXML private Button alertasStockButton;
 
-    private final InsumoDAO insumoDAO;
-    private final TipoProveedorDAO tipoProveedorDAO;
-    private final HistorialActividadDAO historialDAO;
+    private InsumoDAO insumoDAO;
+    private TipoProveedorDAO tipoProveedorDAO;
     private ObservableList<Insumo> masterData = FXCollections.observableArrayList();
     private FilteredList<Insumo> filteredData;
     private List<TipoProveedor> tiposProveedor;
 
-    // VARIABLE CLAVE PARA AUDITORÍA Y CONTROL DE EDICIÓN
-    private Insumo insumoOriginal;
-
     public StockController() {
         this.insumoDAO = new InsumoDAO();
         this.tipoProveedorDAO = new TipoProveedorDAO();
-        this.historialDAO = new HistorialActividadDAO();
     }
-
-    // =========================================================================
-    // UTILIDADES DE AUDITORÍA Y CONTROL
-    // =========================================================================
-
-    private Insumo crearCopiaInsumo(Insumo original) {
-        if (original == null) return null;
-        // Se usa el constructor de 7 argumentos para crear la copia
-        Insumo copia = new Insumo(
-                original.getIdInsumo(),
-                original.getNombreInsumo(),
-                original.getDescripcion(),
-                original.getStockMinimo(),
-                original.getStockActual(),
-                original.getEstado(),
-                original.getIdTipoProveedor()
-        );
-        return copia;
-    }
-
-    private void revertirInsumoAlOriginal(Insumo actual, Insumo original) {
-        if (actual == null || original == null) return;
-        // Revertir solo si el ID coincide
-        if (actual.getIdInsumo() != original.getIdInsumo()) return;
-
-        actual.setNombreInsumo(original.getNombreInsumo());
-        actual.setDescripcion(original.getDescripcion());
-        actual.setStockMinimo(original.getStockMinimo());
-        actual.setStockActual(original.getStockActual());
-        actual.setEstado(original.getEstado());
-        actual.setIdTipoProveedor(original.getIdTipoProveedor());
-        insumosTableView.refresh();
-    }
-
-    private void auditarYGuardarCambio(Connection conn, Insumo insumoActual, String columna, Object valorOriginal, Object valorNuevo) throws SQLException {
-        String originalStr = (valorOriginal != null) ? valorOriginal.toString() : "";
-        String nuevoStr = (valorNuevo != null) ? valorNuevo.toString() : "";
-
-        boolean exitoRegistro = historialDAO.insertarRegistro(
-                SessionManager.getInstance().getLoggedInUserId(),
-                "Insumo",
-                columna,
-                insumoActual.getIdInsumo(),
-                originalStr,
-                nuevoStr,
-                conn
-        );
-
-        if (!exitoRegistro) {
-            // Si falla el registro, lanzamos una excepción para provocar el ROLLBACK
-            throw new SQLException("Fallo al registrar la actividad para la columna: " + columna);
-        }
-    }
-
-    // =========================================================================
-    // INICIALIZACIÓN Y CONFIGURACIÓN DE CELDAS
-    // =========================================================================
 
     @FXML
     private void initialize() {
         insumosTableView.setEditable(true);
-
-        // ==========================================================
-        // === VINCULACIÓN DEL ANCHO DE COLUMNAS PORCENTUAL ========
-        // ==========================================================
-        idInsumoColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.05));
-        nombreInsumoColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.20));
-        descripcionColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.25));
-        stockMinimoColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.10));
-        stockActualColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.10));
-        estadoColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.08));
-        idTipoProveedorColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.12));
-        accionColumn.prefWidthProperty().bind(insumosTableView.widthProperty().multiply(0.10));
-
-        // ==========================================================
-        // === FIN DE VINCULACIÓN PORCENTUAL ========================
-        // ==========================================================
-
 
         idInsumoColumn.setCellValueFactory(new PropertyValueFactory<>("idInsumo"));
         nombreInsumoColumn.setCellValueFactory(cellData -> cellData.getValue().nombreInsumoProperty());
@@ -159,14 +67,7 @@ public class StockController {
         stockActualColumn.setCellValueFactory(new PropertyValueFactory<>("stockActual"));
         estadoColumn.setCellValueFactory(cellData -> cellData.getValue().estadoProperty());
 
-        // Listener para capturar la copia original antes de cualquier edición de fila
-        insumosTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                this.insumoOriginal = crearCopiaInsumo(newVal);
-            }
-        });
-
-        // --- Carga de Tipo Proveedor ---
+        // --- Carga de Tipo Proveedor (MANTENIDO) ---
         try {
             tiposProveedor = tipoProveedorDAO.getAllTipoProveedores();
         } catch (SQLException e) {
@@ -177,10 +78,10 @@ public class StockController {
         idTipoProveedorColumn.setCellValueFactory(cellData -> {
             int id = cellData.getValue().getIdTipoProveedor();
             String nombre = getTipoProveedorNombre(id);
-            return new SimpleStringProperty(nombre);
+            return new javafx.beans.property.SimpleStringProperty(nombre);
         });
 
-        // Cell Factory para idTipoProveedorColumn (Mantenido)
+        // Cell Factory para idTipoProveedorColumn (MANTENIDO)
         idTipoProveedorColumn.setCellFactory(column -> {
             return new TableCell<Insumo, String>() {
                 private final ChoiceBox<TipoProveedor> choiceBox = new ChoiceBox<>();
@@ -254,83 +155,70 @@ public class StockController {
             };
         });
 
-        // OnEditCommit para idTipoProveedorColumn (SOLO ACTUALIZA MODELO EN MEMORIA)
+        // OnEditCommit para idTipoProveedorColumn (MANTENIDO)
         idTipoProveedorColumn.setOnEditCommit(event -> {
             String nuevaDescripcion = event.getNewValue();
-            Insumo insumoActual = event.getRowValue();
-
-            if (event.getOldValue() != null && event.getOldValue().equals(nuevaDescripcion)) {
-                return;
-            }
-
-            TipoProveedor nuevoTipo = null;
+            Insumo insumo = event.getRowValue();
             try {
-                nuevoTipo = tipoProveedorDAO.getTipoProveedorByDescription(nuevaDescripcion);
+                TipoProveedor nuevoTipo = tipoProveedorDAO.getTipoProveedorByDescription(nuevaDescripcion);
+                if (nuevoTipo != null) {
+                    // Validar si realmente hay un cambio para evitar el re-guardado innecesario
+                    if (insumo.getIdTipoProveedor() != nuevoTipo.getId()) {
+                        insumo.setIdTipoProveedor(nuevoTipo.getId());
+                        if (insumoDAO.modificarInsumo(insumo)) {
+                            mostrarAlerta("Éxito", "Tipo de proveedor actualizado exitosamente.", Alert.AlertType.INFORMATION);
+                        } else {
+                            mostrarAlerta("Error", "No se pudo actualizar el tipo de proveedor en la base de datos.", Alert.AlertType.ERROR);
+                            // Revertir el modelo al valor original si falla la BD
+                            insumosTableView.refresh();
+                        }
+                    }
+                } else {
+                    mostrarAlerta("Error", "Tipo de proveedor no encontrado.", Alert.AlertType.ERROR);
+                    // Revertir el modelo al valor original si es inválido
+                    insumosTableView.refresh();
+                }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            if (nuevoTipo == null) {
-                mostrarAlerta("Error", "Tipo de proveedor no encontrado. Se cancela la edición.", Alert.AlertType.ERROR);
+                e.printStackTrace();
+                mostrarAlerta("Error de BD", "Ocurrió un error al actualizar el tipo de proveedor.", Alert.AlertType.ERROR);
+                // Revertir el modelo al valor original si falla la BD
                 insumosTableView.refresh();
-                return;
             }
-
-            // APLICAR CAMBIO AL MODELO EN MEMORIA
-            insumoActual.setIdTipoProveedor(nuevoTipo.getId());
-            insumosTableView.refresh();
         });
 
-        // OnEditCommit para nombreInsumoColumn (SOLO ACTUALIZA MODELO EN MEMORIA)
+        // OnEditCommit para nombreInsumoColumn y descripcionColumn (MANTENIDOS)
         nombreInsumoColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         nombreInsumoColumn.setOnEditCommit(event -> {
-            String nuevoValor = event.getNewValue();
-            Insumo insumoActual = event.getRowValue();
-
-            if (nuevoValor == null || nuevoValor.trim().isEmpty()) {
+            if (event.getNewValue() == null || event.getNewValue().trim().isEmpty()) {
                 mostrarAlerta("Advertencia", "El nombre del insumo no puede quedar vacío.", Alert.AlertType.WARNING);
                 insumosTableView.refresh();
                 return;
             }
-            if (event.getOldValue().equals(nuevoValor.trim())) {
-                return;
-            }
-
-            // APLICAR CAMBIO AL MODELO EN MEMORIA
-            insumoActual.setNombreInsumo(nuevoValor.trim());
-            insumosTableView.refresh();
+            event.getRowValue().setNombreInsumo(event.getNewValue());
         });
 
-        // OnEditCommit para descripcionColumn (SOLO ACTUALIZA MODELO EN MEMORIA)
         descripcionColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         descripcionColumn.setOnEditCommit(event -> {
-            String nuevoValor = event.getNewValue();
-            Insumo insumoActual = event.getRowValue();
-
-            String valorAUsar = (nuevoValor == null || nuevoValor.trim().isEmpty()) ? "" : nuevoValor.trim();
-
-            if (event.getOldValue() != null && event.getOldValue().equals(valorAUsar)) {
+            if (event.getNewValue() == null || event.getNewValue().trim().isEmpty()) {
+                mostrarAlerta("Advertencia", "La descripción no puede quedar vacía.", Alert.AlertType.WARNING);
+                insumosTableView.refresh();
                 return;
             }
-
-            // APLICAR CAMBIO AL MODELO EN MEMORIA
-            insumoActual.setDescripcion(valorAUsar);
-            insumosTableView.refresh();
+            event.getRowValue().setDescripcion(event.getNewValue());
         });
 
-        // OnEditCommit para stockMinimoColumn (SOLO ACTUALIZA MODELO EN MEMORIA)
+        // OnEditCommit para stockMinimoColumn (MANTENIDO)
         stockMinimoColumn.setCellFactory(column -> new TextFieldTableCell<Insumo, Number>() {
             // ... (implementación de la celda de stockMinimo, MANTENIDA) ...
             @Override
             public void startEdit() {
-                if (!isEmpty()) {
-                    super.startEdit();
-                    if (this.getItem() != null) {
-                        TextField textField = new TextField(String.valueOf(this.getItem()));
-                        textField.setOnAction(e -> commitEdit(textField.getText()));
-                        setGraphic(textField);
-                        setText(null);
-                        textField.requestFocus();
-                    }
+                super.startEdit();
+                if (this.getItem() != null) {
+                    TextField textField = new TextField(String.valueOf(this.getItem()));
+                    textField.setOnAction(e -> commitEdit(textField.getText()));
+                    setGraphic(textField);
+                    setText(null);
+                    textField.requestFocus();
                 }
             }
             private void commitEdit(String text) {
@@ -371,33 +259,20 @@ public class StockController {
                 }
             }
         });
-        stockMinimoColumn.setOnEditCommit(event -> {
-            Insumo insumoActual = event.getRowValue();
-            Number nuevoStockNum = event.getNewValue();
-            int nuevoValor = nuevoStockNum.intValue();
 
-            if (event.getOldValue().intValue() == nuevoValor) {
-                return;
-            }
-
-            // APLICAR CAMBIO AL MODELO EN MEMORIA
-            insumoActual.setStockMinimo(nuevoValor);
-            insumosTableView.refresh();
-        });
-
-        // OnEditCommit para stockActualColumn (SOLO ACTUALIZA MODELO EN MEMORIA)
+        // ====================================================================
+        // === IMPLEMENTACIÓN DE ALERTA DE STOCK EN EL COMMIT DE STOCK ACTUAL (MANTENIDO) ===
+        // ====================================================================
         stockActualColumn.setCellFactory(column -> new TextFieldTableCell<Insumo, Number>() {
             @Override
             public void startEdit() {
-                if (!isEmpty()) {
-                    super.startEdit();
-                    if (this.getItem() != null) {
-                        TextField textField = new TextField(String.valueOf(this.getItem()));
-                        textField.setOnAction(e -> commitEdit(textField.getText()));
-                        setGraphic(textField);
-                        setText(null);
-                        textField.requestFocus();
-                    }
+                super.startEdit();
+                if (this.getItem() != null) {
+                    TextField textField = new TextField(String.valueOf(this.getItem()));
+                    textField.setOnAction(e -> commitEdit(textField.getText()));
+                    setGraphic(textField);
+                    setText(null);
+                    textField.requestFocus();
                 }
             }
             private void commitEdit(String text) {
@@ -438,28 +313,45 @@ public class StockController {
                 }
             }
         });
+
         stockActualColumn.setOnEditCommit(event -> {
-            Insumo insumoActual = event.getRowValue();
-            Number nuevoStockNum = event.getNewValue();
-            int nuevoValor = nuevoStockNum.intValue();
+            Insumo insumo = event.getRowValue();
+            Number nuevoStock = event.getNewValue();
 
-            if (event.getOldValue().intValue() == nuevoValor) {
-                return;
-            }
-
-            if (nuevoStockNum == null) {
+            if (nuevoStock == null) {
                 insumosTableView.refresh();
                 return;
             }
 
-            // APLICAR CAMBIO AL MODELO EN MEMORIA
-            insumoActual.setStockActual(nuevoValor);
+            int stockActual = nuevoStock.intValue();
+            insumo.setStockActual(stockActual);
+
+            // Intentar modificar en la base de datos
+            boolean exito = insumoDAO.modificarInsumo(insumo);
+
+            if (exito) {
+                // Validación y Alerta después de la modificación exitosa
+                int stockMinimo = insumo.getStockMinimo();
+                if (stockActual == 0) {
+                    mostrarAlerta("¡Stock Agotado! 🚫", "El insumo '" + insumo.getNombreInsumo() + "' se quedó sin stock.", Alert.AlertType.ERROR);
+                } else if (stockActual <= stockMinimo) {
+                    mostrarAlerta("¡Stock Crítico! ⚠️", "El insumo '" + insumo.getNombreInsumo() + "' ha alcanzado o superado el stock mínimo (" + stockMinimo + ").", Alert.AlertType.WARNING);
+                } else {
+                    // Opcional: Alerta de éxito si el stock se repone
+                    // mostrarAlerta("Éxito", "Stock de " + insumo.getNombreInsumo() + " actualizado correctamente.", Alert.AlertType.INFORMATION);
+                }
+            } else {
+                mostrarAlerta("Error", "No se pudo actualizar el stock en la base de datos.", Alert.AlertType.ERROR);
+                // Revertir el valor si la BD falla
+                insumo.setStockActual(event.getOldValue().intValue());
+            }
             insumosTableView.refresh();
         });
+        // ====================================================================
 
-        // OnEditCommit para estadoColumn (SOLO ACTUALIZA MODELO EN MEMORIA)
+        // LÓGICA DE ESTILO DE ESTADO (MANTENIDA)
         estadoColumn.setCellFactory(column -> new TableCell<Insumo, String>() {
-            // Lógica de ChoiceBox y estilos mantenida.
+            // ... (implementación de la celda de estado, MANTENIDA) ...
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
 
             @Override
@@ -491,12 +383,13 @@ public class StockController {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
+
                 getStyleClass().removeAll("activo-cell", "desactivado-cell");
 
                 if (empty || item == null) {
                     setText(null);
                     setGraphic(null);
-                    setStyle(null);
+                    setStyle(null); // Limpiar estilo
                 } else {
                     if (isEditing()) {
                         choiceBox.getSelectionModel().select(item);
@@ -518,52 +411,37 @@ public class StockController {
                     getStyleClass().add("desactivado-cell");
                     setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
                 } else {
-                    setStyle(null);
+                    setStyle(null); // Limpiar estilo si no coincide
                 }
             }
         });
 
-        // Código corregido para estadoColumn.setOnEditCommit
         estadoColumn.setOnEditCommit(event -> {
-            Insumo insumoActual = event.getRowValue(); // Esta es la variable correcta
+            Insumo insumo = event.getRowValue();
             String nuevoEstado = event.getNewValue();
-
-            // 1. Aplicamos el cambio al modelo en memoria (antes de la persistencia)
-            insumoActual.setEstado(nuevoEstado);
-
-            // 2. Intentamos persistir el cambio en la base de datos
-            // Se usa insumoActual.getIdInsumo() en lugar de insumo.getIdInsumo()
-            boolean exito = insumoDAO.modificarEstadoInsumo(insumoActual.getIdInsumo(), nuevoEstado);
-
+            insumo.setEstado(nuevoEstado);
+            boolean exito = insumoDAO.modificarEstadoInsumo(insumo.getIdInsumo(), nuevoEstado);
             if (exito) {
                 mostrarAlerta("Éxito", "Estado del insumo actualizado.", Alert.AlertType.INFORMATION);
             } else {
                 mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
-                // Si falla, revertimos el estado en memoria al valor anterior
-                // Se usa insumoActual.setEstado() en lugar de insumo.setEstado()
-                insumoActual.setEstado(event.getOldValue());
+                insumo.setEstado(event.getOldValue());
             }
-
-            // [LÍNEA ELIMINADA] La línea 'insumoActual.setEstado(nuevoEstado);' que estaba aquí se elimina
-            // para evitar que anule la reversión si la actualización falló.
-
             insumosTableView.refresh();
         });
 
-        // Restauración de la celda con el botón "Ver Proveedores" (Mantenido)
+
+        // Restauración de la celda con el botón "Ver Proveedores" (MANTENIDO)
         accionColumn.setCellFactory(param -> new TableCell<Insumo, Void>() {
             private final Button btn = new Button("Ver Proveedores");
             {
-                btn.prefWidthProperty().bind(accionColumn.widthProperty());
                 btn.setOnAction(event -> {
                     Insumo insumo = getTableView().getItems().get(getIndex());
                     try {
                         FXMLLoader loader = new FXMLLoader(getClass().getResource("/verProveedores.fxml"));
                         Parent root = loader.load();
-                        // El controlador 'VerProveedoresController' debe existir
-                        // El snippet no lo muestra, pero se asume que funciona.
-                        // VerProveedoresController proveedoresController = loader.getController();
-                        // proveedoresController.setTipoProveedor(insumo.getIdTipoProveedor());
+                        VerProveedoresController proveedoresController = loader.getController();
+                        proveedoresController.setTipoProveedor(insumo.getIdTipoProveedor());
                         Stage stage = new Stage();
                         stage.setScene(new Scene(root));
                         stage.setTitle("Proveedores de " + insumo.getNombreInsumo());
@@ -593,121 +471,9 @@ public class StockController {
         cargarInsumosYConfigurarFiltros();
     }
 
-    // =========================================================================
-    // LÓGICA DE PERSISTENCIA Y AUDITORÍA (SOLO EN EL BOTÓN)
-    // =========================================================================
-
-    @FXML
-    public void handleModificarInsumoButton(ActionEvent event) {
-        Insumo insumoActual = insumosTableView.getSelectionModel().getSelectedItem();
-
-        if (insumoActual == null) {
-            mostrarAlerta("Advertencia", "Por favor, seleccione una fila antes de guardar.", Alert.AlertType.WARNING);
-            return;
-        }
-
-        // Validar que tenemos una copia original válida para comparar
-        if (this.insumoOriginal == null || insumoActual.getIdInsumo() != this.insumoOriginal.getIdInsumo()) {
-            mostrarAlerta("Advertencia", "El insumo no está listo para guardar. Vuelva a seleccionar la fila.", Alert.AlertType.WARNING);
-            return;
-        }
-
-        Connection conn = null;
-        boolean huboCambios = false;
-
-        try {
-            // 1. Iniciar Transacción
-            conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            conn.setAutoCommit(false);
-
-            // --- 2. AUDITAR Y REGISTRAR CADA POSIBLE CAMBIO ---
-
-            // Cambio en Nombre
-            if (!insumoActual.getNombreInsumo().equals(this.insumoOriginal.getNombreInsumo())) {
-                auditarYGuardarCambio(conn, insumoActual, "nombreInsumo", this.insumoOriginal.getNombreInsumo(), insumoActual.getNombreInsumo());
-                huboCambios = true;
-            }
-
-            // Cambio en Descripción
-            if (!insumoActual.getDescripcion().equals(this.insumoOriginal.getDescripcion())) {
-                auditarYGuardarCambio(conn, insumoActual, "descripcion", this.insumoOriginal.getDescripcion(), insumoActual.getDescripcion());
-                huboCambios = true;
-            }
-
-            // Cambio en Stock Mínimo
-            if (insumoActual.getStockMinimo() != this.insumoOriginal.getStockMinimo()) {
-                auditarYGuardarCambio(conn, insumoActual, "stockMinimo", this.insumoOriginal.getStockMinimo(), insumoActual.getStockMinimo());
-                huboCambios = true;
-            }
-
-            // Cambio en Stock Actual
-            if (insumoActual.getStockActual() != this.insumoOriginal.getStockActual()) {
-                auditarYGuardarCambio(conn, insumoActual, "stockActual", this.insumoOriginal.getStockActual(), insumoActual.getStockActual());
-                huboCambios = true;
-            }
-
-            // Cambio en Estado
-            if (!insumoActual.getEstado().equals(this.insumoOriginal.getEstado())) {
-                auditarYGuardarCambio(conn, insumoActual, "estado", this.insumoOriginal.getEstado(), insumoActual.getEstado());
-                huboCambios = true;
-            }
-
-            // Cambio en Tipo Proveedor (Registrando el NOMBRE en el historial)
-            if (insumoActual.getIdTipoProveedor() != this.insumoOriginal.getIdTipoProveedor()) {
-                String nombreOriginal = getTipoProveedorNombre(this.insumoOriginal.getIdTipoProveedor());
-                String nombreNuevo = getTipoProveedorNombre(insumoActual.getIdTipoProveedor());
-
-                auditarYGuardarCambio(conn, insumoActual, "tipoProveedor", nombreOriginal, nombreNuevo);
-                huboCambios = true;
-            }
-
-            // --- 3. PERSISTIR LOS CAMBIOS SI LOS HUBO ---
-            if (huboCambios) {
-                // Guarda todos los campos del insumo actualizado en la BD (modificarInsumo)
-                boolean exitoActualizacion = insumoDAO.modificarInsumo(insumoActual);
-
-                if (exitoActualizacion) {
-                    conn.commit();
-
-                    // Lógica de Alerta de Stock (Mantenida de tu código)
-                    int nuevoStock = insumoActual.getStockActual();
-                    int stockMinimo = insumoActual.getStockMinimo();
-
-                    if (nuevoStock == 0) {
-                        mostrarAlerta("¡Stock Agotado! 🚫", "El insumo '" + insumoActual.getNombreInsumo() + "' se quedó sin stock.", Alert.AlertType.ERROR);
-                    } else if (nuevoStock <= stockMinimo) {
-                        mostrarAlerta("¡Stock Crítico! ⚠️", "El insumo '" + insumoActual.getNombreInsumo() + "' ha alcanzado o superado el stock mínimo (" + stockMinimo + ").", Alert.AlertType.WARNING);
-                    } else {
-                        mostrarAlerta("Éxito", "Insumo y registro de actividad actualizados.", Alert.AlertType.INFORMATION);
-                    }
-
-                    // Actualiza la copia original después de un guardado exitoso
-                    this.insumoOriginal = crearCopiaInsumo(insumoActual);
-                } else {
-                    conn.rollback();
-                    mostrarAlerta("Error", "No se pudo actualizar el insumo en la BD. ROLLBACK realizado.", Alert.AlertType.ERROR);
-                    // Revertir el modelo al estado original en memoria
-                    revertirInsumoAlOriginal(insumoActual, this.insumoOriginal);
-                }
-            } else {
-                conn.rollback();
-                mostrarAlerta("Advertencia", "No se detectaron cambios para guardar.", Alert.AlertType.WARNING);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            try { if (conn != null) conn.rollback(); } catch (SQLException rollbackEx) { /* Ignorar */ }
-            mostrarAlerta("Error de BD", "Ocurrió un error en la base de datos: " + e.getMessage(), Alert.AlertType.ERROR);
-            revertirInsumoAlOriginal(insumoActual, this.insumoOriginal);
-        } finally {
-            try { if (conn != null) { conn.setAutoCommit(true); conn.close(); } } catch (SQLException closeEx) { /* Ignorar */ }
-            insumosTableView.refresh(); // Asegurar que la vista refleja el estado actual
-        }
-    }
-
-    // =========================================================================
-    // RESTO DE MÉTODOS (SIN MODIFICACIÓN CRÍTICA)
-    // =========================================================================
-
+    // ====================================================================
+    // === NUEVO MÉTODO: MANEJO DEL BOTÓN DE ALERTAS GLOBALES DE STOCK (MANTENIDO) ===
+    // ====================================================================
     @FXML
     public void handleAlertasStockButton(ActionEvent event) {
         // Recorrer todos los insumos (masterData para asegurar que se revisan todos)
@@ -724,8 +490,7 @@ public class StockController {
         int count = 0;
 
         for (Insumo i : insumosFaltantes) {
-            String estado = (i.getStockActual() == 0) ?
-                    "AGOTADO (0)" : "CRÍTICO (" + i.getStockActual() + ")";
+            String estado = (i.getStockActual() == 0) ? "AGOTADO (0)" : "CRÍTICO (" + i.getStockActual() + ")";
             sb.append("ID ").append(i.getIdInsumo())
                     .append(": ").append(i.getNombreInsumo())
                     .append(" | Estado: ").append(estado)
@@ -821,7 +586,20 @@ public class StockController {
         }
     }
 
-
+    @FXML
+    public void handleModificarInsumoButton(ActionEvent event) {
+        Insumo selectedInsumo = insumosTableView.getSelectionModel().getSelectedItem();
+        if (selectedInsumo != null) {
+            boolean exito = insumoDAO.modificarInsumo(selectedInsumo);
+            if (exito) {
+                mostrarAlerta("Éxito", "Insumo modificado exitosamente.", Alert.AlertType.INFORMATION);
+            } else {
+                mostrarAlerta("Error", "No se pudo modificar el insumo en la base de datos.", Alert.AlertType.ERROR);
+            }
+        } else {
+            mostrarAlerta("Advertencia", "Por favor, seleccione una fila y modifique los datos antes de guardar.", Alert.AlertType.WARNING);
+        }
+    }
 
     @FXML
     public void handleRefreshButton(ActionEvent event) {
@@ -862,8 +640,6 @@ public class StockController {
         try {
             // Se usa el método estático unificado para asegurar la navegación
             // y que la nueva vista ocupe toda la ventana maximizada.
-            // Se asume que MenuController existe en el paquete app.controller
-            Class.forName("app.controller.MenuController");
             MenuController.loadScene(
                     (Node) event.getSource(),
                     "/menuAbmStock.fxml",
@@ -872,8 +648,6 @@ public class StockController {
         } catch (IOException e) {
             e.printStackTrace();
             mostrarAlerta("Error de Navegación", "No se pudo cargar la vista anterior.", Alert.AlertType.ERROR);
-        } catch (ClassNotFoundException e) {
-            mostrarAlerta("Error de Navegación", "Clase MenuController no encontrada. No se puede volver.", Alert.AlertType.ERROR);
         }
     }
 }

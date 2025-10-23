@@ -1,0 +1,298 @@
+/* Estilo para los campos cuando NO son editables */
+.text-field:disabled {
+    -fx-opacity: 1.0;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff; /* Texto blanco para el tema oscuro */
+    -fx-background-color: #333333; /* Fondo gris oscuro */
+    -fx-background-insets: 0;
+    -fx-border-color: #555555; /* Borde gris más sutil */
+    -fx-border-width: 1px;
+    -fx-border-radius: 0.25em; /* Radio de borde consistente */
+}
+
+/* Estilo para los campos cuando SÍ son editables */
+.editable-field {
+    -fx-opacity: 1.0;
+    -fx-font-weight: normal;
+    -fx-text-fill: #ffffff; /* Texto blanco para el tema oscuro */
+    -fx-background-color: #333333; /* Fondo gris oscuro */
+    -fx-border-color: #777777; /* Borde gris sutil, un poco más claro para indicar editabilidad */
+    -fx-border-width: 1px;
+    -fx-border-radius: 0.25em; /* Radio de borde consistente */
+    -fx-background-insets: 0;
+}
+
+/* Resto de tu CSS (sin cambios) */
+.label-blanco {
+    -fx-text-fill: white;
+}
+
+/* =======================================================
+   CORRECCIÓN CLAVE: Aumentar la especificidad del selector
+   ======================================================= */
+
+/* Estilo para filas o celdas con estado "Activo" */
+.activo-cell {
+    -fx-background-color: #d4edda;
+    /* Mantenemos el estilo en línea directo para máxima prioridad en la celda */
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+}
+/* Forzamos el color NEGRO en el nodo interno de texto, aumentando la especificidad */
+.table-view .activo-cell .text {
+    -fx-fill: #000000;
+    -fx-font-weight: bold;
+}
+
+
+/* Estilo para filas o celdas con estado "Desactivado" */
+.desactivado-cell {
+    -fx-background-color: #f8d7da;
+    /* Mantenemos el estilo en línea directo para máxima prioridad en la celda */
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+}
+/* Forzamos el color NEGRO en el nodo interno de texto, aumentando la especificidad */
+.table-view .desactivado-cell .text {
+    -fx-fill: #000000;
+    -fx-font-weight: bold;
+}
+/* ======================================================= */
+
+
+/* Estilo para asegurar que el texto de entrada sea negro */
+.input-negro {
+    /* Forzar el color de texto a negro */
+    -fx-text-fill: black;
+}
+/* Estilo para el fondo del VBox principal */
+.root {
+    /* Mantener el estilo grid oscuro */
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #72757E 0%, #030000 100%);
+}
+
+/* Estilo para el título */
+.titulo-principal {
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #fffffe;
+}
+
+.titulo-principal-grande {
+    -fx-font-size: 80px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #fffffe;
+}
+
+/* From Uiverse.io by Randdose - Adaptado para JavaFX */
+/* El selector 'Button.button' ahora es más específico */
+Button.button {
+    /* Propiedades de tamaño y fuente */
+    -fx-padding: 0.4em 1.2em;
+    -fx-font-size: 1.2em;
+    -fx-font-family: "Monospaced";
+    /* Propiedades básicas (color naranja) */
+    -fx-border-color: #7f5af0;
+    -fx-border-width: 0.15em;
+    -fx-border-radius: 0.25em;
+    -fx-text-fill: #7f5af0;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-transition-duration: 300ms;
+    -fx-transition-timing-function: ease-in;
+}
+
+/* Efecto al pasar el ratón */
+Button.button:hover {
+    -fx-text-fill: #fffffe;
+    -fx-background-color: #7f5af0;
+}
+
+/* Efecto al hacer click (activo) */
+Button.button:pressed {
+    -fx-border-color: #7f5af0;
+    -fx-background-color: #7f5af0;
+}
+
+/* Estilo específico para el botón de Volver (MODIFICADO) */
+#volverButton {
+    -fx-border-color: #db6151; /* Color rojo/coral del borde */
+    -fx-text-fill: #db6151;    /* Color rojo/coral del texto */
+    -fx-background-color: transparent;
+}
+
+#volverButton:hover {
+    -fx-text-fill: #fffffe;      /* Texto blanco en hover */
+    -fx-background-color: #db6151; /* Fondo rojo/coral en hover */
+}
+
+#volverButton:pressed {
+    -fx-border-color: #b34a3e; /* Rojo un poco más oscuro al presionar */
+    -fx-background-color: #b34a3e; /* Fondo rojo un poco más oscuro al presionar */
+}
+
+/* .button-volver es el estilo base usado por el botón "Cerrar" */
+.button-volver {
+    -fx-border-color: #db6151;
+    -fx-text-fill: #db6151;
+    -fx-background-color: transparent;
+    -fx-padding: 0.4em 1.2em;
+    -fx-font-size: 1.2em;
+    -fx-border-width: 0.15em;
+    -fx-border-radius: 0.25em;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-background-insets: 0;
+    -fx-transition-duration: 300ms;
+    -fx-transition-timing-function: ease-in;
+}
+
+/* CORRECCIÓN: Sobreescribimos el hover/pressed para que no herede el violeta de Button.button */
+.button-volver:hover {
+    -fx-text-fill: #fffffe;
+    -fx-background-color: #db6151; /* ROJO */
+    -fx-border-color: #db6151;
+}
+
+.button-volver:pressed {
+    -fx-border-color: #b34a3e;
+    -fx-background-color: #b34a3e; /* ROJO OSCURO */
+}
+
+/* =======================================================================
+   NUEVOS ESTILOS PARA LOS BOTONES SIN BORDE VIOLETA
+   ======================================================================= */
+
+/* 1. Botón Modificar (Azul) */
+#modificarButton {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: white;
+    -fx-border-color: #2196F3;
+    -fx-border-width: 0;
+    -fx-border-radius: 0.25em;
+    -fx-padding: 0.4em 1.2em;
+    -fx-font-size: 1.2em;
+    -fx-font-weight: 600;
+}
+
+#modificarButton:hover {
+    -fx-background-color: #1976D2;
+    -fx-text-fill: white;
+}
+
+/* 2. Botón Guardar (Verde) */
+#guardarButton {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-border-color: #4CAF50;
+    -fx-border-width: 0;
+    -fx-border-radius: 0.25em;
+    -fx-padding: 0.4em 1.2em;
+    -fx-font-size: 1.2em;
+    -fx-font-weight: 600;
+}
+
+#guardarButton:hover {
+    -fx-background-color: #388E3C;
+    -fx-text-fill: white;
+}
+
+/* 3. Botón Cancelar (Rojo) */
+#cancelarButton {
+    -fx-background-color: #f44336;
+    -fx-text-fill: white;
+    -fx-border-color: #f44336;
+    -fx-border-width: 0;
+    -fx-border-radius: 0.25em;
+    -fx-padding: 0.4em 1.2em;
+    -fx-font-size: 1.2em;
+    -fx-font-weight: 600;
+}
+
+#cancelarButton:hover {
+    -fx-background-color: #D32F2F;
+    -fx-text-fill: white;
+}
+
+/* --- ESTILOS PARA LAS GRILLAS Y TABLAS --- */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #444;
+    -fx-border-width: 1px;
+    -fx-table-cell-border-color: #555;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #C0C0C0; /* Color del encabezado de columna (gris claro) */
+    -fx-border-color: #555;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #212121; /* Texto oscuro en el encabezado */
+    -fx-font-weight: bold;
+}
+
+.table-row-cell {
+    -fx-background-color: #1e1e1e; /* Fondo de fila oscuro */
+    -fx-text-fill: #ccc;           /* Texto de fila claro */
+    -fx-border-color: #555;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #505050; /* Fila seleccionada */
+    -fx-text-fill: #fff;
+}
+
+.table-cell {
+    -fx-text-fill: #ccc; /* Texto general de celda claro */
+    -fx-border-color: #555;
+    -fx-alignment: center;
+}
+
+/* =======================================================================
+   ESTILOS PARA EL BOTÓN DE DIRECCIÓN (Celestito) - CON FUENTE AUMENTADA
+   ======================================================================= */
+
+.table-cell.columna-boton-direccion .button {
+    /* Padding y borde ajustados para la forma. */
+    -fx-padding: 0.4em 0.4em;
+
+    /* CAMBIO APLICADO: Fuente aumentada de 0.8em a 0.9em */
+    -fx-font-size: 0.9em;
+
+    -fx-border-color: #5bc0de;
+    -fx-border-width: 0.15em;
+    -fx-border-radius: 0.25em;
+    -fx-text-fill: #5bc0de;
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-max-width: infinity;
+    -fx-font-weight: 600;
+    -fx-background-insets: 0;
+    -fx-transition-duration: 300ms;
+    -fx-transition-timing-function: ease-in;
+}
+
+.table-cell.columna-boton-direccion .button:hover {
+    -fx-text-fill: #fffffe;
+    -fx-background-color: #5bc0de;
+}
+
+.table-cell.columna-boton-direccion .button:pressed {
+    -fx-border-color: #31b0d5;
+    -fx-background-color: #31b0d5;
+}
+
+.choice-box .label {
+    -fx-text-fill: white;
+}
+
+
+
+/* Asegurar que el estilo .editable-field sobreescriba si es necesario */
+.editable-field .label {
+    -fx-text-fill: white;
+}

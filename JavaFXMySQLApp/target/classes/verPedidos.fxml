@@ -21,80 +21,79 @@
         </font>
     </Label>
 
-    <HBox alignment="CENTER_LEFT" spacing="10.0">
+    <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="filter-panel">
         <Label text="Filtrar por Empleado Asignado:" textFill="#fff8f8">
             <font>
                 <Font size="14.0" />
             </font>
         </Label>
-        <ComboBox fx:id="empleadoFilterComboBox" prefWidth="200.0" promptText="Seleccionar Empleado" />
+        <ComboBox fx:id="empleadoFilterComboBox" promptText="Seleccionar Empleado" HBox.hgrow="ALWAYS" />
 
         <Label text="Estado:" textFill="#fff8f8" />
-        <ComboBox fx:id="estadoFilterComboBox" prefWidth="150.0" promptText="Todos los Estados" />
+        <ComboBox fx:id="estadoFilterComboBox" promptText="Todos los Estados" HBox.hgrow="ALWAYS" />
 
         <Label text="Tipo Pago:" textFill="#fff8f8" />
-        <ComboBox fx:id="metodoPagoFilterComboBox" prefWidth="150.0" promptText="Todos los Tipos" />
+        <ComboBox fx:id="metodoPagoFilterComboBox" promptText="Todos los Tipos" HBox.hgrow="ALWAYS" />
     </HBox>
 
     <TableView fx:id="pedidosTable" editable="true" VBox.vgrow="ALWAYS">
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
         <columns>
-            <TableColumn fx:id="idPedidoColumn" prefWidth="75.0" text="ID">
+            <TableColumn fx:id="idPedidoColumn" text="ID">
                 <cellValueFactory>
                     <PropertyValueFactory property="idPedido" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="clienteColumn" prefWidth="150.0" text="Cliente">
+            <TableColumn fx:id="clienteColumn" text="Cliente">
                 <cellValueFactory>
                     <PropertyValueFactory property="nombreCliente" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="empleadoColumn" prefWidth="150.0" text="Empleado">
+            <TableColumn fx:id="empleadoColumn" text="Empleado">
                 <cellValueFactory>
                     <PropertyValueFactory property="nombreEmpleado" />
                 </cellValueFactory>
             </TableColumn>
 
-            <!-- COLUMNA DE CONTACTO -->
-            <!-- La lógica de botones con los logos de WhatsApp y Gmail se define en VerPedidosController -->
-            <TableColumn fx:id="contactoClienteColumn" prefWidth="110.0" text="Contacto" resizable="false" />
+            <TableColumn fx:id="contactoClienteColumn" text="Contacto" resizable="false" />
 
-            <TableColumn fx:id="estadoColumn" prefWidth="100.0" text="Estado">
+            <TableColumn fx:id="estadoColumn" text="Estado">
                 <cellValueFactory>
                     <PropertyValueFactory property="estado" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="tipoPagoColumn" prefWidth="100.0" text="Tipo Pago">
+            <TableColumn fx:id="tipoPagoColumn" text="Tipo Pago">
                 <cellValueFactory>
                     <PropertyValueFactory property="tipoPago" />
                 </cellValueFactory>
             </TableColumn>
 
-            <TableColumn fx:id="montoTotalColumn" prefWidth="100.0" text="Monto Total">
+            <TableColumn fx:id="montoTotalColumn" text="Monto Total">
                 <cellValueFactory>
                     <PropertyValueFactory property="montoTotal" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="montoEntregadoColumn" prefWidth="120.0" text="Monto Entregado">
+            <TableColumn fx:id="montoEntregadoColumn" text="Monto Entregado">
                 <cellValueFactory>
                     <PropertyValueFactory property="montoEntregado" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="fechaCreacionColumn" prefWidth="150.0" text="Fecha de Creación">
+            <TableColumn fx:id="fechaCreacionColumn" text="Fecha de Creación">
                 <cellValueFactory>
                     <PropertyValueFactory property="fechaCreacion" />
                 </cellValueFactory>
             </TableColumn>
-            <TableColumn fx:id="instruccionesColumn" prefWidth="200.0" text="Instrucciones">
+            <TableColumn fx:id="instruccionesColumn" text="Instrucciones">
                 <cellValueFactory>
                     <PropertyValueFactory property="instrucciones" />
                 </cellValueFactory>
             </TableColumn>
 
-            <!-- COLUMNA para el Comprobante de Pago -->
-            <TableColumn fx:id="comprobantePagoColumn" prefWidth="130.0" text="Comprobante Pago" />
+            <TableColumn fx:id="comprobantePagoColumn" text="Comprobante Pago" />
 
-            <!-- COLUMNA DE BOTÓN TICKET -->
-            <TableColumn fx:id="ticketColumn" prefWidth="120.0" text="Detallar/Ticket" />
+            <TableColumn fx:id="ticketColumn" text="Detallar/Ticket" />
         </columns>
     </TableView>
 
