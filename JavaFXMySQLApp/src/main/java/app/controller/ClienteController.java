@@ -419,40 +419,17 @@ public class ClienteController {
             String nuevoEstado = event.getNewValue();
             String estadoOriginal = event.getOldValue();
 
-            // 💡 IMPORTANTE: Reemplaza con tu método para obtener el ID del usuario logueado
-            int loggedInUserId = app.controller.SessionManager.getInstance().getLoggedInUserId();
-
             // Se utiliza el método modificarEstadoCliente que confirmaste en tu DAO
             boolean exito = clienteDAO.modificarEstadoCliente(cliente.getIdCliente(), nuevoEstado);
 
             if (exito) {
                 cliente.setEstado(nuevoEstado); // Actualiza el modelo en memoria
-
-                // 🚀 AÑADIR REGISTRO EN EL HISTORIAL INMEDIATAMENTE
-                try {
-                    // Asumiendo que historialDAO tiene un método simple para registrar la actividad.
-                    // Si tu historialDAO.insertarRegistro requiere conexión, necesitarás adaptarlo.
-                    // Para mantener la consistencia con tu patrón:
-                    historialDAO.insertarRegistro(
-                            loggedInUserId,
-                            "Cliente",
-                            "estado",
-                            cliente.getIdCliente(), // Usar el ID del cliente
-                            estadoOriginal,
-                            nuevoEstado
-                            // La conexión no es necesaria si el DAO maneja su propia conexión para esta operación.
-                    );
-                } catch (Exception e) {
-                    System.err.println("Advertencia: Fallo al registrar el cambio de estado en el historial.");
-                    e.printStackTrace();
-                    // Continuar, ya que el cambio de estado en la tabla Cliente fue exitoso.
-                }
-
                 mostrarAlerta("Éxito", "Estado del cliente actualizado.", Alert.AlertType.INFORMATION);
             } else {
                 mostrarAlerta("Error", "No se pudo actualizar el estado.", Alert.AlertType.ERROR);
                 cliente.setEstado(estadoOriginal); // Revierte el cambio en memoria
             }
+            // Asegúrate de usar el nombre correcto de tu TableView (clientesTable o clientesTableView)
             clientesTableView.refresh();
         });
 
@@ -890,6 +867,75 @@ public class ClienteController {
 
         // Refrescar la tabla para asegurar que los datos visuales estén sincronizados
         refreshClientesTable();
+    }
+
+    public void registrarCambioDocumentoYRefrescar(Cliente clienteModificado, int oldIdTipoDocumento, String oldNumeroDocumento) {
+
+        // Asume que obtienes el ID del usuario logueado de tu SessionManager
+        int loggedInUserId = app.controller.SessionManager.getInstance().getLoggedInUserId();
+        boolean historialRegistrado = true;
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            conn.setAutoCommit(false); // Iniciar Transacción
+
+            // ------------------------------------------
+            // 1. Registro del cambio de Tipo de Documento
+            // ------------------------------------------
+            if (clienteModificado.getIdTipoDocumento() != oldIdTipoDocumento) {
+                String nuevoTipoDocumentoNombre = obtenerNombreTipoDocumento(clienteModificado.getIdTipoDocumento());
+                String antiguoTipoDocumentoNombre = obtenerNombreTipoDocumento(oldIdTipoDocumento);
+
+
+                // Opcional: Registra el cambio de Nombre (más descriptivo)
+                if (historialRegistrado) {
+                    historialRegistrado = historialDAO.insertarRegistro(
+                            loggedInUserId,
+                            "Cliente",
+                            "tipo_documento_nombre",
+                            clienteModificado.getIdPersona(),
+                            antiguoTipoDocumentoNombre,
+                            nuevoTipoDocumentoNombre,
+                            conn
+                    );
+                }
+            }
+
+            // ------------------------------------------
+            // 2. Registro del cambio de Número de Documento
+            // ------------------------------------------
+            if (historialRegistrado && !clienteModificado.getNumeroDocumento().equals(oldNumeroDocumento)) {
+                historialRegistrado = historialDAO.insertarRegistro(
+                        loggedInUserId,
+                        "Cliente",
+                        "numero_documento",
+                        clienteModificado.getIdPersona(),
+                        oldNumeroDocumento,
+                        clienteModificado.getNumeroDocumento(),
+                        conn
+                );
+            }
+
+            // ------------------------------------------
+            // 3. Manejo de la Transacción y Notificación
+            // ------------------------------------------
+            if (historialRegistrado) {
+                conn.commit();
+                mostrarAlerta("Éxito", "Documento del cliente actualizado y el cambio registrado en el historial.", Alert.AlertType.INFORMATION);
+            } else {
+                conn.rollback();
+                // Nota: El documento se actualizó correctamente en el DAO antes de este método,
+                // pero el registro de actividad falló.
+                mostrarAlerta("Error de Historial", "Fallo al registrar el historial de cambio de documento. La modificación **fue** guardada pero el registro de actividad **no**.", Alert.AlertType.WARNING);
+            }
+
+        } catch (SQLException e) {
+            mostrarAlerta("Error de Transacción", "Error al intentar conectar o ejecutar la transacción de historial. Error: " + e.getMessage(), Alert.AlertType.ERROR);
+        } catch (Exception e) {
+            mostrarAlerta("Error", "Ocurrió un error inesperado al procesar el registro del historial de documento.", Alert.AlertType.ERROR);
+        } finally {
+            // Siempre refrescar la tabla para mostrar los datos que ya fueron actualizados por EdicionDocumentoController.
+            refreshClientesTable();
+        }
     }
 
     private boolean validarSoloLetrasYEspacios(String texto) {

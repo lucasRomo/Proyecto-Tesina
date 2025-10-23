@@ -22,6 +22,10 @@ public class EdicionDocumentoController {
     private ClienteController clienteController;
     private PersonaDAO personaDAO = new PersonaDAO();
 
+    private int idTipoDocumentoOriginal;
+    private String numeroDocumentoOriginal;
+
+
     /**
      * Inicializa el controlador y configura el ChoiceBox.
      */
@@ -50,6 +54,8 @@ public class EdicionDocumentoController {
     public void setClienteParaEdicion(Cliente cliente, ObservableList<TipoDocumento> tiposDocumento, ClienteController controller) {
         this.clienteParaEditar = cliente;
         this.clienteController = controller;
+        this.idTipoDocumentoOriginal = cliente.getIdTipoDocumento();
+        this.numeroDocumentoOriginal = cliente.getNumeroDocumento();
 
         // 1. Cargar opciones
         tipoDocumentoChoiceBox.setItems(tiposDocumento);
@@ -115,14 +121,22 @@ public class EdicionDocumentoController {
         boolean exito = personaDAO.modificarDocumento(clienteParaEditar.getIdPersona(), nuevoTipoId, nuevoNumero);
 
         if (exito) {
-            // Actualizar el modelo en memoria antes de refrescar la tabla
+            // Actualizar el modelo en memoria
             clienteParaEditar.setIdTipoDocumento(nuevoTipoId);
             clienteParaEditar.setNumeroDocumento(nuevoNumero);
 
-            mostrarAlerta("Éxito", "Documento modificado y guardado correctamente.", Alert.AlertType.INFORMATION);
+            // ******************************************************
+            // * LLAMAR AL CONTROLADOR PRINCIPAL PARA REGISTRAR EN HISTORIAL *
+            // ******************************************************
             if (clienteController != null) {
-                clienteController.refreshClientesTable(); // Refrescar la tabla principal
+                clienteController.registrarCambioDocumentoYRefrescar(
+                        clienteParaEditar,
+                        this.idTipoDocumentoOriginal,
+                        this.numeroDocumentoOriginal
+                );
             }
+
+            // La alerta de éxito y el refresh se manejan ahora en ClienteController.
             cerrarVentana();
         } else {
             mostrarAlerta("Error", "No se pudo actualizar el documento en la base de datos.", Alert.AlertType.ERROR);
