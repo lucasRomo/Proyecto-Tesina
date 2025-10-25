@@ -71,7 +71,7 @@ public class InformesController {
         LocalDate hoy = LocalDate.now();
         dpFechaFin.setValue(hoy);
         // Rango por defecto (últimos 30 días)
-        dpFechaInicio.setValue(hoy.minusDays(30));
+        dpFechaInicio.setValue(hoy.minusDays(7));
 
         xAxisVentas.setLabel("Fecha");
         yAxisVentas.setLabel("Monto Vendido ($)");
@@ -84,6 +84,13 @@ public class InformesController {
 
         if (lineChartVentas != null) {
             lineChartVentas.setLegendVisible(false);
+        }
+
+        if (dpFechaInicio != null) {
+            dpFechaInicio.setEditable(false);
+        }
+        if (dpFechaFin != null) {
+            dpFechaFin.setEditable(false);
         }
 
         // Listener que actualiza la métrica del empleado al cambiar la fecha
