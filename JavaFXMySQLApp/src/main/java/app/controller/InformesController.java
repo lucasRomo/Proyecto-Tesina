@@ -214,28 +214,20 @@ public class InformesController {
      * Carga la distribución de ingresos por método de pago en el PieChart.
      */
     private void loadDistribucionDataReal(LocalDate inicio, LocalDate fin) {
-        Map<String, Double> distribucion = comprobantePagoDAO.getDistribucionPagosPorRango(inicio, fin);
+        // 1. Obtener la distribución de MONTOS (Monto Total por cada Método de Pago)
+        // ESTO DEBE FILTRARSE EN EL DAO POR PEDIDO 'RETIRADO'
+        Map<String, Double> distribucionMontos = comprobantePagoDAO.getDistribucionPagosTotalCorrecto(inicio, fin);
 
-        // *******************************************************************
-        // Lógica de acceso a datos que DEBES implementar en ComprobantePagoDAO
-        // Simulación: Asumimos que podemos obtener el conteo
-        // *******************************************************************
-        // DEBES implementar un método en tu DAO como este:
-        // this.conteoPagosPorRango = comprobantePagoDAO.getConteoPagosPorRango(inicio, fin);
-        // Para este ejemplo, simularé datos fijos.
-        this.conteoPagosPorRango = new HashMap<>();
-        // Esto solo funciona si los métodos de pago son 'Efectivo' y 'Cheque'
-        this.conteoPagosPorRango.put("Efectivo", 55);
-        this.conteoPagosPorRango.put("Cheque", 12);
-
-        // Si tu DAO soporta esto, la línea real sería:
-        // this.conteoPagosPorRango = comprobantePagoDAO.getConteoPagosPorRango(inicio, fin);
-        // *******************************************************************
+        // 2. OBTENER el CONTEO de transacciones REAL (cantidad de veces usado cada método)
+        // ESTO DEBE FILTRARSE EN EL DAO POR PEDIDO 'RETIRADO'
+        this.conteoPagosPorRango = comprobantePagoDAO.getConteoPagosPorRango(inicio, fin); // <-- LÍNEA REAL
 
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
 
-        for (Map.Entry<String, Double> entry : distribucion.entrySet()) {
-            pieChartData.add(new PieChart.Data(entry.getKey(), entry.getValue()));
+        for (Map.Entry<String, Double> entry : distribucionMontos.entrySet()) {
+            if (entry.getValue() > 0) {
+                pieChartData.add(new PieChart.Data(entry.getKey(), entry.getValue()));
+            }
         }
 
         pieChartVentas.setData(pieChartData);

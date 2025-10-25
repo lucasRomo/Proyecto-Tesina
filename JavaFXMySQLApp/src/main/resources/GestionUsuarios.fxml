@@ -44,7 +44,7 @@
                         <TableColumn fx:id="idPersonaColumn" prefWidth="69.0" text="ID Persona" />
                         <TableColumn fx:id="SalarioColumn" prefWidth="250.0" text="Salario" />
                         <TableColumn fx:id="EstadoColumn" prefWidth="250.0" text="Estado" />
-                        <TableColumn fx:id="accionUsuarioColumn" prefWidth="221.5" text="Direccion" />
+                        <TableColumn fx:id="accionUsuarioColumn" prefWidth="360.5" text="Direccion" />
                     </columns>
                 </TableView>
                 <HBox alignment="CENTER" spacing="10.0">

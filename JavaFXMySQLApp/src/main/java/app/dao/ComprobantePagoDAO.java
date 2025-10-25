@@ -120,12 +120,15 @@ public class ComprobantePagoDAO {
      * Método requerido por InformesController: getDistribucionPagosPorRango.
      */
     public Map<String, Double> getDistribucionPagosPorRango(LocalDate inicio, LocalDate fin) {
-        // Retornamos un Map<String, Double> para la compatibilidad con InformesController
         Map<String, Double> data = new HashMap<>();
 
-        String sql = "SELECT tipo_pago, COALESCE(SUM(monto_pago), 0) AS total_pago " +
-                "FROM ComprobantePago WHERE fecha_carga BETWEEN ? AND ? " +
-                "GROUP BY tipo_pago";
+        // Consulta SQL con JOIN a Pedido y filtro por estado 'Retirado'
+        String sql = "SELECT cp.tipo_pago, COALESCE(SUM(cp.monto_pago), 0) AS total_pago " +
+                "FROM ComprobantePago cp " +
+                "JOIN Pedido p ON cp.id_pedido = p.id_pedido " + // <<-- JOIN CLAVE
+                "WHERE cp.fecha_carga BETWEEN ? AND ? " +
+                "AND p.estado = 'Retirado' " + // <<-- FILTRO POR PEDIDO COMPLETADO
+                "GROUP BY cp.tipo_pago";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -139,16 +142,88 @@ public class ComprobantePagoDAO {
                     String tipoPago = rs.getString("tipo_pago");
                     double totalPago = rs.getDouble("total_pago");
 
-                    // Solo agregamos datos si el total es positivo
                     if (totalPago > 0) {
                         data.put(tipoPago, totalPago);
                     }
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error al obtener distribución de pagos: " + e.getMessage());
+            System.err.println("Error al obtener distribución de pagos (monto): " + e.getMessage());
             e.printStackTrace();
         }
         return data;
     }
+
+    public Map<String, Integer> getConteoPagosPorRango(LocalDate inicio, LocalDate fin) {
+        Map<String, Integer> conteo = new HashMap<>();
+
+        // Consulta SQL con JOIN a Pedido y filtro por estado 'Retirado'
+        String sql = "SELECT cp.tipo_pago, COUNT(cp.id_comprobante) AS transacciones " +
+                "FROM ComprobantePago cp " +
+                "JOIN Pedido p ON cp.id_pedido = p.id_pedido " + // <<-- JOIN CLAVE
+                "WHERE cp.fecha_carga BETWEEN ? AND ? " +
+                "AND p.estado = 'Retirado' " + // <<-- FILTRO POR PEDIDO COMPLETADO
+                "GROUP BY cp.tipo_pago";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            // inicio.atStartOfDay() y fin.atTime(23, 59, 59) para incluir el día completo
+            stmt.setTimestamp(1, Timestamp.valueOf(inicio.atStartOfDay()));
+            stmt.setTimestamp(2, Timestamp.valueOf(fin.atTime(23, 59, 59)));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    // Solo si hay transacciones
+                    conteo.put(rs.getString("tipo_pago"), rs.getInt("transacciones"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener distribución de pagos (conteo): " + e.getMessage());
+            e.printStackTrace();
+        }
+        return conteo;
+    }
+
+    public Map<String, Double> getDistribucionPagosTotalCorrecto(LocalDate inicio, LocalDate fin) {
+        Map<String, Double> data = new HashMap<>();
+
+        // Consulta que usa una subconsulta (t1) agrupada por id_pedido.
+        // Esto asocia el monto total del pedido (p.monto_entregado) a un UNICO tipo_pago por pedido,
+        // eliminando la doble sumatoria.
+        String sql = "SELECT t1.tipo_pago, SUM(p.monto_entregado) AS total_pago " +
+                "FROM Pedido p " +
+                "JOIN ( " +
+                "    SELECT id_pedido, tipo_pago " +
+                "    FROM ComprobantePago " +
+                "    GROUP BY id_pedido " + // Agrupa los pagos por pedido para obtener un único tipo_pago por id_pedido
+                ") AS t1 ON p.id_pedido = t1.id_pedido " +
+                "WHERE p.fecha_finalizacion BETWEEN ? AND ? " + // Se usa la fecha de finalización del pedido para el rango de venta
+                "AND p.estado = 'Retirado' " +
+                "GROUP BY t1.tipo_pago";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            // inicio.atStartOfDay() y fin.atTime(23, 59, 59) para incluir el día completo
+            stmt.setTimestamp(1, Timestamp.valueOf(inicio.atStartOfDay()));
+            stmt.setTimestamp(2, Timestamp.valueOf(fin.atTime(23, 59, 59)));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String tipoPago = rs.getString("tipo_pago");
+                    double totalPago = rs.getDouble("total_pago");
+
+                    if (totalPago > 0) {
+                        data.put(tipoPago, totalPago);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener distribución de pagos (monto) con corrección: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return data;
+    }
+
 }
