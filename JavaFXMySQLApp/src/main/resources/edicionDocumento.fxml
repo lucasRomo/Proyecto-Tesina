@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.net.URL?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<VBox alignment="TOP_CENTER" prefHeight="250.0" prefWidth="400.0" spacing="20.0" styleClass="root" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.EdicionDocumentoController">
+<VBox alignment="TOP_CENTER" prefHeight="266.0" prefWidth="432.0" spacing="20.0" styleClass="root" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.EdicionDocumentoController">
     <stylesheets>
         <URL value="@styleRegistro.css" />
     </stylesheets>
@@ -18,12 +14,32 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
     <children>
-        <Label text="Modificar Tipo y Número de Documento" styleClass="titulo-principal">
-            <font>
-                <Font name="System Bold" size="18.0" />
-            </font>
-        </Label>
-        <VBox spacing="10.0" alignment="CENTER">
+        <!-- INICIO: Contenedor AnchorPane para Título y Botón de Ayuda -->
+        <AnchorPane prefHeight="40.0" VBox.vgrow="NEVER">
+
+            <!-- 1. Título Principal (Centrado) -->
+            <Label styleClass="titulo-principal" text="Modificar Tipo" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0.0">
+                <font>
+                    <Font name="System Bold" size="18.0" />
+                </font>
+                <alignment>CENTER</alignment>
+            </Label>
+
+            <!-- 2. Botón de Ayuda (Anclado a la derecha) -->
+            <Button fx:id="helpButton" layoutY="3.0" onAction="#handleHelpButton" prefHeight="28.0" prefWidth="29.0" styleClass="help-button" AnchorPane.bottomAnchor="34.0" AnchorPane.rightAnchor="9.0" AnchorPane.topAnchor="3.0">
+                <graphic>
+                    <!-- Usamos un texto con el signo de pregunta y color azul -->
+                    <Text fill="#007bff" text="?" wrappingWidth="6.8837890625">
+                        <font>
+                            <Font name="System Bold" size="18.0" />
+                        </font>
+                    </Text>
+                </graphic>
+            </Button>
+        </AnchorPane>
+        <!-- FIN: AnchorPane -->
+
+        <VBox alignment="CENTER" spacing="10.0">
             <children>
                 <HBox alignment="CENTER_LEFT" spacing="10.0">
                     <children>
@@ -34,7 +50,7 @@
                 <HBox alignment="CENTER_LEFT" spacing="10.0">
                     <children>
                         <Label prefWidth="120.0" text="Nº Documento:" />
-                        <TextField fx:id="numeroDocumentoField" prefHeight="25.0" prefWidth="210.0" promptText="Ingrese el nuevo número" HBox.hgrow="ALWAYS" />
+                        <TextField fx:id="numeroDocumentoField" prefHeight="25.0" prefWidth="232.0" promptText="Ingrese el nuevo número" HBox.hgrow="ALWAYS" />
                     </children>
                 </HBox>
             </children>
@@ -44,8 +60,8 @@
         </VBox>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0" VBox.vgrow="ALWAYS">
             <children>
-                <Button fx:id="guardarButton" onAction="#handleGuardar" text="Guardar" styleClass="save-button" prefWidth="120.0" />
-                <Button fx:id="cancelarButton" onAction="#handleCancelar" text="Cancelar" styleClass="cancel-button" prefWidth="120.0" />
+                <Button fx:id="guardarButton" onAction="#handleGuardar" prefWidth="120.0" styleClass="save-button" text="Guardar" />
+                <Button fx:id="cancelarButton" onAction="#handleCancelar" prefWidth="120.0" styleClass="cancel-button" text="Cancelar" />
             </children>
         </HBox>
     </children>

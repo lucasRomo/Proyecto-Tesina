@@ -292,4 +292,100 @@ public class MenuController {
         }
     }
 
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu Para Empleados");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite El Ingreso a los Siguientes Menues:\n"
+                + "\n"
+                + "Haga Click en el Boton Pedidos para Ingresar al Menu de Crear Pedidos, Ver Pedidos y Historial de Pedidos.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Haga Click en el Boton Clientes para Ingresar al Menu de Modificación e Registro de Clientes.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Haga Click en el Boton Stock para Ingresar al Menu de Stock, Proveedores y Productos.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Haga Click en el Boton Admin para Ingresar a las Opciones de Administrador.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void handleHelpButtonStock() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu Para Empleados, Apartado de Stock");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite El Ingreso a los Siguientes Menues:\n"
+                + "\n"
+                + "Haga Click en el Boton Proveedores para Ingresar al Menu de Registro y Modificación de Proveedores.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Haga Click en el Boton Stock de Insumos para Ingresar al Menu de Registro y Modificación de Insumos.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Haga Click en el Boton Productos para Ingresar al Menu de Registro y Modificaciòn de Productos.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void handleHelpButtonAdmin() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu de Administrador");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite El Ingreso a los Siguientes Menues solo para el Administrador:\n"
+                + "\n"
+                + "Haga Click en el Boton Informes para Ingresar al Menu de Informes y Estadisticas de Venta.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Haga Click en el Boton Gestion de Usuarios para Ingresar al Menu de Gestión y Modificación de Usuarios.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Haga Click en el Boton Historial de Actividad para Ingresar al Menu de Visualizacion de Modificaciones de los datos del Sistema.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void handleHelpButtonInicial() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu Inicial");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite El Ingreso y Registro del Usuario al Sistema:\n"
+                + "\n"
+                + "Haga Click en el Boton Iniciar Sesion para Ingresar las Credenciales y Continuar al Menú de Empleado.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Haga Click en el Boton Registrar Empleado Para Registrar un Nuevo Usuario y Contraseña para Ingresar al Sistema.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
+
 }

@@ -17,6 +17,23 @@
             <VBox.vgrow>NEVER</VBox.vgrow>
         </Label>
 
+        <HBox alignment="CENTER_RIGHT">
+            <children>
+                <Button fx:id="helpButton" onAction="#handleHelpButton" prefHeight="28.0" prefWidth="28.0" styleClass="help-button">
+                    <graphic>
+                        <Text fill="#007bff" text="?">
+                            <font>
+                                <Font name="System Bold" size="18.0" />
+                            </font>
+                        </Text>
+                    </graphic>
+                </Button>
+            </children>
+            <padding>
+                <Insets right="20.0" />
+            </padding>
+        </HBox>
+
         <!-- Contenido Dividido (Área de Estadísticas) -->
         <HBox VBox.vgrow="ALWAYS">
             <VBox fx:id="panelEstadisticas" prefHeight="754.0" prefWidth="1200.0" spacing="15.0" HBox.hgrow="ALWAYS">

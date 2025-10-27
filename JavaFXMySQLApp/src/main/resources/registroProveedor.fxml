@@ -70,4 +70,15 @@
             <Button onAction="#handleCancelar" text="Cancelar" styleClass="cancel-button" prefHeight="40.0" prefWidth="120.0" />
         </HBox>
     </VBox>
+
+    <Button fx:id="helpButton" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+        <graphic>
+            <Text fill="#007bff" text="  ?" wrappingWidth="27.8837890625">
+                <font>
+                    <Font name="System Bold" size="18.0" />
+                </font>
+            </Text>
+        </graphic>
+    </Button>
+
 </AnchorPane>

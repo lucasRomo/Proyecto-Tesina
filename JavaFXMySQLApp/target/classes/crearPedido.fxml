@@ -14,11 +14,33 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label styleClass="titulo-principal" text="Crear Nuevo Pedido">
-        <font>
-            <Font name="System Bold" size="24.0" />
-        </font>
-    </Label>
+    <!-- INICIO: Contenedor AnchorPane para Título y Botón de Ayuda (Simula la región 'top') -->
+    <AnchorPane prefHeight="40.0" VBox.vgrow="NEVER">
+
+        <!-- 1. Título Principal (Centrado) -->
+        <Label styleClass="titulo-principal" text="Crear Nuevo Pedido" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0.0">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+            <alignment>CENTER</alignment>
+        </Label>
+
+        <!-- 2. Botón de Ayuda (Nuevo - Anclado a la derecha) -->
+        <Button fx:id="helpButton" layoutY="2.0" onAction="#handleHelpButton" prefHeight="29.0" prefWidth="27.0" styleClass="help-button" AnchorPane.bottomAnchor="35.0" AnchorPane.rightAnchor="35.0" AnchorPane.topAnchor="2.0">
+            <graphic>
+                <!-- Usamos un texto con el signo de pregunta y color azul (ajustar en CSS si es necesario) -->
+                <Text fill="#007bff" text="?">
+                    <font>
+                        <Font name="System Bold" size="18.0" />
+                    </font>
+                </Text>
+            </graphic>
+         <font>
+            <Font size="10.0" />
+         </font>
+        </Button>
+    </AnchorPane>
+    <!-- FIN: AnchorPane -->
 
     <GridPane alignment="CENTER" hgap="10" vgap="10">
         <Label text="Cliente:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
@@ -30,14 +52,11 @@
         <Label text="Estado:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <ComboBox fx:id="estadoComboBox" promptText="Seleccione Estado" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-        <!-- CAMBIO: Etiqueta y fx:id de Método de Pago a Tipo de Pago -->
         <Label text="Tipo de Pago:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
         <ComboBox fx:id="tipoPagoComboBox" promptText="Seleccione Tipo" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
         <Label text="Fecha de Entrega Estimada:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
         <DatePicker fx:id="fechaEntregaEstimadaPicker" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-
-        <!-- FECHA FINALIZACION ELIMINADA (Estaba en rowIndex 5) -->
 
         <Label text="Monto Total:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
         <TextField fx:id="montoTotalField" promptText="Monto Total" GridPane.columnIndex="1" GridPane.rowIndex="5" />

@@ -399,4 +399,30 @@ public class InformesController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu de Generación de Estadisticas de Las Ventas Registradas en el Sistema");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la Visualizacion de los informes y Estadisticas de las Ventas Registradas en el Sistema:\n"
+                + "\n"
+                + "Paso 1: Seleccione La Fecha Desde donde quiere que calcule el Grafico a la Izquierda.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Paso 2: Seleccione La Fecha Hasta donde quiere que calcule el Grafico a la Derecha.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Paso 3: Haga Click en el Boton Generar Grafico.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para Filtrar los Pedidos Completados por Dicho Empleado Haga click en el Choicebox de la Derecha y luego seleccione el Empleado.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
 }

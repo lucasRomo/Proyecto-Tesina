@@ -222,3 +222,31 @@
     -fx-background-color: transparent;
     -fx-padding: 10px;
 }
+
+.help-button {
+    -fx-background-color: transparent; /* Hace el fondo transparente */
+    -fx-background-radius: 50%;        /* Fondo circular */
+    -fx-border-color: #007bff;         /* Color del borde (por ejemplo, azul) */
+    -fx-border-width: 2px;             /* Ancho del borde */
+    -fx-border-radius: 50%;            /* Borde circular */
+    -fx-alignment: center;             /* Centra el contenido (el signo de pregunta) */
+    -fx-padding: 0;                    /* Elimina cualquier padding interno */
+}
+
+.help-button:hover {
+    -fx-background-color: #0056b3; /* Color un poco más oscuro al pasar el ratón */
+}
+
+/* Si tu clase .button-primary tiene un padding que está afectando
+   el tamaño del círculo, puedes sobreescribirlo aquí o asegurarte
+   de que .help-button tenga mayor especificidad */
+.button-primary {
+    /* ... Tus estilos existentes para .button-primary ... */
+    -fx-padding: 8 15 8 15; /* Ejemplo de padding */
+    -fx-background-color: #007bff;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+

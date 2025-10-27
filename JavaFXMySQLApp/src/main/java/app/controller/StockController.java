@@ -800,4 +800,36 @@ public class StockController {
             mostrarAlerta("Error de Navegación", "No se pudo cargar la vista anterior.", Alert.AlertType.ERROR);
         }
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu de Stock del Sistema");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite La Visualizacion y Modificación de Los datos del Stock Registrados:\n"
+                + "\n"
+                + "1. Visualización y Edición: Modifique directamente los campos de la tabla (Nombre Insumo, Descripcion, Stock Minimo y Stock Actual) Al hacer doble click en la Columna.\n"
+                + "----------------------------------------------------------------------\n"
+                + "2. Para Modificar el Tipo de Insumo y el Estado del Insumo Haga Click y luego Seleccione la opcion requerida en el ChoiceBox.\n"
+                + "----------------------------------------------------------------------\n"
+                + "3. Para Registrar un nuevo Insumo Haga Click en el boton Registrar Nuevo Proveedor.\n"
+                + "----------------------------------------------------------------------\n"
+                + "4. Para Visualizar las Alertas por Stock Minimo haga Click en el Boton Ver Alertas de Stock.\n"
+                + "----------------------------------------------------------------------\n"
+                + "5. Para Actualizar o Reiniciar la Tabla haga click en el boton Refrescar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "6. Filtros: Utilice el campo de texto para buscar usuarios por Nombre y el *ChoiceBox* para filtrar por Estado (Activo/Inactivo).\n"
+                + "----------------------------------------------------------------------\n"
+                + "7. Guardar Cambios: El botón 'Modificar Insumo' aplica todas las modificaciones realizadas en las celdas de la tabla a la base de datos.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
 }

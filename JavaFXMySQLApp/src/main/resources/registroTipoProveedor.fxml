@@ -27,4 +27,15 @@
 
         </HBox>
     </VBox>
+
+    <Button fx:id="helpButton" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+        <graphic>
+            <Text fill="#007bff" text="  ?" wrappingWidth="26.8837890625">
+                <font>
+                    <Font name="System Bold" size="18.0" />
+                </font>
+            </Text>
+        </graphic>
+    </Button>
+
 </AnchorPane>

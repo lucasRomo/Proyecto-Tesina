@@ -183,5 +183,29 @@ public class EdicionDocumentoController {
     private void mostrarAlerta(String titulo, String mensaje) {
         mostrarAlerta(titulo, mensaje, Alert.AlertType.WARNING);
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Modificación de Tipo de Documento y Nª de Documento");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la Modificación del Tipo de Documento y el Nº de Documento del Cliente:\n"
+                + "\n"
+                + "Paso 1: Seleccionar el Tipo de Documento (DNI, CUIL, CUIT, o Pasaporte).\n"
+                + "----------------------------------------------------------------------\n"
+                + "Paso 2: Ingresar el Nuevo numero de Documento.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Paso 3: Hacer Click en el Boton Guardar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
 }
 

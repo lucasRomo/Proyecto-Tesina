@@ -81,4 +81,15 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
         </padding>
     </VBox>
+
+    <Button fx:id="helpButton" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+        <graphic>
+            <Text fill="#007bff" text="  ?" wrappingWidth="27.8837890625">
+                <font>
+                    <Font name="System Bold" size="18.0" />
+                </font>
+            </Text>
+        </graphic>
+    </Button>
+
 </AnchorPane>

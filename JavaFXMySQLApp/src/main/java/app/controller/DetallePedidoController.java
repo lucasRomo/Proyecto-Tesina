@@ -506,4 +506,32 @@ public class DetallePedidoController implements Initializable {
             }
         }
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Detalles de Pedido y Creación de Ticket");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la Creacion Del Ticket del Pedido :\n"
+                + "\n"
+                + "Paso 1: Seleccionar Los Productos, La Cantidad de Productos y Luego hacer click en Añadir a Pedido.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Paso 2: Seleccionar el Metodo de Pago.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Paso 3: Ingresar el Monto Entregado.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Paso 5: Hacer click en el boton Generar Ticket PDF.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Paso 6: Hacer click en el Boton Finalizar Pedido (Retirado).\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
 }

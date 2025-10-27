@@ -1008,4 +1008,38 @@ public class ClienteController {
     private void showAlert(Alert.AlertType type, String title, String message) {
         mostrarAlerta(title, message, type);
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu de Clientes Registrados");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite La Visualizacion y Modificación de Los datos de Clientes Registrados:\n"
+                + "\n"
+                + "1. Visualización y Edición: Modifique directamente los campos de la tabla (Nombre, Apellido, N° de Documento, Telefono, Email, Persona de Contacto y Condición de Pago) Al hacer doble click en la Columna.\n"
+                + "----------------------------------------------------------------------\n"
+                + "2. Para Modificar Razon Social o Estado del Cliente Haga Click y luego Seleccione la opcion requerida en el ChoiceBox.\n"
+                + "----------------------------------------------------------------------\n"
+                + "3. Para Modificar El Tipo de Documento Haga click en Modificar Documento.\n"
+                + "----------------------------------------------------------------------\n"
+                + "4. Para Modificar o Visualizar la Direccion del Cliente Haga Click en el Boton Direccion.\n"
+                + "----------------------------------------------------------------------\n"
+                + "5. Para Registrar Un Nuevo Cliente haga Click en el boton Registrar Cliente.\n"
+                + "----------------------------------------------------------------------\n"
+                + "6. Para Actualizar o Reiniciar la Tabla haga click en el boton Refrescar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "7. Filtros: Utilice el campo de texto para buscar usuarios por Nombre, Apellido o N° de Documento, y el *ChoiceBox* para filtrar por Estado (Activo/Inactivo).\n"
+                + "----------------------------------------------------------------------\n"
+                + "8. Guardar Cambios: El botón 'Modificar Cliente' aplica todas las modificaciones realizadas en las celdas de la tabla a la base de datos.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
 }

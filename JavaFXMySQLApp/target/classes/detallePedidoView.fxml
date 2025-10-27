@@ -13,18 +13,42 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
+<?import java.net.URL?>
 
-<VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.DetallePedidoController">
+<?import javafx.scene.text.Text?>
+<VBox alignment="TOP_CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="app.controller.DetallePedidoController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
     </padding>
 
-    <Label text="Detalle y Finalización de Pedido" style="-fx-font-weight: bold;">
-        <font>
-            <Font size="22.0" />
-        </font>
-    </Label>
+    <!-- INICIO: Contenedor AnchorPane para Título y Botón de Ayuda -->
+    <AnchorPane prefHeight="40.0" VBox.vgrow="NEVER">
+
+        <!-- 1. Título Principal (Centrado) -->
+        <Label text="Detalle y Finalización de Pedido" style="-fx-font-weight: bold;" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0">
+            <font>
+                <Font size="22.0" />
+            </font>
+            <alignment>CENTER</alignment>
+        </Label>
+
+        <!-- 2. Botón de Ayuda (Nuevo - Anclado a la derecha) -->
+        <Button fx:id="helpButton" onAction="#handleHelpButton" prefHeight="35.0" prefWidth="35.0" styleClass="help-button"
+                AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="2.5" AnchorPane.bottomAnchor="2.5">
+            <graphic>
+                <!-- Usamos un texto con el signo de pregunta y color azul (Asegúrate de que 'help-button' en tu CSS lo haga circular y transparente) -->
+                <Text text="?" fill="#007bff">
+                    <font>
+                        <Font name="System Bold" size="18.0" />
+                    </font>
+                </Text>
+            </graphic>
+        </Button>
+    </AnchorPane>
+    <!-- FIN: AnchorPane -->
+
     <Separator />
 
     <!-- Sección de Información del Pedido -->

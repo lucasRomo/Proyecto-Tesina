@@ -8,10 +8,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.ChoiceBox; // *** IMPORTAR ChoiceBox ***
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.sql.Timestamp;
@@ -148,5 +145,25 @@ public class HistorialActividadController {
             System.err.println("Error de navegación: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Gestión de Historial de Actividad");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la administración completa de las Modifiaciónes Hechas por un Empleado/Usuario Registrado en el Sistema:\n"
+                + "\n"
+                + "1. Para Filtrar La Modificaciónes Hechas por un Usuario/Empleado en Especifico Haga Click en el ChoiceBox de La Izquierda y Luego Seleccion el Nombre del Empleado.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
     }
 }

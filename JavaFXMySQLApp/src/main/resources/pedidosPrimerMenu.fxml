@@ -41,4 +41,15 @@
 
     <Button fx:id="volverButton" onAction="#handleVolverPedido" styleClass="cancel-button" text="Volver" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="20.0" />
 
+    <Button fx:id="helpButton" onAction="#handleHelpButton" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="30.0">
+        <graphic>
+            <Text fill="#007bff" text="  ? " wrappingWidth="26.8837890625">
+                <font>
+                    <Font name="System Bold" size="18.0" />
+                </font>
+            </Text>
+        </graphic>
+    </Button>
+
+
 </AnchorPane>

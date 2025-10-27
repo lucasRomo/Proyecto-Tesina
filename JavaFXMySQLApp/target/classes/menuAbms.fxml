@@ -20,6 +20,16 @@
         </image>
     </ImageView>
 
+    <Button fx:id="helpButton" onAction="#handleHelpButton" prefHeight="28.0" prefWidth="28.0" styleClass="help-button"
+            AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+        <graphic>
+            <Text fill="#007bff" text="?">
+                <font>
+                    <Font name="System Bold" size="18.0" />
+                </font>
+            </Text>
+        </graphic>
+    </Button>
     <VBox alignment="TOP_CENTER" spacing="20.0"
           AnchorPane.topAnchor="150.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
 

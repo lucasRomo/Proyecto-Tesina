@@ -253,4 +253,30 @@ public class CrearPedidoController implements Initializable {
         alert.setContentText(content);
         alert.showAndWait();
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu De Creación de Pedido");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la Creacion y la Asignacion de un Pedido :\n"
+                + "\n"
+                + "Paso 1: Seleccionar El Cliente, El Empleado a Cargo de completar el Pedido, El Estado del Encargo, y el Tipo del Pago con el que se Efectuó el Pedido.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Paso 2: Seleccionar la Fecha de Entrega Estimada del Pedido.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Paso 3: Ingresar el Monto total y el Monto Entregado del Pedido.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Paso 4: Ingresar las Instrucciones (Opcional).\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
 }
