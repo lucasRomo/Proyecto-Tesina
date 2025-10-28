@@ -41,18 +41,22 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.awt.Desktop; // Importado para abrir el archivo
 
 /**
- * Controlador para la vista del historial de pedidos (solo estado "Retirado").
- * Incluye filtros, la visualización de la tabla y la funcionalidad de generar el Ticket PDF.
+ * Controlador para la vista del historial de pedidos.
+ * Incluye pedidos con estado "Retirado" y "Cancelado" y permite filtrarlos.
  */
 public class VerHistorialPedidosController implements Initializable {
 
     // --- Constantes y Formateadores ---
     private static final String ESTADO_RETIRADO = "Retirado";
+    private static final String ESTADO_CANCELADO = "Cancelado";
+    private static final String ESTADO_TODOS = "Mostrar Todos los Estados"; // Opción de filtro
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
 
@@ -63,6 +67,10 @@ public class VerHistorialPedidosController implements Initializable {
     private ComboBox<Empleado> empleadoFilterComboBox;
     @FXML
     private ComboBox<String> tipoPagoFilterComboBox;
+
+    // NUEVO CAMPO FXML: Filtro de Estado para el Historial
+    @FXML
+    private ComboBox<String> estadoHistorialFilterComboBox;
 
     // --- Campos FXML de la Tabla ---
     @FXML
@@ -105,7 +113,7 @@ public class VerHistorialPedidosController implements Initializable {
     private ComprobantePagoDAO comprobantePagoDAO;
     private DetallePedidoDAO detallePedidoDAO;
 
-    private ObservableList<Pedido> pedidosRetiradosMaestra;
+    private ObservableList<Pedido> pedidosHistorialMaestra; // Renombrada para mayor claridad
     private FilteredList<Pedido> pedidosFiltrados;
 
 
@@ -121,10 +129,10 @@ public class VerHistorialPedidosController implements Initializable {
         // 1. Configurar las columnas de la tabla
         configurarColumnas();
 
-        // 2. Cargar los datos maestros (solo Retirados) y configurar la lista filtrada
+        // 2. Cargar los datos maestros (Retirados y Cancelados) y configurar la lista filtrada
         cargarDatosMaestros();
 
-        // 3. Inicializar los ComboBox de filtros con datos
+        // 3. Inicializar los ComboBox de filtros con datos, incluyendo el nuevo filtro de estado
         inicializarFiltros();
 
         // 4. Conectar los ComboBox a la función de filtrado
@@ -144,7 +152,7 @@ public class VerHistorialPedidosController implements Initializable {
         montoEntregadoColumn.setCellValueFactory(new PropertyValueFactory<>("montoEntregado"));
         instruccionesColumn.setCellValueFactory(new PropertyValueFactory<>("instrucciones"));
 
-        // Mapeamos a "fechaFinalizacion" ya que esta vista es solo para pedidos 'Retirado' (historial)
+        // Usamos fechaFinalizacion. Para Cancelados, este valor será nulo o se usará otra columna
         fechaEntregaEstimadaColumn.setCellValueFactory(new PropertyValueFactory<>("fechaFinalizacion"));
 
         // Configuramos la celda para formatear la fecha/hora
@@ -153,10 +161,10 @@ public class VerHistorialPedidosController implements Initializable {
         // Configurar la columna de Acciones para el botón Ticket
         agregarBotonTicketATabla();
 
-        // NUEVA CONFIGURACIÓN: Columna para el botón Ver Comprobante
+        // Columna para el botón Ver Comprobante
         configurarColumnaComprobanteView();
 
-        // 🚨 MODIFICACIÓN CLAVE: Aplicar la política de redimensionamiento para que las columnas ocupen el ancho total 🚨
+        // Aplicar la política de redimensionamiento
         pedidosTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         // --- ASIGNACIÓN DE ANCHOS PREFERIDOS POR PORCENTAJE (SUMA 100.0%) ---
@@ -204,7 +212,7 @@ public class VerHistorialPedidosController implements Initializable {
                         } else {
                             Pedido pedido = getTableView().getItems().get(getIndex());
 
-                            // *** Importante: asume que la clase Pedido tiene un método getRutaComprobante() ***
+                            // Asume que la clase Pedido tiene un método getRutaComprobante()
                             String ruta = pedido.getRutaComprobante();
 
                             // Cambia el texto y estilo del botón basado en si ya hay un comprobante
@@ -366,21 +374,39 @@ public class VerHistorialPedidosController implements Initializable {
 
 
     /**
-     * Carga solo los pedidos con estado 'Retirado' usando el método optimizado del DAO.
+     * Carga los pedidos con estado 'Retirado' Y 'Cancelado'.
      */
     private void cargarDatosMaestros() {
-        System.out.println("Cargando historial de pedidos con estado: " + ESTADO_RETIRADO);
+        System.out.println("Cargando historial de pedidos con estado: " + ESTADO_RETIRADO + " y " + ESTADO_CANCELADO);
 
-        // Uso del método getPedidosPorEstado()
+        List<Pedido> listaFinal = new ArrayList<>();
+
+        // 1. Obtener Retirados
         List<Pedido> listaRetirados = pedidoDAO.getPedidosPorEstado(ESTADO_RETIRADO);
-        pedidosRetiradosMaestra = FXCollections.observableArrayList(listaRetirados);
+        if (listaRetirados != null) {
+            listaFinal.addAll(listaRetirados);
+        } else {
+            System.err.println("Advertencia: No se pudo obtener la lista de pedidos Retirados.");
+        }
+
+
+        // 2. Obtener Cancelados
+        List<Pedido> listaCancelados = pedidoDAO.getPedidosPorEstado(ESTADO_CANCELADO);
+        if (listaCancelados != null) {
+            listaFinal.addAll(listaCancelados);
+        } else {
+            System.err.println("Advertencia: No se pudo obtener la lista de pedidos Cancelados.");
+        }
+
+
+        pedidosHistorialMaestra = FXCollections.observableArrayList(listaFinal);
 
         // Inicializar FilteredList con la lista maestra
-        pedidosFiltrados = new FilteredList<>(pedidosRetiradosMaestra, p -> true); // Predicado inicial: mostrar todo
+        pedidosFiltrados = new FilteredList<>(pedidosHistorialMaestra, p -> true); // Predicado inicial: mostrar todo
     }
 
     /**
-     * Carga los datos de Cliente, Empleado y Tipos de Pago en los ComboBox.
+     * Carga los datos de Cliente, Empleado, Tipos de Pago y el NUEVO filtro de Estado en los ComboBox.
      */
     private void inicializarFiltros() {
         // --- 1. Clientes ---
@@ -430,6 +456,13 @@ public class VerHistorialPedidosController implements Initializable {
             @Override
             public String fromString(String string) { return string; }
         });
+
+        // --- 4. Filtro de Estado de Historial (NUEVO) ---
+        ObservableList<String> estadosHistorial = FXCollections.observableArrayList(
+                ESTADO_TODOS, ESTADO_RETIRADO, ESTADO_CANCELADO
+        );
+        estadoHistorialFilterComboBox.setItems(estadosHistorial);
+        estadoHistorialFilterComboBox.setValue(ESTADO_TODOS); // Establecer 'Mostrar Todos' como valor inicial
     }
 
     /**
@@ -445,6 +478,10 @@ public class VerHistorialPedidosController implements Initializable {
         if (tipoPagoFilterComboBox != null) {
             tipoPagoFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> actualizarFiltro());
         }
+        // CONEXIÓN DEL NUEVO FILTRO DE ESTADO
+        if (estadoHistorialFilterComboBox != null) {
+            estadoHistorialFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> actualizarFiltro());
+        }
     }
 
     /**
@@ -452,37 +489,38 @@ public class VerHistorialPedidosController implements Initializable {
      */
     private void actualizarFiltro() {
         pedidosFiltrados.setPredicate(pedido -> {
+
             // 1. Predicado Cliente
             Cliente clienteSeleccionado = clienteFilterComboBox.getSelectionModel().getSelectedItem();
-            // Si hay un cliente seleccionado (no null) Y el ID del pedido no coincide, filtrar
             if (clienteSeleccionado != null && pedido.getIdCliente() != clienteSeleccionado.getIdCliente()) {
                 return false;
             }
 
             // 2. Predicado Empleado
             Empleado empleadoSeleccionado = empleadoFilterComboBox.getSelectionModel().getSelectedItem();
-            // Si hay un empleado seleccionado (no null) Y el ID del pedido no coincide, filtrar
             if (empleadoSeleccionado != null && pedido.getIdEmpleado() != empleadoSeleccionado.getIdEmpleado()) {
                 return false;
             }
 
             // 3. Predicado Tipo de Pago
             String tipoPagoSeleccionado = tipoPagoFilterComboBox.getSelectionModel().getSelectedItem();
-
-            // Si se seleccionó un tipo de pago (tipoPagoSeleccionado no es null)
             if (tipoPagoSeleccionado != null) {
                 String pedidoTipoPago = pedido.getTipoPago();
-
-                // Si el tipo de pago del pedido es nulo o vacío, no coincide con el seleccionado
-                if (pedidoTipoPago == null || pedidoTipoPago.isEmpty()) {
-                    return false;
-                }
-
-                // Si no coincide el tipo de pago (ignorando mayúsculas/minúsculas), filtrar
-                if (!tipoPagoSeleccionado.equalsIgnoreCase(pedidoTipoPago)) {
+                if (pedidoTipoPago == null || pedidoTipoPago.isEmpty() || !tipoPagoSeleccionado.equalsIgnoreCase(pedidoTipoPago)) {
                     return false;
                 }
             }
+
+            // 4. Predicado Estado de Historial (NUEVO)
+            String estadoSeleccionado = estadoHistorialFilterComboBox.getSelectionModel().getSelectedItem();
+            // Si el estado seleccionado NO es "Mostrar Todos los Estados", aplicamos el filtro
+            if (estadoSeleccionado != null && !ESTADO_TODOS.equals(estadoSeleccionado)) {
+                // Si el estado del pedido NO coincide con el estado seleccionado, filtrar
+                if (!pedido.getEstado().equalsIgnoreCase(estadoSeleccionado)) {
+                    return false;
+                }
+            }
+
 
             // Si pasa todos los filtros, mostrar el pedido
             return true;
@@ -501,6 +539,9 @@ public class VerHistorialPedidosController implements Initializable {
         if (clienteFilterComboBox != null) clienteFilterComboBox.getSelectionModel().clearSelection();
         if (empleadoFilterComboBox != null) empleadoFilterComboBox.getSelectionModel().clearSelection();
         if (tipoPagoFilterComboBox != null) tipoPagoFilterComboBox.getSelectionModel().clearSelection();
+        // Limpiar el nuevo filtro de estado, volviendo al valor por defecto
+        if (estadoHistorialFilterComboBox != null) estadoHistorialFilterComboBox.setValue(ESTADO_TODOS);
+
         // Los listeners se encargan de llamar a actualizarFiltro()
     }
 
@@ -548,19 +589,23 @@ public class VerHistorialPedidosController implements Initializable {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
 
         // Configuramos el título y los encabezados del mensaje
-        alert.setTitle("Ayuda - Menu De Visualizacion de Pedidos Retirados");
+        alert.setTitle("Ayuda - Menu De Visualizacion de Pedidos Historial");
         alert.setHeaderText("Funcionalidades del Módulo");
 
-        // Configuramos el contenido del mensaje
-        alert.setContentText("Este módulo permite la Visualizacion de Pedidos Finaliizados y Retirados Exitosamente: \n"
+        // Configuramos el contenido del mensaje (se actualiza la descripción de filtros)
+        alert.setContentText("Este módulo permite la Visualizacion de Pedidos Finaliizados ('Retirado') y Pedidos CANCELADOS: \n"
                 + "\n"
-                + "1. Filtros: Utilice el *ChoiceBox* para filtrar por Nombre de Cliente (Seleccionar Cliente), por Nombre de Empleado (Seleccionar Empleado) o por Tipo de Pago (Seleccionar Tipo de Pago).\n"
+                + "1. Filtros: Utilice los ChoiceBox para filtrar por:\n"
+                + "   - Estado: 'Retirado' o 'Cancelado'.\n"
+                + "   - Nombre de Cliente.\n"
+                + "   - Nombre de Empleado.\n"
+                + "   - Tipo de Pago.\n"
                 + "----------------------------------------------------------------------\n"
                 + "2. Limpiar Filtros: Haga Click en el Boton para Limpiar todos Los Filtros Seleccionados Anteriormente.\n"
                 + "----------------------------------------------------------------------\n"
                 + "3. Ver PDF: Haga Click en el Siguiente Boton para ver el PDF del Comprobante de Pago Vinculado al ID del Pedido (Si no hay un Comprobante Vinculado se Mostrara No Disponible).\n"
                 + "----------------------------------------------------------------------\n"
-                + "4. Ticket: Haga Click en el Siguiente Boton para Generar y Guardar un PDF del Ticket del Pedido Finalizado Vinculado al ID del Pedido.\n"
+                + "4. Ticket: Haga Click en el Siguiente Boton para Generar y Guardar un PDF del Ticket del Pedido Finalizado Vinculado al ID del Pedido (Sólo para pedidos 'Retirado').\n"
                 + "----------------------------------------------------------------------\n"
                 + "Para mas Información Visite el Manual de Usuario.\n");
 

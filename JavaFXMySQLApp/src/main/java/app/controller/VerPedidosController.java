@@ -179,6 +179,12 @@ public class VerPedidosController implements Initializable {
             } else if (pedido.getEstado() != null && pedido.getEstado().equalsIgnoreCase("Retirado") && !nuevoEstado.equalsIgnoreCase("Retirado")) {
                 pedido.setFechaFinalizacion(null);
             }
+            if (nuevoEstado.equalsIgnoreCase("Cancelado")) {
+                pedido.setFechaFinalizacion(LocalDateTime.now());
+                mostrarAlerta("Éxito", "El pedido ha sido marcado como Cancelado.", Alert.AlertType.INFORMATION);
+            } else if (pedido.getEstado() != null && pedido.getEstado().equalsIgnoreCase("Cancelado") && !nuevoEstado.equalsIgnoreCase("Cancelado")) {
+                pedido.setFechaFinalizacion(null);
+            }
 
             pedido.setEstado(nuevoEstado);
             guardarCambiosEnBD(pedido, "Estado");
@@ -695,7 +701,10 @@ public class VerPedidosController implements Initializable {
             // ------------------------------------------
 
             System.out.println("Pedido ID " + pedido.getIdPedido() + " actualizado. Campo modificado: " + campoEditado);
-            if ("Retirado".equalsIgnoreCase(pedido.getEstado())) {
+
+            // Si el estado es 'Retirado' O 'Cancelado', recargamos la tabla
+            // para que desaparezca de la vista de pedidos activos.
+            if ("Retirado".equalsIgnoreCase(pedido.getEstado()) || "Cancelado".equalsIgnoreCase(pedido.getEstado())) {
                 cargarPedidos();
             } else {
                 pedidosTable.refresh();
@@ -707,13 +716,28 @@ public class VerPedidosController implements Initializable {
     }
 
 
+    /**
+     * Carga y filtra los pedidos. Ahora, excluye los estados 'Retirado' y 'Cancelado'
+     * por defecto, asumiendo que estos se muestran en la tabla de historial.
+     */
     private void cargarPedidos() {
         // ... (Tu lógica existente para cargar y filtrar)
         List<Pedido> listaCompleta = pedidoDAO.getPedidosPorEmpleado(idEmpleadoFiltro);
 
         List<Pedido> listaFiltrada = listaCompleta.stream()
+
+                // === NUEVA LÓGICA DE FILTRADO POR DEFECTO ===
+                // Excluye los estados finales ('Retirado' y 'Cancelado') de la tabla activa.
+                .filter(p -> {
+                    String estado = p.getEstado();
+                    return !"Retirado".equalsIgnoreCase(estado) && !"Cancelado".equalsIgnoreCase(estado);
+                })
+                // ===========================================
+
                 .filter(p -> {
                     String estadoSeleccionado = estadoFilterComboBox != null ? estadoFilterComboBox.getSelectionModel().getSelectedItem() : null;
+                    // Si el filtro de estado está activo y no es "Todos", lo aplicamos.
+                    // Si el estado seleccionado es "Todos los Estados" o el ComboBox es null, este filtro pasa.
                     if (estadoSeleccionado != null && !estadoSeleccionado.equals("Todos los Estados")) {
                         return p.getEstado().equals(estadoSeleccionado);
                     }
@@ -738,18 +762,12 @@ public class VerPedidosController implements Initializable {
         Pedido pedidoSeleccionado = pedidosTable.getSelectionModel().getSelectedItem();
 
         if (pedidoSeleccionado != null) {
-            boolean exito = pedidoDAO.modificarPedido(pedidoSeleccionado);
+            // Usamos la lógica de modificación que maneja el historial y la recarga
+            // para que los pedidos 'Cancelado' y 'Retirado' desaparezcan.
+            guardarCambiosEnBD(pedidoSeleccionado, "Guardar Cambios (Botón)");
 
-            if (exito) {
-                mostrarAlerta("Éxito", "El Pedido ID " + pedidoSeleccionado.getIdPedido() + " ha sido modificado y guardado correctamente.", Alert.AlertType.INFORMATION);
-                if ("Retirado".equalsIgnoreCase(pedidoSeleccionado.getEstado())) {
-                    cargarPedidos();
-                } else {
-                    pedidosTable.refresh();
-                }
-            } else {
-                mostrarAlerta("Error", "No se pudo modificar el pedido ID " + pedidoSeleccionado.getIdPedido() + " en la base de datos.", Alert.AlertType.ERROR);
-            }
+            // El método guardarCambiosEnBD ya maneja las alertas y el refresh/cargarPedidos.
+
         } else {
             mostrarAlerta("Advertencia", "Por favor, seleccione una fila antes de usar el botón 'Guardar Cambios'.", Alert.AlertType.WARNING);
         }

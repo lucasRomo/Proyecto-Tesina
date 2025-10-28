@@ -23,12 +23,15 @@
             </font>
         </Label>
 
-        <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="10.0" styleClass="filter-panel">
-            <Label styleClass="label-bold" text="Filtrar por:" textFill="#fffdfd" />
+        <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="10.0" styleClass="filter-panel" style="-fx-background-color: #f0f0f0; -fx-padding: 10; -fx-background-radius: 8;">
+            <Label styleClass="label-bold" text="Filtrar por:" textFill="#333333" />
 
-            <ComboBox fx:id="clienteFilterComboBox" promptText="Seleccionar Cliente" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
-            <ComboBox fx:id="empleadoFilterComboBox" promptText="Seleccionar Empleado" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
-            <ComboBox fx:id="tipoPagoFilterComboBox" promptText="Seleccionar Tipo de Pago" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
+            <!-- NUEVO FILTRO DE ESTADO -->
+            <ComboBox fx:id="estadoHistorialFilterComboBox" promptText="Estado (Retirado/Cancelado)" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
+
+            <ComboBox fx:id="clienteFilterComboBox" promptText="Cliente" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
+            <ComboBox fx:id="empleadoFilterComboBox" promptText="Empleado" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
+            <ComboBox fx:id="tipoPagoFilterComboBox" promptText="Tipo de Pago" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
 
             <Button onAction="#handleLimpiarFiltros" styleClass="btn-danger" text="Limpiar Filtros" />
         </HBox>
