@@ -243,6 +243,8 @@ public class UsuarioDAO {
         return null;
     }
 
+
+
     // =========================================================================
     // CORRECCIÓN #3: Obtener p.id_tipo_persona para inicio de sesión.
     // (Este era el método que causaba el error original)

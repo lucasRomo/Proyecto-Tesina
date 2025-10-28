@@ -224,60 +224,73 @@ public class UsuariosEmpleadoController implements Initializable {
         });
 
 
-        // --- Configuración de EstadoColumn (SIN CAMBIOS) ---
+        // --- Configuración de EstadoColumn (SIMPLIFICADA - SOLO EDICIÓN VISUAL) ---
+        // --- Configuración de EstadoColumn (SOLO PARA MOSTRAR CHOICEBOX) ---
         EstadoColumn.setCellFactory(column -> new TableCell<UsuarioEmpleadoTableView, String>() {
-            private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
+            private final ChoiceBox<String> choiceBox = new ChoiceBox<>(FXCollections.observableArrayList("Activo", "Desactivado"));
 
             {
-                choiceBox.setItems(FXCollections.observableArrayList("Activo", "Desactivado"));
+                // Listener que se activa cuando CAMBIA el valor SELECCIONADO en el ChoiceBox
                 choiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-                    if (getTableRow() != null && getTableRow().getItem() != null && newVal != null && !newVal.equals(oldVal)) {
-                        UsuarioEmpleadoTableView usuario = getTableRow().getItem();
-                        updateUsuarioEstado(usuario, oldVal, newVal);
+                    // SI la celda está en modo edición Y el valor es nuevo,
+                    // intenta confirmar la edición con ese nuevo valor.
+                    if (isEditing() && newVal != null && !newVal.equals(getItem())) { // Compara con getItem() que es el valor original
+                        commitEdit(newVal); // Esto disparará setOnEditCommit de la COLUMNA
                     }
                 });
+                // La celda empieza mostrando solo texto
+                setContentDisplay(ContentDisplay.TEXT_ONLY);
             }
 
             @Override
             public void startEdit() {
-                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable()) {
-                    return;
+                if (!isEditable() || !getTableView().isEditable() || !getTableColumn().isEditable() || isEmpty()) {
+                    return; // No iniciar edición si no se cumplen condiciones
                 }
-                super.startEdit();
-                choiceBox.getSelectionModel().select(getItem());
-                setGraphic(choiceBox);
-                setText(null);
+                super.startEdit(); // NECESARIO para que la celda entre en modo edición
+
+                // Configurar y mostrar el ChoiceBox
+                choiceBox.getSelectionModel().select(getItem()); // Seleccionar valor actual
+                setText(null); // Ocultar texto
+                setGraphic(choiceBox); // Mostrar ChoiceBox
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY); // Asegurar que solo se vea el ChoiceBox
+
+                // Pedir foco para el ChoiceBox para interacción inmediata
+                Platform.runLater(choiceBox::requestFocus);
             }
 
             @Override
             public void cancelEdit() {
-                super.cancelEdit();
-                setGraphic(null);
+                super.cancelEdit(); // NECESARIO para salir del modo edición correctamente
+                // Revertir la vista a solo texto
                 setText(getItem());
-                applyCellStyle(getItem());
+                setGraphic(null);
+                setContentDisplay(ContentDisplay.TEXT_ONLY);
+                applyCellStyle(getItem()); // Re-aplicar estilo visual
             }
 
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                getStyleClass().removeAll("activo-cell", "desactivado-cell");
+                getStyleClass().removeAll("activo-cell", "desactivado-cell"); // Limpiar estilos
+
                 if (empty || item == null) {
                     setText(null);
                     setGraphic(null);
                     setStyle(null);
                 } else {
-                    if (isEditing()) {
-                        choiceBox.getSelectionModel().select(item);
-                        setText(null);
-                        setGraphic(choiceBox);
-                    } else {
-                        setGraphic(null);
+                    // Si está editando, muestra el ChoiceBox (manejado por startEdit/cancelEdit)
+                    // Si NO está editando, muestra el texto
+                    if (!isEditing()) {
                         setText(item);
+                        setGraphic(null);
                         applyCellStyle(item);
+                        setContentDisplay(ContentDisplay.TEXT_ONLY);
                     }
                 }
             }
 
+            // Método applyCellStyle se mantiene igual
             private void applyCellStyle(String item) {
                 if ("Activo".equalsIgnoreCase(item)) {
                     getStyleClass().add("activo-cell");
@@ -290,6 +303,69 @@ public class UsuariosEmpleadoController implements Initializable {
                 }
             }
         });
+
+        // --- LÓGICA DE VALIDACIÓN Y GUARDADO (CON SOLUCIÓN DEFINITIVA AL BUG VISUAL) ---
+        EstadoColumn.setOnEditCommit(event -> {
+            UsuarioEmpleadoTableView usuario = event.getRowValue();
+            String newVal = event.getNewValue();
+            String oldVal = event.getOldValue();
+
+            // 1. Evitar procesamiento si el valor no cambió
+            if (newVal == null || newVal.equals(oldVal)) {
+                // Si no hay cambio, forzamos un redibujo para salir del modo edición de forma limpia
+                Platform.runLater(() -> event.getTableView().refresh());
+                return;
+            }
+
+            // 🚨 PASO 2: PEDIR CONTRASEÑA 🚨
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Confirmar cambio de estado");
+            dialog.setHeaderText("Verificación de seguridad");
+            dialog.setContentText("Por favor, ingresa tu contraseña para confirmar el cambio de estado a '" + newVal + "':");
+
+            Optional<String> result = dialog.showAndWait();
+
+            // 3. Manejo de la respuesta del usuario
+            if (!result.isPresent()) {
+                // --- CASO 1: USUARIO CANCELA O CIERRA ---
+                mostrarAlerta("Advertencia", "Cambio de estado cancelado por el usuario.", Alert.AlertType.WARNING);
+
+                // 🚨 SOLUCIÓN AL BUG VISUAL 🚨
+                // Hacemos que la TableView re-lea el valor de la celda original (oldVal)
+                Platform.runLater(() -> {
+                    // El truco es revertir el valor del modelo EN LA FILA, y luego forzar el refresh
+                    usuario.setEstado(oldVal); // Asegurar que el modelo tenga el valor antiguo
+                    event.getTableView().refresh();
+                    // Alternativa más focalizada: event.getTableView().getTableView().getItems().set(event.getTablePosition().getRow(), usuario);
+                });
+
+            } else {
+                // --- CASO 2: CONTRASEÑA INGRESADA ---
+                String password = result.get().trim();
+                String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword().trim();
+
+                if (password.equals(loggedInUserPassword)) {
+                    // --- CASO 2a: Contraseña CORRECTA: Llamar a la lógica de DB ---
+                    actualizarEstadoEnBaseDeDatos(usuario, oldVal, newVal);
+                    // Si la DB tiene éxito, el modelo (usuario) se actualiza a newVal dentro de actualizarEstadoEnBaseDeDatos
+
+                } else {
+                    // --- CASO 2b: Contraseña INCORRECTA ---
+                    mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
+
+                    // 🚨 SOLUCIÓN AL BUG VISUAL 🚨
+                    // Hacemos que la TableView re-lea el valor de la celda original (oldVal)
+                    Platform.runLater(() -> {
+                        // Asegurar que el modelo tenga el valor antiguo y refrescar
+                        usuario.setEstado(oldVal);
+                        event.getTableView().refresh();
+                    });
+                }
+            }
+        });
+
+
+
 
 
         // --- Configuración de accionUsuarioColumn (SIN CAMBIOS) ---
@@ -589,82 +665,59 @@ public class UsuariosEmpleadoController implements Initializable {
 
     private boolean isProcessing = false;
 
-    private void updateUsuarioEstado(UsuarioEmpleadoTableView usuario, String oldVal, String newVal) {
-        if (isProcessing) {
-            return;
+    private void actualizarEstadoEnBaseDeDatos(UsuarioEmpleadoTableView usuarioTableView, String oldVal, String newVal) {
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            conn.setAutoCommit(false); // Iniciar transacción
+
+            int idUsuarioResponsable = SessionManager.getInstance().getLoggedInUserId();
+            boolean exitoHistorial = true;
+
+            // 1. Registrar en Historial si el valor cambió
+            if (!newVal.equals(oldVal)) {
+                exitoHistorial = historialDAO.insertarRegistro(
+                        idUsuarioResponsable,
+                        "Empleado", // Tabla donde está el campo 'estado'
+                        "estado", // Campo modificado
+                        usuarioTableView.getIdPersona(), // ID de la entidad afectada (Empleado usa idPersona)
+                        oldVal, // Valor anterior
+                        newVal, // Valor nuevo
+                        conn    // Conexión transaccional
+                );
+            }
+
+            // 2. Preparar el objeto Usuario para el DAO
+            // TU DAO (modificarUsuariosEmpleados(Usuario, Connection)) espera un objeto Usuario,
+            // aunque solo actualice el estado en la tabla Empleado. Creamos uno temporal.
+            Usuario userParaDAO = new Usuario();
+            userParaDAO.setIdUsuario(usuarioTableView.getIdUsuario()); // Necesario para identificar
+            userParaDAO.setEstado(newVal); // El nuevo estado a guardar
+
+            // 3. Llamar al DAO para actualizar el estado en la tabla Empleado (dentro de la transacción)
+            // Usamos el método DAO que ya tienes: modificarUsuariosEmpleados(Usuario, Connection)
+            boolean exitoUpdate = usuarioDAO.modificarUsuariosEmpleados(userParaDAO, conn);
+
+            // 4. Commit o Rollback
+            if (exitoUpdate && exitoHistorial) {
+                conn.commit(); // Confirmar transacción
+                usuarioTableView.setEstado(newVal); // Actualizar el modelo de la tabla EN MEMORIA
+                mostrarAlerta("Éxito", "Estado actualizado exitosamente.", Alert.AlertType.INFORMATION);
+                // No es necesario refresh aquí, el commitEdit ya actualiza la celda visualmente.
+            } else {
+                conn.rollback(); // Deshacer cambios si algo falló
+                mostrarAlerta("Error", "No se pudo actualizar el estado o registrar el historial. Se realizó ROLLBACK.", Alert.AlertType.ERROR);
+                // Forzar redibujo con el valor antiguo si falla la DB
+                Platform.runLater(() -> usuariosEditableView.refresh());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            mostrarAlerta("Error de BD", "Fallo en conexión o query: " + e.getMessage() + ". ROLLBACK si aplica.", Alert.AlertType.ERROR);
+            // Forzar redibujo con el valor antiguo si falla la DB
+            Platform.runLater(() -> usuariosEditableView.refresh());
+        } catch (Exception e) { // Captura genérica por si algo más falla
+            e.printStackTrace();
+            mostrarAlerta("Error Inesperado", "Ocurrió un error: " + e.getMessage(), Alert.AlertType.ERROR);
+            Platform.runLater(() -> usuariosEditableView.refresh());
         }
-
-        isProcessing = true;
-
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Confirmar cambio de estado");
-        dialog.setHeaderText("Verificación de seguridad");
-        dialog.setContentText("Por favor, ingresa tu contraseña para confirmar el cambio de estado:");
-
-        usuariosEditableView.setEditable(false);
-
-        Optional<String> result = dialog.showAndWait();
-
-        if (!result.isPresent()) {
-            usuario.setEstado(oldVal);
-        } else {
-            result.ifPresent(password -> {
-                String loggedInUserPassword = SessionManager.getInstance().getLoggedInUserPassword().trim();
-                if (password.trim().equals(loggedInUserPassword)) {
-                    try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
-                        conn.setAutoCommit(false);
-
-                        int idUsuarioResponsable = SessionManager.getInstance().getLoggedInUserId();
-                        boolean exitoHistorial = true;
-
-                        if (!newVal.equals(oldVal)) {
-                            exitoHistorial = historialDAO.insertarRegistro(
-                                    idUsuarioResponsable,
-                                    "Empleado", // Se asume que el estado está en Empleado
-                                    "estado",
-                                    usuario.getIdPersona(), // Usar idPersona para la tabla Empleado
-                                    oldVal,
-                                    newVal,
-                                    conn
-                            );
-                        }
-
-                        Usuario userToUpdateState = new Usuario();
-                        userToUpdateState.setIdUsuario(usuario.getIdUsuario());
-                        userToUpdateState.setUsuario(usuario.getUsuario());
-                        userToUpdateState.setContrasena(usuario.getContrasena());
-                        userToUpdateState.setEstado(newVal);
-                        userToUpdateState.setIdTipoUsuario(usuario.getIdTipoUsuario());
-
-                        boolean exitoUpdate = usuarioDAO.modificarUsuariosEmpleados(userToUpdateState, conn);
-
-                        if (exitoUpdate && exitoHistorial) {
-                            conn.commit();
-                            usuario.setEstado(newVal);
-                            usuariosPendientesDeGuardar.remove(usuario);
-                            mostrarAlerta("Éxito", "Estado actualizado exitosamente.", Alert.AlertType.INFORMATION);
-                        } else {
-                            conn.rollback();
-                            mostrarAlerta("Error", "No se pudo actualizar el estado en la base de datos. Se realizó ROLLBACK.", Alert.AlertType.ERROR);
-                            usuario.setEstado(oldVal);
-                        }
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                        mostrarAlerta("Error de BD", "Fallo en conexión o query: " + e.getMessage() + ". ROLLBACK si aplica.", Alert.AlertType.ERROR);
-                        usuario.setEstado(oldVal);
-                    }
-                } else {
-                    mostrarAlerta("Error", "Contraseña incorrecta. La modificación ha sido cancelada.", Alert.AlertType.ERROR);
-                    usuario.setEstado(oldVal);
-                }
-            });
-        }
-
-        usuariosEditableView.setEditable(true);
-        if (!isProcessing) {
-            usuariosEditableView.refresh();
-        }
-        isProcessing = false;
     }
 
     @FXML

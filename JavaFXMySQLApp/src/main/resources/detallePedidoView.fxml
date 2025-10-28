@@ -137,7 +137,7 @@
         <HBox spacing="10.0" alignment="CENTER_RIGHT" GridPane.columnSpan="2" GridPane.rowIndex="3" maxWidth="Infinity">
             <Button text="Finalizar Pedido (Retirado)" onAction="#finalizarPedido" style="-fx-background-color: #ffc107; -fx-font-weight: bold;" />
             <Button text="Generar Ticket PDF" onAction="#generarTicketPDF" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold;" />
-            <Button text="Cerrar Ventana" onAction="#volverAlMenuPedidos" style="-fx-background-color: #6c757d; -fx-text-fill: white;" />
+            <Button text="Cerrar Ventana" onAction="#volverAlMenuPedidos" style="-fx-background-color: #dc3545; -fx-text-fill: white;" />
         </HBox>
     </GridPane>
 

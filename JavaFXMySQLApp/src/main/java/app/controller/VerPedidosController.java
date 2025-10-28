@@ -593,6 +593,7 @@ public class VerPedidosController implements Initializable {
             stage.setTitle("Detalle de Compra y Generación de Ticket - Pedido ID: " + pedido.getIdPedido());
             stage.setScene(new Scene(root, 1000, 700));
             stage.initModality(Modality.WINDOW_MODAL);
+            stage.setResizable(false);
             stage.initOwner(ownerStage);
             stage.centerOnScreen();
             stage.showAndWait();
