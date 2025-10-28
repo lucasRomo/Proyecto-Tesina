@@ -11,6 +11,12 @@
     -fx-padding: 10px 0 0 0;
 }
 
+.titulo-principal2 {
+    -fx-font-size: 29px; /* ¡Esta es la regla que prevalece! */
+    -fx-font-weight: bold;
+    -fx-text-fill: #fffffe;
+}
+
 /* Estilo para todas las etiquetas Label */
 .label {
     -fx-text-fill: #FFFFFF; /* Texto blanco para todos los labels */

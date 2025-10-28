@@ -37,6 +37,11 @@
                 <HBox alignment="CENTER_LEFT" spacing="10.0">
                     <Label style="-fx-text-fill: white;" text="Filtrar por Empleado:" />
                     <ChoiceBox fx:id="cmbFiltroUsuario" prefWidth="200.0" />
+
+                    <!-- INICIO: Filtro por Tabla Afectada -->
+                    <Label style="-fx-text-fill: white;" text="Filtrar por Tabla Modificada:" />
+                    <TextField fx:id="txtFiltroTabla" promptText="Ingrese el Nombre de la Tabla" prefWidth="250.0"/>
+                    <!-- FIN: Filtro por Tabla Afectada -->
                 </HBox>
                 <TableView fx:id="historialTableView" VBox.vgrow="ALWAYS">
                     <columnResizePolicy>

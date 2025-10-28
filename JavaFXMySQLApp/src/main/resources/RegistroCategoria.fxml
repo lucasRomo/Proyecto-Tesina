@@ -17,7 +17,7 @@
             <Insets bottom="10" left="10" right="10" top="10" />
         </padding>
 
-        <Label prefHeight="56.0" prefWidth="541.0" styleClass="titulo-principal" text="Registrar Nueva Categoría">
+        <Label prefHeight="56.0" prefWidth="541.0" styleClass="titulo-principal2" text="Registrar Nueva Categoría">
             <font>
                 <Font name="System Bold" size="10.0" />
             </font>

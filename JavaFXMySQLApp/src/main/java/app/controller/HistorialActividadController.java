@@ -32,6 +32,7 @@ public class HistorialActividadController {
 
     // *** NUEVOS ELEMENTOS FXML ***
     @FXML private ChoiceBox<String> cmbFiltroUsuario;
+    @FXML private TextField txtFiltroTabla;
 
     private HistorialActividadDAO historialDAO;
     // *** NUEVAS LISTAS PARA FILTRADO ***
@@ -97,6 +98,10 @@ public class HistorialActividadController {
                     (observable, oldValue, newValue) -> aplicarFiltro()
             );
 
+            txtFiltroTabla.textProperty().addListener(
+                    (observable, oldValue, newValue) -> aplicarFiltro()
+            );
+
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Error al cargar el historial de actividad: " + e.getMessage());
@@ -123,15 +128,43 @@ public class HistorialActividadController {
 
     private void aplicarFiltro() {
         String usuarioSeleccionado = cmbFiltroUsuario.getSelectionModel().getSelectedItem();
+        // Obtener texto de búsqueda y asegurarse de que nunca sea nulo, y convertir a minúsculas
+        String textoBusquedaTabla = txtFiltroTabla.getText() == null ? "" : txtFiltroTabla.getText().trim().toLowerCase();
 
         filteredData.setPredicate(registro -> {
-            // Si "Todos" está seleccionado, mostrar todos los registros
+            boolean coincideUsuario;
+            boolean coincideTabla;
+
+            // --- FILTRO 1: USUARIO ---
+            // Si "Todos" está seleccionado o es nulo, pasa el filtro de usuario
             if (usuarioSeleccionado == null || usuarioSeleccionado.equals("Todos")) {
-                return true;
+                coincideUsuario = true;
+            } else {
+                // Si se selecciona un usuario específico, comprueba la coincidencia
+                // Nota: Asume que getnombreUsuario() devuelve un String que no es null si el registro es válido.
+                coincideUsuario = registro.getnombreUsuario().equals(usuarioSeleccionado);
             }
 
-            // Si se selecciona un usuario específico, filtrar por nombre de usuario
-            return registro.getnombreUsuario().equals(usuarioSeleccionado);
+            // --- FILTRO 2: TABLA AFECTADA (Búsqueda de texto) ---
+            // Si el campo de búsqueda de tabla está vacío, pasa el filtro de tabla
+            if (textoBusquedaTabla.isEmpty()) {
+                coincideTabla = true;
+            } else {
+                // OBTIENE el valor de la tabla (asegurándose de que sea una cadena, incluso si es nulo)
+                String tablaAfectada = registro.getTablaAfectada();
+
+                // MÁS ROBUSTO: Comprueba si el valor de la tabla es válido y si contiene el texto de búsqueda.
+                // Si getTablaAfectada() es null, o está vacío, no coincide.
+                if (tablaAfectada == null || tablaAfectada.trim().isEmpty()) {
+                    coincideTabla = false;
+                } else {
+                    // Comprueba si el nombre de la tabla afectada contiene el texto de búsqueda (ignorando mayúsculas/minúsculas)
+                    coincideTabla = tablaAfectada.toLowerCase().contains(textoBusquedaTabla);
+                }
+            }
+
+            // Un registro se muestra si COINCIDE con el filtro de usuario Y con el filtro de tabla
+            return coincideUsuario && coincideTabla;
         });
     }
 
