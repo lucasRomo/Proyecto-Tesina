@@ -325,3 +325,7 @@ Button.button:pressed {
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
 }
+
+.dark-choice-box .label { /* Ajuste de especificidad para el ChoiceBox con styleClass="dark-choice-box" */
+    -fx-text-fill: black; /* Texto del ChoiceBox (cerrado) a negro */
+}
