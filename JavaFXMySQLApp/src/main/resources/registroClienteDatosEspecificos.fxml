@@ -44,11 +44,15 @@
         </HBox>
     </VBox>
 
-    <Button fx:id="helpButton" onAction="#handleHelpButton" prefHeight="29.0" prefWidth="27.0" styleClass="help-button" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="20.0" />
-      <Text fill="#007bff" layoutX="349.0" layoutY="41.0" text="  ?" wrappingWidth="24.0">
-          <font>
-              <Font name="System Bold" size="18.0" />
-          </font>
-      </Text>
+    <!-- Botón de Ayuda (Corregido: Se eliminó el Text flotante y se anidó como graphic) -->
+    <Button fx:id="helpButton" onAction="#handleHelpButton" prefHeight="29.0" prefWidth="27.0" styleClass="help-button" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="20.0">
+        <graphic>
+            <Text fill="#007bff" text="  ?" wrappingWidth="27.0">
+                <font>
+                    <Font name="System Bold" size="18.0" />
+                </font>
+            </Text>
+        </graphic>
+    </Button>
 
 </AnchorPane>
