@@ -33,7 +33,7 @@
         <VBox alignment="CENTER" maxWidth="347.0" prefHeight="122.0" prefWidth="347.0" spacing="10.0">
             <Button onAction="#handlecrearPedido" prefWidth="200.0" styleClass="button" text="Crear Pedido" />
             <Button onAction="#handleVerPedidos" prefHeight="34.0" prefWidth="240.0" styleClass="button" text="Ver Pedidos (Activos)" />
-            <Button onAction="#handleVerHistorial" prefHeight="34.0" prefWidth="327.0" styleClass="button" text="Historial de Pedidos (Retirados)" />
+            <Button onAction="#handleVerHistorial" prefHeight="34.0" prefWidth="238.0" styleClass="button" text="Historial de Pedidos " />
 
         </VBox>
 
