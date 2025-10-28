@@ -13,9 +13,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DAO (Data Access Object) para la entidad Pedido.
@@ -719,4 +722,57 @@ public class PedidoDAO {
         }
         return count;
     }
+
+    public Map<String, Integer> getPedidosCompletadosPorEmpleado(LocalDate inicio, LocalDate fin) {
+        Map<String, Integer> pedidosPorEmpleado = new HashMap<>();
+
+        String sql = "SELECT " +
+                "    p_e.nombre, " +
+                "    p_e.apellido, " +
+                "    COUNT(p.id_pedido) AS total_pedidos " +
+                "FROM " +
+                "    Pedido p " +
+                "JOIN " +
+                "    AsignacionPedido ap ON p.id_pedido = ap.id_pedido " +
+                "JOIN " +
+                "    Empleado e ON ap.id_empleado = e.id_empleado " +
+                "JOIN " +
+                "    Persona p_e ON e.id_persona = p_e.id_persona " +
+                "WHERE " +
+                "    p.estado = 'Retirado' AND " +
+                "    p.fecha_finalizacion >= ? AND " +
+                "    p.fecha_finalizacion < ? " +
+                "GROUP BY " +
+                "    p_e.nombre, p_e.apellido " +
+                "ORDER BY " +
+                "    total_pedidos DESC";
+
+        try (Connection conn = obtenerConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            // 1. Asignar la fecha de inicio (desde la medianoche de ese día).
+            ps.setTimestamp(1, java.sql.Timestamp.valueOf(inicio.atStartOfDay()));
+
+            // 2. Asignar la fecha de FIN: Usamos el día siguiente (fin.plusDays(1))
+            //    y el operador '<' para incluir todas las horas del día 'fin'.
+            LocalDate diaSiguiente = fin.plusDays(1);
+            ps.setTimestamp(2, java.sql.Timestamp.valueOf(diaSiguiente.atStartOfDay()));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String nombreCompleto = rs.getString("nombre") + " " + rs.getString("apellido");
+                    int totalPedidos = rs.getInt("total_pedidos");
+                    pedidosPorEmpleado.put(nombreCompleto, totalPedidos);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al obtener pedidos completados por empleado: " + e.getMessage());
+            e.printStackTrace();
+            // Lanza una excepción para que el Controller pueda manejar el fallback de datos de prueba
+            throw new RuntimeException("Error de base de datos al generar informe de pedidos por empleado.", e);
+        }
+        return pedidosPorEmpleado;
+    }
+
 }

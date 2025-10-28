@@ -9,7 +9,6 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.chart.*;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
@@ -24,6 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+/**
+ * Controlador para la vista de Informes (Reportes) de la aplicación.
+ * Gestiona la carga de datos estadísticos y su visualización en gráficos.
+ */
 public class InformesController {
 
     // DAOs
@@ -31,9 +34,9 @@ public class InformesController {
     private final ComprobantePagoDAO comprobantePagoDAO = new ComprobantePagoDAO();
     private final ProductoDAO productoDAO = new ProductoDAO();
     private final EmpleadoDAO empleadoDAO = new EmpleadoDAO();
-    private final PedidoDAO pedidoDAO = new PedidoDAO();
+    private final PedidoDAO pedidoDAO = new PedidoDAO(); // Ya existe
 
-    // Variable para almacenar el conteo de pagos (Necesario para el Tooltip)
+    // Variable para almacenar el conteo de pagos (Necesario para el Tooltip del PieChart)
     private Map<String, Integer> conteoPagosPorRango = new HashMap<>();
 
     // Formato para la moneda
@@ -46,13 +49,13 @@ public class InformesController {
     @FXML private CategoryAxis xAxisVentas;
     @FXML private NumberAxis yAxisVentas;
     @FXML private Label lblTotalVentas;
-    @FXML private Label lblFacturasEmitidas; // Se mantiene, pero quizás represente pedidos finalizados
+    @FXML private Label lblFacturasEmitidas; // Muestra el total de pedidos finalizados
 
-    // FXML fields para la métrica de Empleados
-    @FXML private ChoiceBox<Empleado> cbEmpleado;
-    // ¡CAMBIO DE NOMBRE! Sugerencia: Cambiar el nombre del campo FXML de 'lblFacturasEmpleado' en el .fxml
-    // Por ahora, solo cambio la lógica interna y el texto.
-    @FXML private Label lblFacturasEmpleado;
+    // Componentes del BarChart Ventas por Empleado
+    @FXML private BarChart<String, Number> barChartVentasEmpleado;
+    @FXML private CategoryAxis xAxisVentasEmpleado;
+    @FXML private NumberAxis yAxisVentasEmpleado;
+
 
     // FXML fields para la Fila Inferior
     @FXML private PieChart pieChartVentas;
@@ -65,27 +68,41 @@ public class InformesController {
 
     @FXML
     public void initialize() {
-        // ... (resto del método initialize, no necesita cambios)
-
-        // 1. Configurar ejes y rangos iniciales
+        // 1. Configurar fechas iniciales
         LocalDate hoy = LocalDate.now();
         dpFechaFin.setValue(hoy);
-        // Rango por defecto (últimos 30 días)
+        // Rango por defecto (últimos 7 días)
         dpFechaInicio.setValue(hoy.minusDays(7));
 
+        // 2. Configurar ejes de gráficos
         xAxisVentas.setLabel("Fecha");
         yAxisVentas.setLabel("Monto Vendido ($)");
         xAxisCategorias.setLabel("Categoría");
         yAxisUnidades.setLabel("Unidades Vendidas");
 
+        if (xAxisVentasEmpleado != null) {
+            xAxisVentasEmpleado.setLabel("Empleado");
+        }
+        if (yAxisVentasEmpleado != null) {
+            // Se actualiza la etiqueta del eje para reflejar la cantidad de pedidos
+            yAxisVentasEmpleado.setLabel("Pedidos Completados");
+            // Asegura que el eje Y se trata como un número entero
+            yAxisVentasEmpleado.setTickUnit(1.0);
+            yAxisVentasEmpleado.setMinorTickVisible(false);
+        }
+
+        // 3. Ocultar leyendas innecesarias
+        if (barChartVentasEmpleado != null) {
+            barChartVentasEmpleado.setLegendVisible(false);
+        }
         if (barChartCategorias != null) {
             barChartCategorias.setLegendVisible(false);
         }
-
         if (lineChartVentas != null) {
             lineChartVentas.setLegendVisible(false);
         }
 
+        // 4. Deshabilitar edición de DatePickers
         if (dpFechaInicio != null) {
             dpFechaInicio.setEditable(false);
         }
@@ -93,121 +110,154 @@ public class InformesController {
             dpFechaFin.setEditable(false);
         }
 
-        // Listener que actualiza la métrica del empleado al cambiar la fecha
-        dpFechaInicio.valueProperty().addListener((obs, oldV, newV) -> handleDateChange());
-        dpFechaFin.valueProperty().addListener((obs, oldV, newV) -> handleDateChange());
-
-        // 2. Cargar empleados en el ChoiceBox
-        cargarEmpleados();
-
-        // 3. Configurar Listener para ChoiceBox de Empleados
-        if (cbEmpleado != null) {
-            cbEmpleado.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-                // Al seleccionar un empleado o al cambiar el rango de fechas, actualizamos la métrica
-                if (newValue != null && dpFechaInicio.getValue() != null && dpFechaFin.getValue() != null) {
-                    // ¡CAMBIO CLAVE AQUÍ!
-                    actualizarPedidosRetiradosPorEmpleado(newValue, dpFechaInicio.getValue(), dpFechaFin.getValue());
-                } else {
-                    lblFacturasEmpleado.setText("0");
-                }
-            });
-        }
-
-        // 4. Cargar datos iniciales
+        // 5. Cargar datos iniciales
         handleGenerarGraficoButton(null);
     }
 
     /**
-     * Manejador de eventos para cambios en DatePicker.
-     * Actualiza la métrica del empleado seleccionado.
+     * Carga la cantidad de pedidos entregados por cada empleado en el BarChart.
+     * En producción, esto llama al método del DAO que devuelve Map<String, Integer>.
      */
-    private void handleDateChange() {
-        Empleado selectedEmpleado = cbEmpleado.getSelectionModel().getSelectedItem();
-        LocalDate inicio = dpFechaInicio.getValue();
-        LocalDate fin = dpFechaFin.getValue();
+    private void loadVentasEmpleadoData(LocalDate inicio, LocalDate fin) {
+        if (barChartVentasEmpleado == null) return;
 
-        if (selectedEmpleado != null && inicio != null && fin != null) {
-            actualizarPedidosRetiradosPorEmpleado(selectedEmpleado, inicio, fin); // <-- Llamada al nuevo método
-        } else if (lblFacturasEmpleado != null) {
-            lblFacturasEmpleado.setText("0");
+        barChartVentasEmpleado.getData().clear();
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Pedidos Completados");
+
+        try {
+            // 1. Obtener los datos del DAO (incluye la lógica de conexión)
+            // Se asume que el método en PedidoDAO se llama getPedidosCompletadosPorEmpleado
+            Map<String, Integer> pedidosPorEmpleado = pedidoDAO.getPedidosCompletadosPorEmpleado(inicio, fin);
+
+            // 2. Ordenar el mapa por la cantidad de pedidos (descendente)
+            pedidosPorEmpleado.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                    .forEach(entry -> {
+                        series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+                    });
+
+            barChartVentasEmpleado.getData().add(series);
+            barChartVentasEmpleado.setTitle("Pedidos Entregados por Empleado");
+
+        } catch (RuntimeException e) {
+            // Manejar la excepción de conexión (propagada desde el DAO)
+            System.err.println("Error al cargar el gráfico de pedidos por empleado: " + e.getMessage());
+            mostrarAlerta("Error de Conexión", "No se pudieron cargar los datos de pedidos por empleado de la base de datos. Se mostrarán datos de prueba.", Alert.AlertType.ERROR);
+
+            // Fallback a datos de prueba
+            loadVentasEmpleadoTestData();
         }
+
+        setupBarChartVentasEmpleadoTooltips();
     }
 
     /**
-     * Carga la lista de empleados activos en el ChoiceBox.
+     * Carga datos de prueba para el gráfico de pedidos por empleado en caso de fallo.
      */
-    private void cargarEmpleados() {
-        if (cbEmpleado == null) return;
+    private void loadVentasEmpleadoTestData() {
+        if (barChartVentasEmpleado == null) return;
 
-        List<Empleado> empleados = empleadoDAO.getAllEmpleados();
+        barChartVentasEmpleado.getData().clear();
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Pedidos Completados (Datos de Prueba)");
 
-        if (!empleados.isEmpty()) {
-            cbEmpleado.setItems(FXCollections.observableArrayList(empleados));
-            // Selecciona el primer empleado para inicializar la métrica
-            cbEmpleado.getSelectionModel().selectFirst();
-        } else {
-            cbEmpleado.setItems(FXCollections.observableArrayList());
-            lblFacturasEmpleado.setText("0");
+        Map<String, Integer> testData = new HashMap<>();
+        testData.put("Juan Pérez", 25);
+        testData.put("Ana Gómez", 18);
+        testData.put("Carlos Ruiz", 32);
+        testData.put("Elena Castro", 15);
+
+        // Ordenar los datos de prueba
+        testData.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .forEach(entry -> {
+                    series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+                });
+
+        barChartVentasEmpleado.getData().add(series);
+        barChartVentasEmpleado.setTitle("Pedidos Entregados por Empleado (DATOS DE PRUEBA)");
+    }
+
+
+    /**
+     * Agrega tooltips al BarChart de Pedidos por Empleado para mostrar la cantidad.
+     */
+    private void setupBarChartVentasEmpleadoTooltips() {
+        if (barChartVentasEmpleado == null || barChartVentasEmpleado.getData().isEmpty()) {
+            return;
+        }
+
+        for (XYChart.Series<String, Number> series : barChartVentasEmpleado.getData()) {
+            for (XYChart.Data<String, Number> data : series.getData()) {
+                Node node = data.getNode();
+                if (node != null) {
+                    String employeeName = data.getXValue();
+                    Number count = data.getYValue();
+
+                    String tooltipText = String.format(
+                            "%s:\n" +
+                                    "Pedidos Entregados: %d",
+                            employeeName,
+                            count.intValue() // Se usa intValue para mostrar la cantidad
+                    );
+
+                    Tooltip tooltip = new Tooltip(tooltipText);
+                    Tooltip.install(node, tooltip);
+                }
+            }
         }
     }
 
-    /**
-     * Lógica para contar pedidos con estado 'retirados' emitidos por un empleado en un rango de fechas.
-     * ⚠️ NOTA: DEBES IMPLEMENTAR EL MÉTODO 'contarPedidosRetiradosPorEmpleado' en FacturaDAO (o PedidoDAO).
-     */
-    private void actualizarPedidosRetiradosPorEmpleado(Empleado empleado, LocalDate inicio, LocalDate fin) {
-        if (lblFacturasEmpleado == null) return;
-
-        int idEmpleado = empleado.getIdEmpleado();
-        // CAMBIO CLAVE: Usar PedidoDAO.contarPedidosRetiradosPorEmpleado
-        int count = pedidoDAO.contarPedidosRetiradosPorEmpleado(idEmpleado, inicio, fin);
-
-        // Opcional: Cambiar el texto de la etiqueta a "Pedidos Retirados" en lugar de "Facturas"
-        lblFacturasEmpleado.setText(String.valueOf(count));
-    }
-
-
-    // El resto del código se mantiene igual...
-    // ... loadVentasDataReal, loadDistribucionDataReal, loadCategoriasDataReal,
-    // ... setupBarChartTooltips, setupPieChartTooltips, handleGenerarGraficoButton,
-    // ... handleVolverButtonInformes, mostrarAlerta
 
     /**
      * Carga datos de ventas en el LineChart y actualiza las Métricas Clave.
      */
     private void loadVentasDataReal(LocalDate inicio, LocalDate fin) {
         // 1. OBTENER DATOS DESDE PEDIDODAO
-        double totalVentas = pedidoDAO.getTotalVentasPorRango(inicio, fin);
-        int totalPedidos = pedidoDAO.getTotalPedidosPorRango(inicio, fin); // Cambiado a conteo de pedidos
-        Map<LocalDate, Double> ventasPorDia = pedidoDAO.getVentasDiariasPorRango(inicio, fin);
+        double totalVentas = 0.0;
+        int totalPedidos = 0;
+        Map<LocalDate, Double> ventasPorDia = new HashMap<>();
+
+        try {
+            totalVentas = pedidoDAO.getTotalVentasPorRango(inicio, fin);
+            totalPedidos = pedidoDAO.getTotalPedidosPorRango(inicio, fin);
+            ventasPorDia = pedidoDAO.getVentasDiariasPorRango(inicio, fin);
+        } catch (RuntimeException e) {
+            System.err.println("Error al cargar datos de ventas (KPIs y Gráfico de Líneas): " + e.getMessage());
+            mostrarAlerta("Error de Conexión", "No se pudieron cargar los datos de ventas de la base de datos.", Alert.AlertType.ERROR);
+            // Si falla la conexión, los valores permanecen en 0 o vacíos.
+        }
+
 
         // 2. Actualizar Métricas Clave
         if (lblTotalVentas != null) {
             lblTotalVentas.setText(currencyFormatter.format(totalVentas));
         }
         if (lblFacturasEmitidas != null) {
-            // La etiqueta lblFacturasEmitidas ahora muestra el total de pedidos
             lblFacturasEmitidas.setText(String.valueOf(totalPedidos));
         }
 
         // 3. Cargar LineChart (Ventas Diarias)
-        XYChart.Series<String, Number> seriesVentas = new XYChart.Series<>();
-        seriesVentas.setName("Ventas Diarias");
+        if (lineChartVentas != null) {
+            XYChart.Series<String, Number> seriesVentas = new XYChart.Series<>();
+            seriesVentas.setName("Ventas Diarias");
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
 
-        ventasPorDia.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> {
-                    seriesVentas.getData().add(new XYChart.Data<>(
-                            entry.getKey().format(formatter),
-                            entry.getValue()
-                    ));
-                });
+            ventasPorDia.entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .forEach(entry -> {
+                        seriesVentas.getData().add(new XYChart.Data<>(
+                                entry.getKey().format(formatter),
+                                entry.getValue()
+                        ));
+                    });
 
-        lineChartVentas.getData().clear();
-        lineChartVentas.getData().add(seriesVentas);
-        lineChartVentas.setTitle("Tendencia de Ventas (Pedidos) (" + inicio + " al " + fin + ")"); // Título actualizado
+            lineChartVentas.getData().clear();
+            lineChartVentas.getData().add(seriesVentas);
+            lineChartVentas.setTitle("Tendencia de Ventas (Pedidos) (" + inicio + " al " + fin + ")");
+        }
     }
 
     /**
@@ -215,75 +265,81 @@ public class InformesController {
      */
     private void loadDistribucionDataReal(LocalDate inicio, LocalDate fin) {
         // 1. Obtener la distribución de MONTOS (Monto Total por cada Método de Pago)
-        // ESTO DEBE FILTRARSE EN EL DAO POR PEDIDO 'RETIRADO'
-        Map<String, Double> distribucionMontos = comprobantePagoDAO.getDistribucionPagosTotalCorrecto(inicio, fin);
-
+        Map<String, Double> distribucionMontos = new HashMap<>();
         // 2. OBTENER el CONTEO de transacciones REAL (cantidad de veces usado cada método)
-        // ESTO DEBE FILTRARSE EN EL DAO POR PEDIDO 'RETIRADO'
-        this.conteoPagosPorRango = comprobantePagoDAO.getConteoPagosPorRango(inicio, fin); // <-- LÍNEA REAL
+        this.conteoPagosPorRango = new HashMap<>();
 
-        ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
-
-        for (Map.Entry<String, Double> entry : distribucionMontos.entrySet()) {
-            if (entry.getValue() > 0) {
-                pieChartData.add(new PieChart.Data(entry.getKey(), entry.getValue()));
-            }
+        try {
+            distribucionMontos = comprobantePagoDAO.getDistribucionPagosTotalCorrecto(inicio, fin);
+            this.conteoPagosPorRango = comprobantePagoDAO.getConteoPagosPorRango(inicio, fin);
+        } catch (RuntimeException e) {
+            System.err.println("Error al cargar datos de distribución (PieChart): " + e.getMessage());
+            mostrarAlerta("Error de Conexión", "No se pudieron cargar los datos de distribución de pagos de la base de datos.", Alert.AlertType.ERROR);
         }
 
-        pieChartVentas.setData(pieChartData);
-        pieChartVentas.setTitle("Distribución por Método de Pago");
+
+        if (pieChartVentas != null) {
+            ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+
+            for (Map.Entry<String, Double> entry : distribucionMontos.entrySet()) {
+                if (entry.getValue() > 0) {
+                    pieChartData.add(new PieChart.Data(entry.getKey(), entry.getValue()));
+                }
+            }
+
+            pieChartVentas.setData(pieChartData);
+            pieChartVentas.setTitle("Distribución por Método de Pago");
+        }
     }
-
-
-
 
     /**
      * Carga las unidades vendidas por categoría en el BarChart.
      */
     private void loadCategoriasDataReal(LocalDate inicio, LocalDate fin) {
-        Map<String, Integer> unidadesVendidas = productoDAO.getUnidadesVendidasPorCategoria(inicio, fin);
+        Map<String, Integer> unidadesVendidas = new HashMap<>();
 
-        XYChart.Series<String, Number> seriesUnidades = new XYChart.Series<>();
-        seriesUnidades.setName("Unidades Vendidas");
+        try {
+            unidadesVendidas = productoDAO.getUnidadesVendidasPorCategoria(inicio, fin);
+        } catch (RuntimeException e) {
+            System.err.println("Error al cargar datos de categorías (BarChart): " + e.getMessage());
+            mostrarAlerta("Error de Conexión", "No se pudieron cargar los datos de categorías de la base de datos.", Alert.AlertType.ERROR);
+        }
 
-        unidadesVendidas.entrySet().stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .forEach(entry -> {
-                    seriesUnidades.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
-                });
 
-        barChartCategorias.getData().clear();
-        barChartCategorias.getData().add(seriesUnidades);
-        barChartCategorias.setTitle("Volumen por Categoría");
+        if (barChartCategorias != null) {
+            XYChart.Series<String, Number> seriesUnidades = new XYChart.Series<>();
+            seriesUnidades.setName("Unidades Vendidas");
+
+            unidadesVendidas.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                    .forEach(entry -> {
+                        seriesUnidades.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+                    });
+
+            barChartCategorias.getData().clear();
+            barChartCategorias.getData().add(seriesUnidades);
+            barChartCategorias.setTitle("Volumen por Categoría");
+        }
     }
 
     /**
      * Agrega tooltips a cada barra del BarChartCategorias para mostrar las unidades vendidas.
-     * Este método debe ser llamado después de poblar el BarChart con datos.
      */
     private void setupBarChartTooltips() {
-        // Asegúrate de que el BarChart tenga datos antes de intentar iterar
-        if (barChartCategorias.getData().isEmpty()) {
+        if (barChartCategorias == null || barChartCategorias.getData().isEmpty()) {
             return;
         }
 
-        // Iterar sobre todas las series (en este caso, solo "Unidades Vendidas")
         for (XYChart.Series<String, Number> series : barChartCategorias.getData()) {
-            // Iterar sobre cada punto de dato (cada barra) dentro de la serie
             for (XYChart.Data<String, Number> data : series.getData()) {
-                // El 'Node' representa la barra visual en el gráfico
                 Node node = data.getNode();
 
                 if (node != null) {
-                    // Obtener la categoría (XValue) y las unidades vendidas (YValue)
                     String category = data.getXValue();
                     Number unitsSold = data.getYValue();
 
-                    // Formatear el texto del tooltip
-                    // Usamos intValue() porque las unidades son números enteros
                     String tooltipText = String.format("%s: %d unidades vendidas", category, unitsSold.intValue());
 
-                    // Crear e instalar el Tooltip en el Node (la barra)
                     Tooltip tooltip = new Tooltip(tooltipText);
                     Tooltip.install(node, tooltip);
                 }
@@ -296,7 +352,7 @@ public class InformesController {
      * Y la cantidad total de ventas (transacciones) de ese método.
      */
     private void setupPieChartTooltips() {
-        if (pieChartVentas.getData().isEmpty()) {
+        if (pieChartVentas == null || pieChartVentas.getData().isEmpty()) {
             return;
         }
 
@@ -352,26 +408,32 @@ public class InformesController {
         }
 
         // Limpiar gráficos antes de cargar nuevos datos
-        lineChartVentas.getData().clear();
-        pieChartVentas.getData().clear();
-        barChartCategorias.getData().clear();
+        if (lineChartVentas != null) {
+            lineChartVentas.getData().clear();
+        }
+        if (pieChartVentas != null) {
+            pieChartVentas.getData().clear();
+        }
+        if (barChartCategorias != null) {
+            barChartCategorias.getData().clear();
+        }
+
+        if (barChartVentasEmpleado != null) {
+            barChartVentasEmpleado.getData().clear();
+        }
+
 
         // Llamada a la capa DAO con los datos reales
         loadVentasDataReal(inicio, fin);
-        // loadDistribucionDataReal ahora carga el mapa de conteos también (simulado)
         loadDistribucionDataReal(inicio, fin);
         loadCategoriasDataReal(inicio, fin);
+        loadVentasEmpleadoData(inicio, fin); // Carga el BarChart de empleados
 
-        // Llamada a los nuevos métodos de tooltips, justo después de cargar los datos
+
+        // Llamada a los métodos de tooltips, justo después de cargar los datos
         setupBarChartTooltips();
         setupPieChartTooltips();
-
-        // Actualizar métrica de empleado si hay uno seleccionado
-        Empleado selectedEmpleado = cbEmpleado.getSelectionModel().getSelectedItem();
-        if (selectedEmpleado != null) {
-            // ¡CAMBIO CLAVE AQUÍ!
-            actualizarPedidosRetiradosPorEmpleado(selectedEmpleado, inicio, fin);
-        }
+        setupBarChartVentasEmpleadoTooltips();
 
         // Solo mostrar alerta si fue disparado por el botón (no en initialize)
         if (event != null) {
@@ -418,7 +480,7 @@ public class InformesController {
                 + "----------------------------------------------------------------------\n"
                 + "Paso 3: Haga Click en el Boton Generar Grafico para Continuar.\n"
                 + "----------------------------------------------------------------------\n"
-                + "Para Filtrar los Pedidos Completados por Dicho Empleado Haga click en el Choicebox de la Derecha y luego seleccione el Empleado.\n"
+                + "Si alguna Estadistica o Grafico está fuera de lugar, Vuelva a Hacer Click en Generar Grafico.\n"
                 + "----------------------------------------------------------------------\n"
                 + "Para mas Información Visite el Manual de Usuario.\n");
 
