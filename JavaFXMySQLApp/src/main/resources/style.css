@@ -171,6 +171,26 @@ Button.button:pressed {
     -fx-transition-timing-function: ease-in;
 }
 
+.table-cell.columna-boton-direccion2 .button {
+    /* Padding y borde ajustados para la forma. */
+    -fx-padding: 0
+
+    /* CAMBIO APLICADO: Fuente aumentada de 0.8em a 0.9em */
+    -fx-font-size: 0.9em;
+
+    -fx-border-color: #5bc0de;
+    -fx-border-width: 0.15em;
+    -fx-border-radius: 0.25em;
+    -fx-text-fill: #5bc0de;
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-max-width: infinity;
+    -fx-font-weight: 600;
+    -fx-background-insets: 0;
+    -fx-transition-duration: 300ms;
+    -fx-transition-timing-function: ease-in;
+}
+
 .table-cell.columna-boton-direccion .button:hover {
     -fx-text-fill: #fffffe;
     -fx-background-color: #5bc0de;

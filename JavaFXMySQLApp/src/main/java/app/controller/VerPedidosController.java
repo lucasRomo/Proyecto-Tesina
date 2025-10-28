@@ -93,7 +93,7 @@ public class VerPedidosController implements Initializable {
         // ... dentro del método initialize
 
         // Aplica la política de redimensionamiento que distribuye el ancho de la tabla entre todas las columnas.
-        pedidosTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
 
         // --- ASIGNACIÓN DE ANCHOS CORREGIDOS (SUMA 99.8%) ---
 
@@ -128,8 +128,10 @@ public class VerPedidosController implements Initializable {
         instruccionesColumn.setPrefWidth(14.0);     // Instrucciones (14.0%)
 
         // BOTONES FINALES
-        comprobantePagoColumn.setPrefWidth(9.0);    // Comprobante Pago (9.0%)
-        ticketColumn.setPrefWidth(8.5);
+        comprobantePagoColumn.setPrefWidth(50.0);    // Comprobante Pago
+        comprobantePagoColumn.setMinWidth(50.0);    // Comprobante Pago (9.0%)
+        ticketColumn.setPrefWidth(45.0);             // Detallar/Ticket
+        ticketColumn.setMinWidth(45.0);
        // Aplica la política de redimensionamiento que distribuye el ancho de la tabla entre todas las columnas.
         // NOTA: Esta línea es redundante si está en el FXML, pero se mantiene como seguro.
                  // Detallar/Ticket (8.3%)

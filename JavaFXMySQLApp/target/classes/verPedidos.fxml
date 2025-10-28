@@ -96,7 +96,7 @@
 
                 <TableColumn fx:id="comprobantePagoColumn" text="Comprobante Pago" />
 
-                <TableColumn fx:id="ticketColumn" styleClass="columna-boton-direccion" text="Detallar/Ticket" />
+                <TableColumn fx:id="ticketColumn" styleClass="columna-boton-direccion2" text="Detallar/Ticket" />
             </columns>
         </TableView>
 
