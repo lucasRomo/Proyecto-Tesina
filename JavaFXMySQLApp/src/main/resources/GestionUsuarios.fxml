@@ -3,7 +3,8 @@
 <?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
@@ -11,37 +12,21 @@
     <stylesheets>
         <URL value="@style.css" />
     </stylesheets>
+    <ImageView fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true"
+               AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="20.0">
+        <image>
+            <Image url="@imagenes/Logo_no_bg.png" />
+        </image>
+    </ImageView>
     <top>
-        <!-- AnchorPane para posicionar el logo (izquierda), título (centro) y botón de ayuda (derecha) -->
-        <AnchorPane prefHeight="60.0" BorderPane.alignment="CENTER">
-
-            <!-- 1. Logo (Movido a la región superior izquierda) -->
-            <ImageView fitHeight="40.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="10.0">
-                <image>
-                    <Image url="@imagenes/Logo_no_bg.png" />
-                </image>
-            </ImageView>
-
-            <!-- 2. Título Principal (Centrado) -->
-            <Label styleClass="titulo-principal" text="Gestionar Usuarios Empleados" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="10.0">
-                <font>
-                    <Font name="System Bold" size="24.0" />
-                </font>
-                <alignment>CENTER</alignment>
-            </Label>
-
-            <!-- 3. Botón de Ayuda (Nuevo - Esquina superior derecha) -->
-            <Button fx:id="helpButton" onAction="#handleHelpButton" layoutY="32.0" prefHeight="31.0" prefWidth="29.0" styleClass="help-button" AnchorPane.bottomAnchor="13.0" AnchorPane.rightAnchor="21.0" AnchorPane.topAnchor="32.0">
-                <graphic>
-                    <!-- El signo de pregunta como texto dentro del botón -->
-                    <Text fill="#007bff" text="?" wrappingWidth="7.8837890625">
-                        <font>
-                            <Font name="System Bold" size="18.0" />
-                        </font>
-                    </Text>
-                </graphic>
-            </Button>
-        </AnchorPane>
+        <Label styleClass="titulo-principal" text="Gestionar Usuarios Empleados" BorderPane.alignment="CENTER">
+            <font>
+                <Font name="System Bold" size="24.0" />
+            </font>
+            <BorderPane.margin>
+                <Insets bottom="10.0" top="10.0" />
+            </BorderPane.margin>
+        </Label>
     </top>
     <center>
         <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
@@ -56,10 +41,11 @@
                         <TableColumn fx:id="ContrasenaColumn" prefWidth="200.0" text="Contraseña" />
                         <TableColumn fx:id="NombreColumn" prefWidth="250.0" text="Nombre" />
                         <TableColumn fx:id="ApellidoColumn" prefWidth="250.0" text="Apellido" />
-                        <TableColumn fx:id="idPersonaColumn" prefWidth="69.0" text="ID Persona" />
+                        <TableColumn fx:id="idPersonaColumn" prefWidth="65.0" text="ID Persona" />
+                        <TableColumn fx:id="idTipoUsuarioColumn" prefWidth="120.0" text="Rol (ID)" />
                         <TableColumn fx:id="SalarioColumn" prefWidth="250.0" text="Salario" />
                         <TableColumn fx:id="EstadoColumn" prefWidth="250.0" text="Estado" />
-                        <TableColumn fx:id="accionUsuarioColumn" prefWidth="357.0" text="Direccion" styleClass="columna-boton-direccion" />
+                        <TableColumn fx:id="accionUsuarioColumn" prefWidth="240.0" text="Direccion" styleClass="columna-boton-direccion"/>
                     </columns>
                 </TableView>
                 <HBox alignment="CENTER" spacing="10.0">

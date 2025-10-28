@@ -18,8 +18,9 @@ public class UsuarioEmpleadoTableView {
     private final IntegerProperty idPersona;
     private final IntegerProperty idDireccion;
     private StringProperty numeroDocumento;
+    private final IntegerProperty idTipoUsuario;
 
-    public UsuarioEmpleadoTableView(int idUsuario, String usuario, String contrasena, String nombre, String apellido, double salario, String estado, int idPersona, int idDireccion) {
+    public UsuarioEmpleadoTableView(int idUsuario, String usuario, String contrasena, String nombre, String apellido, double salario, String estado, int idPersona, int idDireccion, int idTipoUsuario) {
         this.idUsuario = new SimpleIntegerProperty(idUsuario);
         this.usuario = new SimpleStringProperty(usuario);
         this.contrasena = new SimpleStringProperty(contrasena);
@@ -29,10 +30,11 @@ public class UsuarioEmpleadoTableView {
         this.estado = new SimpleStringProperty(estado);
         this.idPersona = new SimpleIntegerProperty(idPersona);
         this.idDireccion = new SimpleIntegerProperty(idDireccion);
+        this.idTipoUsuario = new SimpleIntegerProperty(idTipoUsuario); // <-- Inicialización
     }
 
     public UsuarioEmpleadoTableView(int idUsuario, String usuario, String contrasena, String nombre, String apellido,
-                                    String numeroDocumento, double salario, String estado, int idPersona, int idDireccion) {
+                                    String numeroDocumento, double salario, String estado, int idPersona, int idDireccion, int idTipoUsuario) {
         // ... inicialización de campos existentes
         this.idUsuario = new SimpleIntegerProperty(idUsuario);
         this.usuario = new SimpleStringProperty(usuario);
@@ -44,6 +46,7 @@ public class UsuarioEmpleadoTableView {
         this.idPersona = new SimpleIntegerProperty(idPersona);
         this.idDireccion = new SimpleIntegerProperty(idDireccion);
         this.numeroDocumento = new SimpleStringProperty(numeroDocumento); // Inicializa el nuevo campo
+        this.idTipoUsuario = new SimpleIntegerProperty(idTipoUsuario);
     }
 
     public int getIdUsuario() {
@@ -141,4 +144,17 @@ public class UsuarioEmpleadoTableView {
     public IntegerProperty idPersonaProperty() {
         return this.idPersona;
     }
+
+    public int getIdTipoUsuario() {
+        return this.idTipoUsuario.get();
+    }
+
+    public void setIdTipoUsuario(int idTipoUsuario) {
+        this.idTipoUsuario.set(idTipoUsuario);
+    }
+
+    public IntegerProperty idTipoUsuarioProperty() {
+        return this.idTipoUsuario;
+    }
+
 }

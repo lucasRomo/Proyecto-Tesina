@@ -29,20 +29,20 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.sql.Connection; // <-- Importación crucial para transacciones
-import java.sql.DriverManager; // <-- Importación crucial para obtener la conexión
-import java.util.HashSet; // <-- NUEVO: Para rastrear cambios
-import java.util.Set; // <-- NUEVO: Para rastrear cambios
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.util.HashSet;
+import java.util.Set;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.scene.control.TableCell;
 import app.controller.SessionManager;
 import javafx.fxml.Initializable;
+import javafx.scene.control.cell.ChoiceBoxTableCell;
 
 import static app.controller.MenuController.loadScene;
 
-// IMPLEMENTACIÓN DE LA INTERFAZ INITIALIZABLE
 public class UsuariosEmpleadoController implements Initializable {
 
     // Configuración de la conexión (Asegúrate que estos datos sean correctos)
@@ -59,6 +59,9 @@ public class UsuariosEmpleadoController implements Initializable {
     @FXML private TableColumn<UsuarioEmpleadoTableView, String> ApellidoColumn;
     @FXML private TableColumn<UsuarioEmpleadoTableView, Number> SalarioColumn;
     @FXML private TableColumn<UsuarioEmpleadoTableView, String> EstadoColumn;
+
+    @FXML private TableColumn<UsuarioEmpleadoTableView, Number> idTipoUsuarioColumn;
+
     @FXML private TableColumn<UsuarioEmpleadoTableView, Void> accionUsuarioColumn;
     @FXML private Button modificarUsuarioButton;
     @FXML private TextField filterField;
@@ -72,8 +75,11 @@ public class UsuariosEmpleadoController implements Initializable {
     private ObservableList<UsuarioEmpleadoTableView> listaUsuariosEmpleados;
     private FilteredList<UsuarioEmpleadoTableView> filteredData;
 
-    // NUEVO: Conjunto para rastrear qué usuarios tienen cambios pendientes de guardar
+    // Conjunto para rastrear qué usuarios tienen cambios pendientes de guardar
     private Set<UsuarioEmpleadoTableView> usuariosPendientesDeGuardar = new HashSet<>();
+
+    // MODIFICACIÓN CLAVE: Restringir a solo 2 y 4
+    private final ObservableList<Number> rolesDisponibles = FXCollections.observableArrayList(2, 4); // 2=Empleado, 4=Administrador
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -97,41 +103,42 @@ public class UsuariosEmpleadoController implements Initializable {
         SalarioColumn.setCellValueFactory(new PropertyValueFactory<>("salario"));
         EstadoColumn.setCellValueFactory(new PropertyValueFactory<>("estado"));
 
+        // Configuración para la columna de Tipo de Usuario
+        idTipoUsuarioColumn.setCellValueFactory(new PropertyValueFactory<>("idTipoUsuario"));
+
         usuariosEditableView.setEditable(true);
 
-        // Se configura la edición de las celdas y sus validaciones
+        // --- Configuración de edición de celdas (Nombre, Usuario, Contrasena, Apellido, Salario - SIN CAMBIOS) ---
         NombreColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         NombreColumn.setOnEditCommit(event -> {
             String nuevoNombre = event.getNewValue();
             if (nuevoNombre != null && !nuevoNombre.trim().isEmpty() && nuevoNombre.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+")) {
                 event.getRowValue().setNombre(nuevoNombre);
-                usuariosPendientesDeGuardar.add(event.getRowValue()); // REGISTRA CAMBIO
+                usuariosPendientesDeGuardar.add(event.getRowValue());
             } else {
                 mostrarAlerta("Advertencia", "El nombre solo puede contener letras y no puede estar vacío.", Alert.AlertType.WARNING);
                 usuariosEditableView.refresh();
             }
         });
 
-        // Se configura la edición de la columna de Usuario y su validación
         UsuarioColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         UsuarioColumn.setOnEditCommit(event -> {
             String nuevoUsuario = event.getNewValue();
             if (nuevoUsuario != null && !nuevoUsuario.trim().isEmpty() && !nuevoUsuario.contains(" ")) {
                 event.getRowValue().setUsuario(nuevoUsuario);
-                usuariosPendientesDeGuardar.add(event.getRowValue()); // REGISTRA CAMBIO
+                usuariosPendientesDeGuardar.add(event.getRowValue());
             } else {
                 mostrarAlerta("Advertencia", "El nombre de usuario no puede estar vacío y no puede contener espacios.", Alert.AlertType.WARNING);
                 usuariosEditableView.refresh();
             }
         });
 
-        // Se configura la edición de la columna de contraseña.
         ContrasenaColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         ContrasenaColumn.setOnEditCommit(event -> {
             String nuevaContrasena = event.getNewValue();
             if (nuevaContrasena != null && !nuevaContrasena.trim().isEmpty()) {
                 event.getRowValue().setContrasena(nuevaContrasena);
-                usuariosPendientesDeGuardar.add(event.getRowValue()); // REGISTRA CAMBIO
+                usuariosPendientesDeGuardar.add(event.getRowValue());
             } else {
                 mostrarAlerta("Advertencia", "La contraseña no puede estar vacía.", Alert.AlertType.WARNING);
                 usuariosEditableView.refresh();
@@ -143,14 +150,13 @@ public class UsuariosEmpleadoController implements Initializable {
             String nuevoApellido = event.getNewValue();
             if (nuevoApellido != null && !nuevoApellido.trim().isEmpty() && nuevoApellido.matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+")) {
                 event.getRowValue().setApellido(nuevoApellido);
-                usuariosPendientesDeGuardar.add(event.getRowValue()); // REGISTRA CAMBIO
+                usuariosPendientesDeGuardar.add(event.getRowValue());
             } else {
                 mostrarAlerta("Advertencia", "El apellido solo puede contener letras y no puede estar vacío.", Alert.AlertType.WARNING);
                 usuariosEditableView.refresh();
             }
         });
 
-        // Se configura la edición del Salario con validación para que solo acepte números
         SalarioColumn.setCellFactory(TextFieldTableCell.forTableColumn(new StringConverter<Number>() {
             @Override
             public String toString(Number object) {
@@ -162,7 +168,7 @@ public class UsuariosEmpleadoController implements Initializable {
                 try {
                     return Double.parseDouble(string);
                 } catch (NumberFormatException e) {
-                    return null; // Devuelve null si no es un número válido
+                    return null;
                 }
             }
         }));
@@ -171,15 +177,54 @@ public class UsuariosEmpleadoController implements Initializable {
             Number nuevoSalario = event.getNewValue();
             if (nuevoSalario != null && nuevoSalario.doubleValue() >= 0) {
                 event.getRowValue().setSalario(nuevoSalario.doubleValue());
-                usuariosPendientesDeGuardar.add(event.getRowValue()); // REGISTRA CAMBIO
+                usuariosPendientesDeGuardar.add(event.getRowValue());
             } else {
                 mostrarAlerta("Advertencia", "El salario debe ser un número válido y no puede ser negativo.", Alert.AlertType.WARNING);
                 usuariosEditableView.refresh();
             }
         });
 
-        // La columna de estado mantiene su lógica de guardado inmediato dentro de updateUsuarioEstado,
-        // ya que implica una validación de seguridad (contraseña) y una transacción inmediata.
+        // --- Configuración para la columna de ID Tipo de Usuario (Rol) ---
+        idTipoUsuarioColumn.setCellFactory(ChoiceBoxTableCell.forTableColumn(new StringConverter<Number>() {
+            @Override
+            public String toString(Number object) {
+                // Conversión para mostrar el nombre en lugar del ID
+                if (object != null) {
+                    int id = object.intValue();
+                    if (id == 4) return "4 (Administrador)";
+                    if (id == 2) return "2 (Empleado)";
+                    return object.toString();
+                }
+                return "";
+            }
+
+            @Override
+            public Number fromString(String string) {
+                // Si el ChoiceBox devuelve un string con el formato "X (Rol)", extraemos solo X
+                try {
+                    String idStr = string.split(" ")[0];
+                    return Integer.parseInt(idStr);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }, rolesDisponibles)); // Usa la lista restringida (2, 4)
+
+        idTipoUsuarioColumn.setOnEditCommit(event -> {
+            Number nuevoIdTipoUsuario = event.getNewValue();
+
+            // VALIDACIÓN CLAVE: Solo permitir 2 o 4
+            if (nuevoIdTipoUsuario != null && (nuevoIdTipoUsuario.intValue() == 2 || nuevoIdTipoUsuario.intValue() == 4)) {
+                event.getRowValue().setIdTipoUsuario(nuevoIdTipoUsuario.intValue());
+                usuariosPendientesDeGuardar.add(event.getRowValue());
+            } else {
+                mostrarAlerta("Advertencia", "El ID de Rol solo puede ser 2 (Empleado) o 4 (Administrador).", Alert.AlertType.WARNING);
+                usuariosEditableView.refresh();
+            }
+        });
+
+
+        // --- Configuración de EstadoColumn (SIN CAMBIOS) ---
         EstadoColumn.setCellFactory(column -> new TableCell<UsuarioEmpleadoTableView, String>() {
             private final ChoiceBox<String> choiceBox = new ChoiceBox<>();
 
@@ -188,8 +233,6 @@ public class UsuariosEmpleadoController implements Initializable {
                 choiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
                     if (getTableRow() != null && getTableRow().getItem() != null && newVal != null && !newVal.equals(oldVal)) {
                         UsuarioEmpleadoTableView usuario = getTableRow().getItem();
-                        // Llama al método para manejar el cambio de estado con la validación de contraseña
-                        // ESTE MÉTODO HACE EL GUARDADO INMEDIATO POR SEGURIDAD
                         updateUsuarioEstado(usuario, oldVal, newVal);
                     }
                 });
@@ -249,13 +292,13 @@ public class UsuariosEmpleadoController implements Initializable {
         });
 
 
+        // --- Configuración de accionUsuarioColumn (SIN CAMBIOS) ---
         accionUsuarioColumn.setCellFactory(param -> new TableCell<UsuarioEmpleadoTableView, Void>() {
             private final Button btn = new Button("Ver Dirección");
 
             {
                 btn.setMaxWidth(Double.MAX_VALUE);
                 btn.setOnAction(event -> {
-                    // Petición de contraseña para ver la dirección
                     TextInputDialog dialog = new TextInputDialog();
                     dialog.setTitle("Verificación de Seguridad");
                     dialog.setHeaderText("Ver dirección");
@@ -286,7 +329,7 @@ public class UsuariosEmpleadoController implements Initializable {
             }
         });
 
-        // Intentar cargar los datos al final de la inicialización
+        // Cargar datos
         try {
             cargarDatosyConfigurarFiltros();
         } catch (SQLException e) {
@@ -294,6 +337,8 @@ public class UsuariosEmpleadoController implements Initializable {
             mostrarAlerta("Error", "No se pudieron cargar los datos de los usuarios.", Alert.AlertType.ERROR);
         }
     }
+
+    // --- Métodos Auxiliares (SIN CAMBIOS) ---
 
     private void mostrarDireccionUsuario(int idDireccion) {
         Direccion direccion = direccionDAO.obtenerPorId(idDireccion);
@@ -357,7 +402,7 @@ public class UsuariosEmpleadoController implements Initializable {
             return;
         }
 
-        // Diálogo de confirmación con contraseña para todos los cambios
+        // Diálogo de confirmación con contraseña
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Confirmar Modificaciones Múltiples");
         dialog.setHeaderText("Verificación de seguridad");
@@ -382,7 +427,7 @@ public class UsuariosEmpleadoController implements Initializable {
         // --- INICIO DEL PROCESO DE GUARDADO MÚLTIPLE ---
         int exitos = 0;
         int fallos = 0;
-        UsuarioEmpleadoTableView usuarioLogueadoModificado = null; // Para verificar si el usuario logueado cambió credenciales
+        UsuarioEmpleadoTableView usuarioLogueadoModificado = null;
 
         for (UsuarioEmpleadoTableView selectedUsuario : usuariosPendientesDeGuardar) {
 
@@ -403,31 +448,39 @@ public class UsuariosEmpleadoController implements Initializable {
 
                 String originalUsuarioNombre = originalUser.getUsuario();
                 String originalContrasena = originalUser.getContrasenia();
+                int originalIdTipoUsuario = originalUser.getIdTipoUsuario();
 
                 boolean exitoHistorial = true;
 
-                // 2. Comparar y registrar cambios en Historial
-
+                // 2. Comparar y registrar cambios en Historial (Usuario, Contraseña, Nombre, Apellido, Salario)
                 if (!selectedUsuario.getUsuario().equals(originalUsuarioNombre)) {
                     exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(idUsuarioResponsable, "Usuario", "nombre_usuario", selectedUsuario.getIdUsuario(), originalUsuarioNombre, selectedUsuario.getUsuario(), conn);
                 }
-
                 if (!selectedUsuario.getContrasena().equals(originalContrasena)) {
                     exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(idUsuarioResponsable, "Usuario", "contrasena", selectedUsuario.getIdUsuario(), originalContrasena, selectedUsuario.getContrasena(), conn);
                 }
-
                 if (!selectedUsuario.getNombre().equals(originalPersona.getNombre())) {
                     exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(idUsuarioResponsable, "Persona", "nombre", selectedUsuario.getIdPersona(), originalPersona.getNombre(), selectedUsuario.getNombre(), conn);
                 }
                 if (!selectedUsuario.getApellido().equals(originalPersona.getApellido())) {
                     exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(idUsuarioResponsable, "Persona", "apellido", selectedUsuario.getIdPersona(), originalPersona.getApellido(), selectedUsuario.getApellido(), conn);
                 }
-
                 if (selectedUsuario.getSalario() != originalEmpleado.getSalario()) {
                     exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(idUsuarioResponsable, "Empleado", "salario", selectedUsuario.getIdPersona(), String.valueOf(originalEmpleado.getSalario()), String.valueOf(selectedUsuario.getSalario()), conn);
                 }
 
-                // NOTA: El estado se guarda inmediatamente en updateUsuarioEstado, no es necesario registrarlo aquí.
+                // Registro de cambio de idTipoUsuario (Rol)
+                if (selectedUsuario.getIdTipoUsuario() != originalIdTipoUsuario) {
+                    exitoHistorial = exitoHistorial && historialDAO.insertarRegistro(
+                            idUsuarioResponsable,
+                            "Persona", // La tabla donde se actualiza el rol
+                            "id_tipo_persona",
+                            selectedUsuario.getIdPersona(),
+                            String.valueOf(originalIdTipoUsuario),
+                            String.valueOf(selectedUsuario.getIdTipoUsuario()),
+                            conn
+                    );
+                }
 
                 // 3. Actualizar Tablas
 
@@ -440,12 +493,13 @@ public class UsuariosEmpleadoController implements Initializable {
                     stmt.executeUpdate();
                 }
 
-                // Persona
-                String updatePersonaSql = "UPDATE Persona SET nombre = ?, apellido = ? WHERE id_persona = ?";
+                // Persona (ACTUALIZACIÓN CLAVE: Se incluye id_tipo_persona)
+                String updatePersonaSql = "UPDATE Persona SET nombre = ?, apellido = ?, id_tipo_persona = ? WHERE id_persona = ?";
                 try (PreparedStatement stmt = conn.prepareStatement(updatePersonaSql)) {
                     stmt.setString(1, selectedUsuario.getNombre());
                     stmt.setString(2, selectedUsuario.getApellido());
-                    stmt.setInt(3, selectedUsuario.getIdPersona());
+                    stmt.setInt(3, selectedUsuario.getIdTipoUsuario()); // <-- Se actualiza el rol
+                    stmt.setInt(4, selectedUsuario.getIdPersona());
                     stmt.executeUpdate();
                 }
 
@@ -462,7 +516,6 @@ public class UsuariosEmpleadoController implements Initializable {
                     conn.commit();
                     exitos++;
 
-                    // Si el usuario logueado cambió sus credenciales, lo marcamos para redirección
                     if (selectedUsuario.getIdUsuario() == loggedInUserId &&
                             (!selectedUsuario.getContrasena().equals(originalContrasena) || !selectedUsuario.getUsuario().equals(originalUsuarioNombre))) {
                         usuarioLogueadoModificado = selectedUsuario;
@@ -485,9 +538,7 @@ public class UsuariosEmpleadoController implements Initializable {
             }
         }
 
-        // --- LIMPIEZA Y RESULTADO FINAL ---
-
-        // 1. Redirección si el usuario logueado se modificó
+        // --- LIMPIEZA Y RESULTADO FINAL (SIN CAMBIOS) ---
         if (usuarioLogueadoModificado != null) {
             SessionManager.getInstance().clearSession();
             Platform.runLater(() -> {
@@ -501,16 +552,14 @@ public class UsuariosEmpleadoController implements Initializable {
             return;
         }
 
-        // 2. Mostrar resumen del guardado
         if (fallos == 0) {
-            mostrarAlerta("Éxito", "Columna modificada exitosamente.", Alert.AlertType.INFORMATION);
+            mostrarAlerta("Éxito", "Cambios guardados exitosamente.", Alert.AlertType.INFORMATION);
         } else if (exitos > 0) {
             mostrarAlerta("Advertencia", "Se guardaron " + exitos + " usuarios, pero falló el guardado de " + fallos + " usuarios. Verifique los errores individuales.", Alert.AlertType.WARNING);
         } else {
             mostrarAlerta("Error", "Fallo al guardar la modificación. Ningún cambio fue persistido correctamente.", Alert.AlertType.ERROR);
         }
 
-        // 3. Limpiar Set y Refrescar Tabla
         usuariosPendientesDeGuardar.clear();
         usuariosEditableView.refresh();
         try {
@@ -519,6 +568,8 @@ public class UsuariosEmpleadoController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    // --- Métodos de alerta y redirección (SIN CAMBIOS) ---
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);
@@ -536,16 +587,14 @@ public class UsuariosEmpleadoController implements Initializable {
         }
     }
 
-    private boolean isProcessing = false; // Bandera para evitar re-entrada en el cambio de estado
+    private boolean isProcessing = false;
 
-    // Mantiene la lógica de guardado inmediato por requerimiento de seguridad (contraseña)
     private void updateUsuarioEstado(UsuarioEmpleadoTableView usuario, String oldVal, String newVal) {
-        // Evitar re-entrada si ya estamos procesando
         if (isProcessing) {
             return;
         }
 
-        isProcessing = true; // Marcar que estamos procesando
+        isProcessing = true;
 
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Confirmar cambio de estado");
@@ -571,9 +620,9 @@ public class UsuariosEmpleadoController implements Initializable {
                         if (!newVal.equals(oldVal)) {
                             exitoHistorial = historialDAO.insertarRegistro(
                                     idUsuarioResponsable,
-                                    "Usuario",
+                                    "Empleado", // Se asume que el estado está en Empleado
                                     "estado",
-                                    usuario.getIdUsuario(),
+                                    usuario.getIdPersona(), // Usar idPersona para la tabla Empleado
                                     oldVal,
                                     newVal,
                                     conn
@@ -585,15 +634,14 @@ public class UsuariosEmpleadoController implements Initializable {
                         userToUpdateState.setUsuario(usuario.getUsuario());
                         userToUpdateState.setContrasena(usuario.getContrasena());
                         userToUpdateState.setEstado(newVal);
+                        userToUpdateState.setIdTipoUsuario(usuario.getIdTipoUsuario());
 
                         boolean exitoUpdate = usuarioDAO.modificarUsuariosEmpleados(userToUpdateState, conn);
 
-                        // Si el cambio fue exitoso, eliminamos el usuario del set si estaba allí (aunque este cambio
-                        // no fue por el botón principal, ayuda a mantener limpio el estado).
                         if (exitoUpdate && exitoHistorial) {
                             conn.commit();
                             usuario.setEstado(newVal);
-                            usuariosPendientesDeGuardar.remove(usuario); // Limpia si se guardó aquí
+                            usuariosPendientesDeGuardar.remove(usuario);
                             mostrarAlerta("Éxito", "Estado actualizado exitosamente.", Alert.AlertType.INFORMATION);
                         } else {
                             conn.rollback();
@@ -627,31 +675,4 @@ public class UsuariosEmpleadoController implements Initializable {
             e.printStackTrace();
         }
     }
-
-    @FXML
-    private void handleHelpButton() {
-        // Creamos una nueva alerta de tipo INFORMATION
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-
-        // Configuramos el título y los encabezados del mensaje
-        alert.setTitle("Ayuda - Gestión de Usuarios Empleados");
-        alert.setHeaderText("Funcionalidades del Módulo");
-
-        // Configuramos el contenido del mensaje
-        alert.setContentText("Este módulo permite la administración completa de las cuentas de usuario con rol de empleado. Las funciones principales incluyen:\n"
-                + "\n"
-                + "1. Visualización y Edición: Modifique directamente los campos de la tabla (Usuario, Contraseña, Salario, Dirección, etc) Al hacer doble click en la Columna.\n"
-                + "----------------------------------------------------------------------\n"
-                + "2. Filtros: Utilice el campo de texto para buscar usuarios por Nombre, Apellido o Usuario, y el *ChoiceBox* para filtrar por Estado (Activo/Inactivo).\n"
-                + "----------------------------------------------------------------------\n"
-                + "3. Ver Direccion: Para Visualizar o Modificar la Direccion Registrada del Ussuario haga CLick en el boton Ver Direccion.\n"
-                + "----------------------------------------------------------------------\n"
-                + "4. Guardar Cambios: El botón 'Guardar Cambios' aplica todas las modificaciones realizadas en las celdas de la tabla a la base de datos. (Se le Solicitará la contraseña del Administrador Nuevamente.\n"
-                + "----------------------------------------------------------------------\n"
-                + "Para mas Información Visite el Manual de Usuario.\n");
-
-        // Mostramos el mensaje y esperamos a que el usuario lo cierre
-        alert.showAndWait();
-    }
-
 }

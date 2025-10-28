@@ -26,12 +26,8 @@ public class UsuarioDAO {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
-    // =========================================================================
-    // MODIFICACIÓN #1: Nueva sobrecarga para inserción en transacciones.
-    // Se usa la conexión recibida por parámetro.
-    // =========================================================================
-
     public boolean insertar(Usuario usuario, Connection conn) throws SQLException {
+        // Asumo que el campo 'id_tipo_persona' se maneja al insertar la Persona
         String sql = "INSERT INTO Usuario (id_persona, nombre_usuario, contrasena) VALUES (?, ?, ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -41,21 +37,22 @@ public class UsuarioDAO {
             stmt.executeUpdate();
             return true;
         }
-        // Nota: No se cierra conn aquí, se propaga la excepción si falla.
     }
 
-    // Método original (mantengo el método de inserción sin conexión por si se usa fuera de transacción)
     public boolean insertar(Usuario usuario) throws SQLException {
         try (Connection conn = getConnection()) {
-            return insertar(usuario, conn); // Reutilizo la lógica
+            return insertar(usuario, conn);
         }
     }
 
-
+    // =========================================================================
+    // CORRECCIÓN #1: Obtener p.id_tipo_persona para la vista de tabla.
+    // =========================================================================
     public ObservableList<UsuarioEmpleadoTableView> obtenerUsuariosEmpleados() throws SQLException {
         ObservableList<UsuarioEmpleadoTableView> listaUsuarios = FXCollections.observableArrayList();
 
-        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.nombre, p.apellido, p.numero_documento, e.salario, e.estado, p.id_persona, p.id_Direccion " +
+        // Se obtiene p.id_tipo_persona
+        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_tipo_persona, p.nombre, p.apellido, p.numero_documento, e.salario, e.estado, p.id_persona, p.id_Direccion " +
                 "FROM Usuario u " +
                 "JOIN Empleado e ON u.id_persona = e.id_persona " +
                 "JOIN Persona p ON e.id_persona = p.id_persona";
@@ -68,6 +65,8 @@ public class UsuarioDAO {
                 int idUsuario = rs.getInt("id_usuario");
                 String usuario = rs.getString("nombre_usuario");
                 String contrasena = rs.getString("contrasena");
+                // Se lee id_tipo_persona de la columna 'id_tipo_persona'
+                int idTipoUsuario = rs.getInt("id_tipo_persona");
                 String nombre = rs.getString("nombre");
                 String apellido = rs.getString("apellido");
                 String numeroDocumento = rs.getString("numero_documento");
@@ -76,7 +75,8 @@ public class UsuarioDAO {
                 int idPersona = rs.getInt("id_persona");
                 int idDireccion = rs.getInt("id_Direccion");
 
-                UsuarioEmpleadoTableView usuarioEmpleado = new UsuarioEmpleadoTableView(idUsuario, usuario, contrasena, nombre, apellido, numeroDocumento, salario, estado, idPersona, idDireccion);
+                // Se pasa idTipoUsuario al constructor de UsuarioEmpleadoTableView
+                UsuarioEmpleadoTableView usuarioEmpleado = new UsuarioEmpleadoTableView(idUsuario, usuario, contrasena, nombre, apellido, numeroDocumento, salario, estado, idPersona, idDireccion, idTipoUsuario);
                 listaUsuarios.add(usuarioEmpleado);
             }
         }
@@ -90,7 +90,7 @@ public class UsuarioDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, Usuario);
-            pstmt.setString(2, Contrasenia); // Manteniendo la comparación directa por solicitud
+            pstmt.setString(2, Contrasenia);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 return rs.next();
@@ -122,21 +122,14 @@ public class UsuarioDAO {
         return false;
     }
 
-    /**
-     * Modifica los datos principales del Usuario, Persona y Empleado asociado
-     * dentro de una sola transacción (este método maneja su propia conexión).
-     * @param usuario El objeto UsuarioEmpleadoTableView que contiene los datos a modificar.
-     * @return true si todas las modificaciones fueron exitosas.
-     */
     public boolean modificarUsuariosEmpleados(UsuarioEmpleadoTableView usuario) {
-        // Este método NO debe ser llamado desde el controlador que usa la transacción.
-        // Debe usarse un método que acepte la conexión.
+        // SIN CAMBIOS
         String sqlUpdateUsuario = "UPDATE Usuario SET nombre_usuario = ?, contrasena = ? WHERE id_usuario = ?";
         String sqlUpdatePersona = "UPDATE Persona SET nombre = ?, apellido = ? WHERE id_persona = ?";
         String sqlUpdateEmpleado = "UPDATE Empleado SET salario = ?, estado = ? WHERE id_persona = ?";
-
+        // ... (resto del método sin cambios)
         try (Connection conn = getConnection()) {
-            conn.setAutoCommit(false); // Inicia la transacción
+            conn.setAutoCommit(false);
 
             // 1. Actualizar Usuario
             try (PreparedStatement stmt = conn.prepareStatement(sqlUpdateUsuario)) {
@@ -162,7 +155,7 @@ public class UsuarioDAO {
                 stmt.executeUpdate();
             }
 
-            conn.commit(); // Confirma la transacción
+            conn.commit();
             return true;
         } catch (SQLException e) {
             System.err.println("Error al modificar el usuario en la base de datos (Transacción completa).");
@@ -171,15 +164,7 @@ public class UsuarioDAO {
         }
     }
 
-    // =========================================================================
-    // MODIFICACIÓN #2: Método de actualización de usuario para transacciones.
-    // Acepta la conexión 'conn' para ser parte de la transacción del controlador.
-    // ESTE ES EL MÉTODO QUE TU CONTROLADOR NECESITA (líneas 433, 562, etc.).
-    // =========================================================================
-
-
-    // Este método es usado en la transacción principal y en el cambio de estado.
-    // Nota: El objeto Usuario model que le pasas tiene que tener el campo estado.
+    // Método de actualización de usuario para transacciones. (SIN CAMBIOS)
     public boolean modificarUsuariosEmpleados(Usuario usuario, Connection conn) throws SQLException {
         if (usuario == null || usuario.getIdUsuario() <= 0) {
             return false;
@@ -208,8 +193,6 @@ public class UsuarioDAO {
             return rowsAffected > 0;
         }
     }
-    // --------------------------------------------------------------------------------------------
-
 
     public String obtenerContrasenaPorUsuario(String nombreUsuario) {
         String contrasena = null;
@@ -231,10 +214,15 @@ public class UsuarioDAO {
         return contrasena;
     }
 
+    // =========================================================================
+    // CORRECCIÓN #2: Obtener p.id_tipo_persona para el historial.
+    // =========================================================================
     public Usuario obtenerUsuarioPorId(int idUsuario, Connection conn) throws SQLException {
-        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, u.id_persona, e.estado " +
+        // Se obtiene p.id_tipo_persona
+        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_tipo_persona, u.id_persona, e.estado " +
                 "FROM Usuario u " +
                 "JOIN Empleado e ON u.id_persona = e.id_persona " +
+                "JOIN Persona p ON u.id_persona = p.id_persona " + // Se añade JOIN a Persona
                 "WHERE u.id_usuario = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idUsuario);
@@ -244,8 +232,10 @@ public class UsuarioDAO {
                     user.setIdUsuario(rs.getInt("id_usuario"));
                     user.setUsuario(rs.getString("nombre_usuario"));
                     user.setContrasena(rs.getString("contrasena"));
+                    // Se lee id_tipo_persona
+                    user.setIdTipoUsuario(rs.getInt("id_tipo_persona"));
                     user.setIdPersona(rs.getInt("id_persona"));
-                    user.setEstado(rs.getString("estado")); // Obtenido de Empleado
+                    user.setEstado(rs.getString("estado"));
                     return user;
                 }
             }
@@ -254,14 +244,16 @@ public class UsuarioDAO {
     }
 
     // =========================================================================
-    // MODIFICACIÓN CLAVE: Incluir JOIN con Empleado para obtener el estado.
+    // CORRECCIÓN #3: Obtener p.id_tipo_persona para inicio de sesión.
+    // (Este era el método que causaba el error original)
     // =========================================================================
     public Usuario obtenerUsuarioPorCredenciales(String nombreUsuario, String contrasena) {
 
-        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_persona, p.id_direccion, p.id_tipo_persona, e.estado " +
+        // Se selecciona p.id_tipo_persona
+        String sql = "SELECT u.id_usuario, u.nombre_usuario, u.contrasena, p.id_tipo_persona, p.id_persona, p.id_direccion, e.estado " +
                 "FROM Usuario u " +
                 "JOIN Persona p ON u.id_persona = p.id_persona " +
-                "LEFT JOIN Empleado e ON u.id_persona = e.id_persona " + // LEFT JOIN para obtener el estado del empleado
+                "LEFT JOIN Empleado e ON u.id_persona = e.id_persona " +
                 "WHERE u.nombre_usuario = ? AND u.contrasena = ?";
 
         Usuario usuarioEncontrado = null;
@@ -273,8 +265,9 @@ public class UsuarioDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
+                    // Se lee id_tipo_persona
                     int idTipoUsuario = rs.getInt("id_tipo_persona");
-                    String estadoEmpleado = rs.getString("estado"); // Recuperamos el estado
+                    String estadoEmpleado = rs.getString("estado");
 
                     usuarioEncontrado = new Usuario(
                             rs.getInt("id_usuario"),
@@ -285,7 +278,6 @@ public class UsuarioDAO {
                             idTipoUsuario
                     );
 
-                    // Asignamos el estado al objeto Usuario
                     usuarioEncontrado.setEstado(estadoEmpleado);
                 }
             }
