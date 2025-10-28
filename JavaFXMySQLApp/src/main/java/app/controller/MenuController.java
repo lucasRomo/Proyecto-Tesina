@@ -310,7 +310,7 @@ public class MenuController {
                 + "----------------------------------------------------------------------\n"
                 + "Haga Click en el Boton Stock para Ingresar al Menu de Stock, Proveedores y Productos.\n"
                 + "----------------------------------------------------------------------\n"
-                + "Haga Click en el Boton Admin para Ingresar a las Opciones de Administrador.\n"
+                + "Haga Click en el Boton Admin para Ingresar a las Opciones de Administrador (Solo Usuarios Administrador Pueden Ingresar).\n"
                 + "----------------------------------------------------------------------\n"
                 + "Para mas Información Visite el Manual de Usuario.\n");
 

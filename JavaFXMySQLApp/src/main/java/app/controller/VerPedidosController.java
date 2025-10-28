@@ -806,4 +806,36 @@ public class VerPedidosController implements Initializable {
             }
         }
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Gestión de Pedidos Pendientes");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la administración completa de los Pedidos Pendientes Registrados en el Sistema:\n"
+                + "\n"
+                + "1. Visualización y Edición: Modifique directamente los campos de la tabla (Monto Total, Monto Entregado y Instrucciones) Al hacer doble click en la Columna.\n"
+                + "----------------------------------------------------------------------\n"
+                + "2. Filtros: Utilice el *ChoiceBox* para filtrar por El nombre del Empleado a Cargo, Estado (Pendiente, Finalizado, Etc) y por el Tipo de Pago (Efectivo, Tarjeta de Debito, Etc).\n"
+                + "----------------------------------------------------------------------\n"
+                + "3. Estado: Utilice el *ChoiceBox* para Seleccionar el Estado en el que se Encuentra el Pedido (Pendiente, Finalizado, Etc)\n"
+                + "----------------------------------------------------------------------\n"
+                + "4. Contacto: Seleccione el Icono de Whatsapp para Ser Redirigído al Chat de Contacto del Cliente o El Icono del Gmail para Ser Redirirgído al Buzón del Gmail de la Empresa).\n"
+                + "----------------------------------------------------------------------\n"
+                + "5. Subir Comprobante: Utilice este Boton para Vincular la Imagen del Comprobante de pago Recibído a su Pedido Correspondiente.\n"
+                + "----------------------------------------------------------------------\n"
+                + "6. Detallar Ticket: Utilice este Boton para Redactar, Finalizar el Pedido y Generar un PDF del Ticket del Pedido.\n"
+                + "----------------------------------------------------------------------\n"
+                + "7. Guardar Cambios: El botón 'Guardar Cambios' aplica todas las modificaciones realizadas en las celdas de la tabla a la base de datos.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
 }

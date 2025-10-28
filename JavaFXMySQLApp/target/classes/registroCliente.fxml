@@ -101,7 +101,7 @@
         </HBox>
     </VBox>
 
-    <Button fx:id="helpButton" prefHeight="39.0" prefWidth="40.0" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="30.0" />
+    <Button fx:id="helpButton" onAction="#handleHelpButton" prefHeight="39.0" prefWidth="40.0" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="30.0" />
       <Text fill="#007bff" layoutX="595.0" layoutY="56.0" text="  ?" wrappingWidth="40.0">
           <font>
               <Font name="System Bold" size="18.0" />

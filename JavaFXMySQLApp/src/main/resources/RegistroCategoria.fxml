@@ -39,7 +39,7 @@
         </HBox>
     </VBox>
 
-    <Button fx:id="helpButton" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="30.0">
+    <Button fx:id="helpButton" onAction="#handleHelpButton" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="30.0">
         <graphic>
             <Text fill="#007bff" text="  ? " wrappingWidth="26.8837890625">
                 <font>

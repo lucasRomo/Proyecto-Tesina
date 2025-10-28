@@ -13,7 +13,7 @@
     </stylesheets>
     <VBox alignment="CENTER" spacing="10" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <children>
-            <Label styleClass="titulo-principal" text="Datos Específicos del Empleado">
+            <Label prefHeight="65.0" prefWidth="531.0" styleClass="titulo-principal" text="Datos Específicos del Empleado">
                 <font>
                     <Font name="System Bold" size="15.0" />
                 </font>
@@ -75,7 +75,7 @@
         </padding>
     </VBox>
 
-    <Button fx:id="helpButton" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+    <Button fx:id="helpButton" onAction="#handleHelpButton" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
         <graphic>
             <Text fill="#007bff" text="  ?" wrappingWidth="27.8837890625">
                 <font>

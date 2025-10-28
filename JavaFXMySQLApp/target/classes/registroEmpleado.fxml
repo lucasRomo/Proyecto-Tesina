@@ -110,7 +110,7 @@
         </HBox>
     </VBox>
 
-    <Button fx:id="helpButton" prefHeight="28.0" prefWidth="28.0" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+    <Button fx:id="helpButton" onAction="#handleHelpButton" prefHeight="28.0" prefWidth="28.0" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
         <graphic>
             <Text fill="#007bff" text="?">
                 <font>

@@ -277,4 +277,28 @@ public class VerDireccionController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu De Visualizacion y Modificación de Direccion");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la Visualizacion y Modificación de una Direccion en la Base de Datos :\n"
+                + "\n"
+                + "1. Para Modificar Los Datos de Direccion Haga Click en Modificar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "2. Ingrese Los Datos Correctos que no tengan (opcional) Escrito en el cuadro para Continuar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "3. Para Continuar Haga Click en Guardar Cambios o Para Cancelar La Modificación Haga Click en Volver.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
 }

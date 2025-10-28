@@ -238,4 +238,30 @@ public class RegistroProveedorController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu De Creación de un Proveedor");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la Creacion de un Proveedor en la Base de Datos :\n"
+                + "\n"
+                + "1. Ingrese Los Datos Correctos que no tengan (opcional) Escrito en el cuadro para Continuar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "2. Para Seleccionar el Tipo de Proveedor haga Click en el *ChoiceBox* y Seleccione una de las opciones Para Continuar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "3. Nuevo Tipo: Haga Click en el Siguiente Boton para Registrar un Nuevo Tipo de Proveedor en la Base de Datos.\n"
+                + "----------------------------------------------------------------------\n"
+                + "4. Para Continuar Haga Click en Registrar o Para Cancelar el Registro Haga Click en Cancelar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
 }

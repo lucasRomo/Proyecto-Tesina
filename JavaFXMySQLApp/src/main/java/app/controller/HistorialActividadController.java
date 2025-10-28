@@ -159,7 +159,7 @@ public class HistorialActividadController {
         // Configuramos el contenido del mensaje
         alert.setContentText("Este módulo permite la administración completa de las Modifiaciónes Hechas por un Empleado/Usuario Registrado en el Sistema:\n"
                 + "\n"
-                + "1. Para Filtrar La Modificaciónes Hechas por un Usuario/Empleado en Especifico Haga Click en el ChoiceBox de La Izquierda y Luego Seleccion el Nombre del Empleado.\n"
+                + "1. Para Filtrar La Modificaciónes Hechas por un Usuario/Empleado en Especifico Haga Click en el *ChoiceBox* de La Izquierda y Luego Seleccion el Nombre del Empleado.\n"
                 + "----------------------------------------------------------------------\n"
                 + "Para mas Información Visite el Manual de Usuario.\n");
 

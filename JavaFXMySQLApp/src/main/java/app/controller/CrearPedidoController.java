@@ -266,13 +266,13 @@ public class CrearPedidoController implements Initializable {
         // Configuramos el contenido del mensaje
         alert.setContentText("Este módulo permite la Creacion y la Asignacion de un Pedido :\n"
                 + "\n"
-                + "Paso 1: Seleccionar El Cliente, El Empleado a Cargo de completar el Pedido, El Estado del Encargo, y el Tipo del Pago con el que se Efectuó el Pedido.\n"
+                + "1. Haga Click en el *ChoiceBox* para Seleccionar El Cliente, El Empleado a Cargo de completar el Pedido, El Estado del Encargo, y el Tipo del Pago con el que se Efectuó el Pedido para Continuar.\n"
                 + "----------------------------------------------------------------------\n"
-                + "Paso 2: Seleccionar la Fecha de Entrega Estimada del Pedido.\n"
+                + "2. En Fecha de Entrega Estimada Haga Click en el Boton con el Icono de Calendario para Seleccionar la Fecha de Entrega Estimada del Pedido Para Continuar.\n"
                 + "----------------------------------------------------------------------\n"
-                + "Paso 3: Ingresar el Monto total y el Monto Entregado del Pedido.\n"
+                + "3. Complete los Campos Vacios para Continuar.\n"
                 + "----------------------------------------------------------------------\n"
-                + "Paso 4: Ingresar las Instrucciones (Opcional).\n"
+                + "4. Para Continuar Haga Click en Guardar Pedido o Para Cancelar el Registro Haga Click en Cancelar.\n"
                 + "----------------------------------------------------------------------\n"
                 + "Para mas Información Visite el Manual de Usuario.\n");
 

@@ -293,4 +293,28 @@ public class EmpleadoController {
         cargoField.clear();
         salarioField.clear();
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu De Creación de Empleado");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la Creacion de un Usuario Empleado :\n"
+                + "\n"
+                + "1. Ingrese Los Datos Correctos para Continuar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "2. Para Seleccionar la Fecha de Contratación Haga Click en el Boton en forma de Calendario a la Derecha Y selecciona una Fecha Para Continuar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "3. Para Guardar el Usuario Haga Click en Guardar Empleado o Para Cancelar el Registro Haga Click en Cancelar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
 }

@@ -541,4 +541,31 @@ public class VerHistorialPedidosController implements Initializable {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu De Visualizacion de Pedidos Retirados");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la Visualizacion de Pedidos Finaliizados y Retirados Exitosamente: \n"
+                + "\n"
+                + "1. Filtros: Utilice el *ChoiceBox* para filtrar por Nombre de Cliente (Seleccionar Cliente), por Nombre de Empleado (Seleccionar Empleado) o por Tipo de Pago (Seleccionar Tipo de Pago).\n"
+                + "----------------------------------------------------------------------\n"
+                + "2. Limpiar Filtros: Haga Click en el Boton para Limpiar todos Los Filtros Seleccionados Anteriormente.\n"
+                + "----------------------------------------------------------------------\n"
+                + "3. Ver PDF: Haga Click en el Siguiente Boton para ver el PDF del Comprobante de Pago Vinculado al ID del Pedido (Si no hay un Comprobante Vinculado se Mostrara No Disponible).\n"
+                + "----------------------------------------------------------------------\n"
+                + "4. Ticket: Haga Click en el Siguiente Boton para Generar y Guardar un PDF del Ticket del Pedido Finalizado Vinculado al ID del Pedido.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
+
 }

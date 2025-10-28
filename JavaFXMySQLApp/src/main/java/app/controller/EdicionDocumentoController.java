@@ -196,11 +196,11 @@ public class EdicionDocumentoController {
         // Configuramos el contenido del mensaje
         alert.setContentText("Este módulo permite la Modificación del Tipo de Documento y el Nº de Documento del Cliente:\n"
                 + "\n"
-                + "Paso 1: Seleccionar el Tipo de Documento (DNI, CUIL, CUIT, o Pasaporte).\n"
+                + "1. Haga Click en el *ChoiceBox* para Seleccionar el Nuevo Tipo de Documento (DNI, CUIL, CUIT, o Pasaporte).\n"
                 + "----------------------------------------------------------------------\n"
-                + "Paso 2: Ingresar el Nuevo numero de Documento.\n"
+                + "2. Ingrese el Nuevo numero de Documento para Continuar.\n"
                 + "----------------------------------------------------------------------\n"
-                + "Paso 3: Hacer Click en el Boton Guardar.\n"
+                + "3. Para Continuar Haga Click en Guardar o Para Cancelar el Registro Haga Click en Cancelar.\n"
                 + "----------------------------------------------------------------------\n"
                 + "Para mas Información Visite el Manual de Usuario.\n");
 

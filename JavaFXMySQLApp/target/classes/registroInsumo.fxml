@@ -82,7 +82,7 @@
         </padding>
     </VBox>
 
-    <Button fx:id="helpButton" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+    <Button fx:id="helpButton" onAction="#handleHelpButton" styleClass="help-button" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
         <graphic>
             <Text fill="#007bff" text="  ?" wrappingWidth="27.8837890625">
                 <font>

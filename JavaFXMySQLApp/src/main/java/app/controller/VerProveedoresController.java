@@ -8,13 +8,10 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TableColumn;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.ChoiceBox;
 import javafx.stage.Stage;
 import javafx.scene.Node;
-import javafx.scene.control.TableCell;
 
 public class VerProveedoresController {
 
@@ -107,5 +104,25 @@ public class VerProveedoresController {
     private void handleCerrarButton(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
+    }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu De Visualizacion de Proveedores Registrados");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la Visualizacion de Proveedores Registrados Vinculados al Tipo de Insumo Seleccionado: \n"
+                + "\n"
+                + "1. Filtros: Utilice el *ChoiceBox* para filtrar por Estado (Activo o Desactivado).\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
     }
 }

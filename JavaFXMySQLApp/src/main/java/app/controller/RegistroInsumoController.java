@@ -130,4 +130,28 @@ public class RegistroInsumoController {
         Stage stage = (Stage) nombreField.getScene().getWindow();
         stage.close();
     }
+
+    @FXML
+    private void handleHelpButton() {
+        // Creamos una nueva alerta de tipo INFORMATION
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+        // Configuramos el título y los encabezados del mensaje
+        alert.setTitle("Ayuda - Menu De Creación de Insumo");
+        alert.setHeaderText("Funcionalidades del Módulo");
+
+        // Configuramos el contenido del mensaje
+        alert.setContentText("Este módulo permite la Creacion de un Insumo en la Base de Datos :\n"
+                + "\n"
+                + "1. Ingrese Los Datos Correctos para Continuar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "2. Para Seleccionar el Tipo de Proveedor haga Click en el *ChoiceBox* y Seleccione una de las opciones Para Continuar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "3. Para Continuar Haga Click en Guardar Insumo o Para Cancelar el Registro Haga Click en Cancelar.\n"
+                + "----------------------------------------------------------------------\n"
+                + "Para mas Información Visite el Manual de Usuario.\n");
+
+        // Mostramos el mensaje y esperamos a que el usuario lo cierre
+        alert.showAndWait();
+    }
 }

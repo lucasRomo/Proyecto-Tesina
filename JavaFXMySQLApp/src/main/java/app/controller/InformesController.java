@@ -416,7 +416,7 @@ public class InformesController {
                 + "----------------------------------------------------------------------\n"
                 + "Paso 2: Seleccione La Fecha Hasta donde quiere que calcule el Grafico a la Derecha.\n"
                 + "----------------------------------------------------------------------\n"
-                + "Paso 3: Haga Click en el Boton Generar Grafico.\n"
+                + "Paso 3: Haga Click en el Boton Generar Grafico para Continuar.\n"
                 + "----------------------------------------------------------------------\n"
                 + "Para Filtrar los Pedidos Completados por Dicho Empleado Haga click en el Choicebox de la Derecha y luego seleccione el Empleado.\n"
                 + "----------------------------------------------------------------------\n"
