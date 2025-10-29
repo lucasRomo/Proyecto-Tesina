@@ -150,7 +150,7 @@ public class RegistroController {
 
     private boolean validarCamposPersonales() {
         String email = emailField.getText().trim();
-        if (this.nombreField.getText().isEmpty() || this.apellidoField.getText().isEmpty() ||
+        if (this.nombreField.getText().isEmpty() ||
                 this.tipoDocumentoComboBox.getValue() == null || this.numeroDocumentoField.getText().isEmpty() ||
                 this.emailField.getText().isEmpty() || this.telefonoField.getText().isEmpty()) {
             this.mostrarAlerta("Advertencia", "Por favor, complete todos los campos personales obligatorios.");
@@ -160,14 +160,11 @@ public class RegistroController {
             mostrarAlerta("Error de Registro", "El email que ingresó ya se encuentra registrado.");
             return false;
         }
-        if (!this.validarSoloLetras(this.nombreField.getText())) {
-            this.mostrarAlerta("Advertencia", "El nombre no puede contener números. Por favor, ingrese caracteres válidos.");
-            return false;
-        }
+        if (!this.apellidoField.getText().isEmpty()){
         if (!this.validarSoloLetras(this.apellidoField.getText())) {
             this.mostrarAlerta("Advertencia", "El apellido no puede contener números. Por favor, ingrese caracteres válidos.");
             return false;
-        }
+        }}
         if (!this.validarSoloNumeros(this.telefonoField.getText())) {
             this.mostrarAlerta("Advertencia", "El teléfono solo puede contener números.");
             return false;

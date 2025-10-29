@@ -165,7 +165,7 @@ public class ClienteController {
         nombreColumn.setOnEditCommit(event -> {
             Cliente cliente = event.getRowValue();
             String nuevoNombre = event.getNewValue().trim();
-            if (nuevoNombre.isEmpty() || !validarSoloLetrasYEspacios(nuevoNombre)) {
+            if (nuevoNombre.isEmpty()) {
                 mostrarAlerta("Advertencia", "El nombre es inválido o está vacío.", Alert.AlertType.WARNING);
                 clientesTableView.refresh(); return;
             }
@@ -178,10 +178,11 @@ public class ClienteController {
         apellidoColumn.setOnEditCommit(event -> {
             Cliente cliente = event.getRowValue();
             String nuevoApellido = event.getNewValue().trim();
-            if (nuevoApellido.isEmpty() || !validarSoloLetrasYEspacios(nuevoApellido)) {
-                mostrarAlerta("Advertencia", "El apellido es inválido o está vacío.", Alert.AlertType.WARNING);
+            if(!nuevoApellido.isEmpty()){
+            if (!validarSoloLetrasYEspacios(nuevoApellido)) {
+                mostrarAlerta("Advertencia", "El apellido es inválido.", Alert.AlertType.WARNING);
                 clientesTableView.refresh(); return;
-            }
+            }}
             cliente.setApellido(nuevoApellido);
             clientesPendientesDeGuardar.add(cliente); // REGISTRA EL CAMBIO
             clientesTableView.refresh();

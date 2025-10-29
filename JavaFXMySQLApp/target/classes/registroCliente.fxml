@@ -37,10 +37,10 @@
                         <ColumnConstraints percentWidth="40" />
                         <ColumnConstraints percentWidth="60" />
                     </columnConstraints>
-                    <Label text="Nombre:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <Label text="Nombre/Empresa:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                     <TextField fx:id="nombreField" promptText="Nombre" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                     <Label text="Apellido:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                    <TextField fx:id="apellidoField" promptText="Apellido" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <TextField fx:id="apellidoField" promptText="Apellido(Opcional)" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                     <Label text="Tipo de Documento:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                     <ComboBox fx:id="tipoDocumentoComboBox" prefWidth="200" promptText="Seleccione tipo" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                     <Label text="N° Documento:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
