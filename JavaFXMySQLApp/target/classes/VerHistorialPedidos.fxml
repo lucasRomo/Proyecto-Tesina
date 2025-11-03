@@ -23,8 +23,8 @@
             </font>
         </Label>
 
-        <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="10.0" styleClass="filter-panel" style="-fx-background-color: #f0f0f0; -fx-padding: 10; -fx-background-radius: 8;">
-            <Label styleClass="label-bold" text="Filtrar por:" textFill="#333333" />
+        <HBox alignment="CENTER_LEFT" maxWidth="Infinity" spacing="10.0">
+            <Label styleClass="label-blanco" text="Filtrar por:" textFill="#333333" />
 
             <!-- NUEVO FILTRO DE ESTADO -->
             <ComboBox fx:id="estadoHistorialFilterComboBox" promptText="Estado (Retirado/Cancelado)" styleClass="custom-combo-box" HBox.hgrow="ALWAYS" />
