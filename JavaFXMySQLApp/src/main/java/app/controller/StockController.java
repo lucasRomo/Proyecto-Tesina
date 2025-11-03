@@ -165,6 +165,7 @@ public class StockController {
                 .map(TipoProveedor::getDescripcion)
                 .collect(Collectors.toList());
 
+        // ES ACA EL PROBLEMA WIFI VOLVÉ //
         idTipoProveedorColumn.setCellFactory(ComboBoxTableCell.forTableColumn(FXCollections.observableArrayList(descripcionesTipos)));
 
         idTipoProveedorColumn.setOnEditCommit(event -> {
@@ -193,7 +194,7 @@ public class StockController {
 
                 if (insumoOriginalDB == null) throw new SQLException("Datos originales del insumo no encontrados.");
 
-                String descripcionPrevia = insumoOriginalDB.getDescripcion(); // Obtener la descripción previa de la BD
+                String descripcionTipoPrevia = getTipoProveedorNombre(insumoOriginalDB.getIdTipoProveedor()); // Obtener la descripción previa de la BD
 
                 // Aplicar el cambio de ID al modelo (para el guardado)
                 insumoModificado.setIdTipoProveedor(nuevoTipo.getId());
@@ -206,7 +207,7 @@ public class StockController {
                             "Insumo",
                             "id_tipo_proveedor",
                             insumoModificado.getIdInsumo(),
-                            descripcionPrevia,
+                            descripcionTipoPrevia,
                             nuevaDescripcion
                     );
                     mostrarAlerta("Éxito", "Tipo de proveedor actualizado y logueado.", Alert.AlertType.INFORMATION);
