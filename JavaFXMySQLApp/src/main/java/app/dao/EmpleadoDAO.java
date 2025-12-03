@@ -22,19 +22,6 @@ public class EmpleadoDAO {
             "SELECT e.id_empleado, e.fecha_contratacion, e.cargo, e.salario, e.estado, " +
                     "e.id_persona, p.nombre, p.apellido " +
                     "FROM Empleado e JOIN Persona p ON e.id_persona = p.id_persona";
-
-    // 1. Actualiza los datos de la persona
-    private static final String UPDATE_PERSONA =
-            "UPDATE Persona SET nombre = ?, apellido = ? WHERE id_persona = ?";
-
-    // 2. Actualiza los datos del empleado
-    private static final String UPDATE_EMPLEADO =
-            "UPDATE Empleado SET fecha_contratacion = ?, cargo = ?, salario = ?, estado = ? WHERE id_empleado = ?";
-
-    private static final String UPDATE_EMPLEADO_ESTADO_SIMPLE =
-            "UPDATE Empleado SET estado = ? WHERE id_empleado = ?";
-
-
     /**
      * Obtiene la conexión a la base de datos y carga el driver.
      * @return Objeto Connection.
