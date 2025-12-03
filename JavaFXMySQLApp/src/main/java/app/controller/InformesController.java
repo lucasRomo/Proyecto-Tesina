@@ -30,10 +30,8 @@ import java.util.HashMap;
 public class InformesController {
 
     // DAOs
-    private final FacturaDAO facturaDAO = new FacturaDAO();
     private final ComprobantePagoDAO comprobantePagoDAO = new ComprobantePagoDAO();
     private final ProductoDAO productoDAO = new ProductoDAO();
-    private final EmpleadoDAO empleadoDAO = new EmpleadoDAO();
     private final PedidoDAO pedidoDAO = new PedidoDAO(); // Ya existe
 
     // Variable para almacenar el conteo de pagos (Necesario para el Tooltip del PieChart)

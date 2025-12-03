@@ -608,24 +608,6 @@ public class ClienteController {
     /**
      * Revierto los cambios visuales y en el modelo si la validación final falla.
      */
-    private void revertirCambios(Cliente clienteModificado) {
-        if (clienteOriginal != null && clienteOriginalIndex != -1) {
-
-            clienteModificado.setNombre(clienteOriginal.getNombre());
-            clienteModificado.setApellido(clienteOriginal.getApellido());
-            clienteModificado.setIdTipoDocumento(clienteOriginal.getIdTipoDocumento());
-            clienteModificado.setNumeroDocumento(clienteOriginal.getNumeroDocumento());
-            clienteModificado.setTelefono(clienteOriginal.getTelefono());
-            clienteModificado.setEmail(clienteOriginal.getEmail());
-            clienteModificado.setRazonSocial(clienteOriginal.getRazonSocial());
-            clienteModificado.setPersonaContacto(clienteOriginal.getPersonaContacto());
-            clienteModificado.setCondicionesPago(clienteOriginal.getCondicionesPago());
-
-            clientesTableView.getItems().set(clienteOriginalIndex, clienteModificado);
-            clienteOriginal = new Cliente(clienteModificado);
-            clientesTableView.refresh();
-        }
-    }
 
     @FXML
     public void handleRefreshButton(ActionEvent event) {

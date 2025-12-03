@@ -112,11 +112,6 @@ public class EmpleadoController {
         }
     }
 
-
-    public void setDialogStage(Stage dialogStage) {
-        this.dialogStage = dialogStage;
-    }
-
     public void setDatosPersona(String nombre, String apellido, int idTipoDocumento, String numeroDocumento, int idDireccion, String telefono, String email) {
         this.personaData = new Persona(nombre, apellido, idTipoDocumento, numeroDocumento, idDireccion, telefono, email, 2); // '2' para id_tipo_persona de Empleado
         nombrePersonaLabel.setText(nombre + " " + apellido);
@@ -279,10 +274,6 @@ public class EmpleadoController {
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
         alert.showAndWait();
-    }
-
-    private void mostrarAlerta(String titulo, String mensaje) {
-        mostrarAlerta(titulo, mensaje, Alert.AlertType.INFORMATION);
     }
 
     private void limpiarCampos() {

@@ -27,12 +27,10 @@ public class RegistroInsumoController {
     private InsumoDAO insumoDAO;
     private TipoProveedorDAO tipoProveedorDAO;
     private StockController stockController;
-    private Map<String, Integer> tipoProveedorMap;
 
     public RegistroInsumoController() {
         this.insumoDAO = new InsumoDAO();
         this.tipoProveedorDAO = new TipoProveedorDAO();
-        this.tipoProveedorMap = new HashMap<>();
     }
 
     @FXML

@@ -50,10 +50,6 @@ public class MenuController {
     // ===================================
     // CAMPOS DE PROPIEDADES DE SESIÓN
     // ===================================
-    private String loggedInUserPassword;
-    private String loggedInUsername;
-    private int loggedInUserId;
-
     // ===================================
     // CAMPOS FXML (@FXML) - Se elimina maximizarButton
     // ===================================
@@ -70,18 +66,6 @@ public class MenuController {
     // ===================================
     // MÉTODOS SETTER
     // ===================================
-    public void setLoggedInUserPassword(String password) {
-        this.loggedInUserPassword = password;
-    }
-
-    public void setLoggedInUsername(String username) {
-        this.loggedInUsername = username;
-    }
-
-    public void setLoggedInUserId(int userId) {
-        this.loggedInUserId = userId;
-    }
-
     // =========================================================================================
     // MÉTODOS HANDLER DE NAVEGACIÓN (TODOS USANDO loadScene)
     // =========================================================================================

@@ -63,7 +63,6 @@ public class Persona {
     // Getters y Setters con sus respectivos métodos Property() (EXISTENTES)
     public int getIdPersona() { return idPersona.get(); }
     public void setIdPersona(int idPersona) { this.idPersona.set(idPersona); }
-    public IntegerProperty idPersonaProperty() { return idPersona; }
 
     public String getNombre() { return nombre.get(); }
     public StringProperty nombreProperty() { return nombre; }
@@ -74,7 +73,6 @@ public class Persona {
     public void setApellido(String apellido) { this.apellido.set(apellido); }
 
     public int getIdTipoDocumento() { return idTipoDocumento.get(); }
-    public IntegerProperty idTipoDocumentoProperty() { return idTipoDocumento; }
     public void setIdTipoDocumento(int idTipoDocumento) { this.idTipoDocumento.set(idTipoDocumento); }
 
     public String getNumeroDocumento() { return numeroDocumento.get(); }
@@ -82,7 +80,6 @@ public class Persona {
     public void setNumeroDocumento(String numeroDocumento) { this.numeroDocumento.set(numeroDocumento); }
 
     public int getIdDireccion() { return idDireccion.get(); }
-    public IntegerProperty idDireccionProperty() { return idDireccion; }
     public void setIdDireccion(int idDireccion) { this.idDireccion.set(idDireccion); }
 
     public String getTelefono() { return telefono.get(); }
@@ -95,6 +92,5 @@ public class Persona {
 
     // --- NUEVOS MÉTODOS PARA idTipoPersona ---
     public int getIdTipoPersona() { return idTipoPersona.get(); }
-    public IntegerProperty idTipoPersonaProperty() { return idTipoPersona; }
     public void setIdTipoPersona(int idTipoPersona) { this.idTipoPersona.set(idTipoPersona); }
 }

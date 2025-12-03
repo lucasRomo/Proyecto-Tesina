@@ -67,8 +67,4 @@ public class SessionManager {
             this.loggedInUsername = null;
             this.loggedInUserId = -1;
         }
-
-        public boolean isAuthenticated() {
-            return this.loggedInUserPassword != null && this.loggedInUserId != -1;
-        }
 }

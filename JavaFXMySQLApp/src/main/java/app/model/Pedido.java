@@ -136,32 +136,16 @@ public class Pedido {
         return idCliente;
     }
 
-    public void setIdCliente(int idCliente) {
-        this.idCliente = idCliente;
-    }
-
     public String getNombreCliente() {
         return nombreCliente;
-    }
-
-    public void setNombreCliente(String nombreCliente) {
-        this.nombreCliente = nombreCliente;
     }
 
     public int getIdEmpleado() {
         return idEmpleado;
     }
 
-    public void setIdEmpleado(int idEmpleado) {
-        this.idEmpleado = idEmpleado;
-    }
-
     public String getNombreEmpleado() {
         return nombreEmpleado;
-    }
-
-    public void setNombreEmpleado(String nombreEmpleado) {
-        this.nombreEmpleado = nombreEmpleado;
     }
 
     public String getEstado() {
@@ -184,16 +168,8 @@ public class Pedido {
         return fechaCreacion;
     }
 
-    public void setFechaCreacion(LocalDateTime fechaCreacion) {
-        this.fechaCreacion = fechaCreacion;
-    }
-
     public LocalDateTime getFechaEntregaEstimada() {
         return fechaEntregaEstimada;
-    }
-
-    public void setFechaEntregaEstimada(LocalDateTime fechaEntregaEstimada) {
-        this.fechaEntregaEstimada = fechaEntregaEstimada;
     }
 
     public LocalDateTime getFechaFinalizacion() {
@@ -232,23 +208,11 @@ public class Pedido {
         return rutaComprobante;
     }
 
-    public void setRutaComprobante(String rutaComprobante) {
-        this.rutaComprobante = rutaComprobante;
-    }
-
     public String getTelefonoCliente() {
         return telefonoCliente;
     }
 
-    public void setTelefonoCliente(String telefonoCliente) {
-        this.telefonoCliente = telefonoCliente;
-    }
-
     public String getEmailCliente() {
         return emailCliente;
-    }
-
-    public void setEmailCliente(String emailCliente) {
-        this.emailCliente = emailCliente;
     }
 }

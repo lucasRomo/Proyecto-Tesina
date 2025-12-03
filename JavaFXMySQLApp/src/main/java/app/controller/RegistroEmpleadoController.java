@@ -234,15 +234,6 @@ public class RegistroEmpleadoController {
         return texto.matches(regex);
     }
 
-
-    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
-        Alert alert = new Alert(tipo);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
-    }
-
     @FXML
     private void handleVolverButton(ActionEvent event) {
         // Obtenemos el Node (el botón) que disparó el evento y cerramos la ventana.

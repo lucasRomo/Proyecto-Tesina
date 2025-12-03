@@ -34,48 +34,7 @@ public class ComprobantePagoDAO {
     }
 
     /**
-     * 1. Inserta un nuevo registro de comprobante de pago en la DB.
-     * Este método se llama cuando el cliente realiza el pago.
-     * @param idPedido El ID del pedido asociado.
-     * @param idCliente El ID del cliente que realiza el pago.
-     * @param tipoPago El método de pago (ej: "Transferencia").
-     * @param montoPago El monto abonado.
-     * @return El ID generado del nuevo comprobante o -1 en caso de error.
-     */
-    public int insertarComprobante(int idPedido, int idCliente, String tipoPago, double montoPago) {
-        // El campo 'archivo' queda NULL inicialmente.
-        String sql = "INSERT INTO ComprobantePago (id_pedido, id_cliente, tipo_pago, monto_pago, fecha_carga) " +
-                "VALUES (?, ?, ?, ?, NOW())";
-        int idGenerado = -1;
-
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            ps.setInt(1, idPedido);
-            ps.setInt(2, idCliente);
-            ps.setString(3, tipoPago);
-            ps.setDouble(4, montoPago);
-
-            int filasAfectadas = ps.executeUpdate();
-
-            if (filasAfectadas > 0) {
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        idGenerado = rs.getInt(1);
-                    }
-                }
-            }
-            return idGenerado;
-
-        } catch (SQLException e) {
-            System.err.println("Error al insertar el comprobante inicial para el pedido ID: " + idPedido);
-            e.printStackTrace();
-            return -1;
-        }
-    }
-
-    /**
-     * 2. Actualiza el campo 'archivo' (ruta del PDF/JPG) para un comprobante existente.
+     * 1. Actualiza el campo 'archivo' (ruta del PDF/JPG) para un comprobante existente.
      * Este es el método que guarda la ruta del archivo físico.
      * @param idPedido El ID del pedido asociado al comprobante.
      * @param rutaArchivo La ruta absoluta donde se guardó el archivo.
@@ -113,46 +72,6 @@ public class ComprobantePagoDAO {
     // ----------------------------------------------------------------------------------
     // NUEVO MÉTODO DE ESTADÍSTICAS - AJUSTADO PARA InformesController
     // ----------------------------------------------------------------------------------
-
-    /**
-     * Obtiene la distribución de ingresos agrupada por tipo de pago (Efectivo, Transferencia, etc.)
-     * en un rango de fechas. Retorna un Map<Tipo de Pago, Monto Total>.
-     * Método requerido por InformesController: getDistribucionPagosPorRango.
-     */
-    public Map<String, Double> getDistribucionPagosPorRango(LocalDate inicio, LocalDate fin) {
-        Map<String, Double> data = new HashMap<>();
-
-        // Consulta SQL con JOIN a Pedido y filtro por estado 'Retirado'
-        String sql = "SELECT cp.tipo_pago, COALESCE(SUM(cp.monto_pago), 0) AS total_pago " +
-                "FROM ComprobantePago cp " +
-                "JOIN Pedido p ON cp.id_pedido = p.id_pedido " + // <<-- JOIN CLAVE
-                "WHERE cp.fecha_carga BETWEEN ? AND ? " +
-                "AND p.estado = 'Retirado' " + // <<-- FILTRO POR PEDIDO COMPLETADO
-                "GROUP BY cp.tipo_pago";
-
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            // inicio.atStartOfDay() y fin.atTime(23, 59, 59) para incluir el día completo
-            stmt.setTimestamp(1, Timestamp.valueOf(inicio.atStartOfDay()));
-            stmt.setTimestamp(2, Timestamp.valueOf(fin.atTime(23, 59, 59)));
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    String tipoPago = rs.getString("tipo_pago");
-                    double totalPago = rs.getDouble("total_pago");
-
-                    if (totalPago > 0) {
-                        data.put(tipoPago, totalPago);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al obtener distribución de pagos (monto): " + e.getMessage());
-            e.printStackTrace();
-        }
-        return data;
-    }
 
     public Map<String, Integer> getConteoPagosPorRango(LocalDate inicio, LocalDate fin) {
         Map<String, Integer> conteo = new HashMap<>();

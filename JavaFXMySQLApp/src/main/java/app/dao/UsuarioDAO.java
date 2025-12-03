@@ -83,24 +83,6 @@ public class UsuarioDAO {
         return listaUsuarios;
     }
 
-    public boolean verificarUsuario(String Usuario, String Contrasenia) {
-        String sql = "SELECT * FROM Usuario Where nombre_usuario = ? AND contrasena = ?";
-
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, Usuario);
-            pstmt.setString(2, Contrasenia);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                return rs.next();
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 
     public boolean verificarSiUsuarioExiste(String Usuario) {
         String sql = "SELECT COUNT(*) FROM Usuario WHERE nombre_usuario = ?";
@@ -120,48 +102,6 @@ public class UsuarioDAO {
             e.printStackTrace();
         }
         return false;
-    }
-
-    public boolean modificarUsuariosEmpleados(UsuarioEmpleadoTableView usuario) {
-        // SIN CAMBIOS
-        String sqlUpdateUsuario = "UPDATE Usuario SET nombre_usuario = ?, contrasena = ? WHERE id_usuario = ?";
-        String sqlUpdatePersona = "UPDATE Persona SET nombre = ?, apellido = ? WHERE id_persona = ?";
-        String sqlUpdateEmpleado = "UPDATE Empleado SET salario = ?, estado = ? WHERE id_persona = ?";
-        // ... (resto del método sin cambios)
-        try (Connection conn = getConnection()) {
-            conn.setAutoCommit(false);
-
-            // 1. Actualizar Usuario
-            try (PreparedStatement stmt = conn.prepareStatement(sqlUpdateUsuario)) {
-                stmt.setString(1, usuario.getUsuario());
-                stmt.setString(2, usuario.getContrasena());
-                stmt.setInt(3, usuario.getIdUsuario());
-                stmt.executeUpdate();
-            }
-
-            // 2. Actualizar Persona
-            try (PreparedStatement stmt = conn.prepareStatement(sqlUpdatePersona)) {
-                stmt.setString(1, usuario.getNombre());
-                stmt.setString(2, usuario.getApellido());
-                stmt.setInt(3, usuario.getIdPersona());
-                stmt.executeUpdate();
-            }
-
-            // 3. Actualizar Empleado
-            try (PreparedStatement stmt = conn.prepareStatement(sqlUpdateEmpleado)) {
-                stmt.setDouble(1, usuario.getSalario());
-                stmt.setString(2, usuario.getEstado());
-                stmt.setInt(3, usuario.getIdPersona());
-                stmt.executeUpdate();
-            }
-
-            conn.commit();
-            return true;
-        } catch (SQLException e) {
-            System.err.println("Error al modificar el usuario en la base de datos (Transacción completa).");
-            e.printStackTrace();
-            return false;
-        }
     }
 
     // Método de actualización de usuario para transacciones. (SIN CAMBIOS)
@@ -192,26 +132,6 @@ public class UsuarioDAO {
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
         }
-    }
-
-    public String obtenerContrasenaPorUsuario(String nombreUsuario) {
-        String contrasena = null;
-        String sql = "SELECT contrasena FROM Usuario WHERE nombre_usuario = ?";
-
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, nombreUsuario);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    contrasena = rs.getString("contrasena");
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al obtener la contraseña del usuario: " + e.getMessage());
-        }
-        return contrasena;
     }
 
     // =========================================================================

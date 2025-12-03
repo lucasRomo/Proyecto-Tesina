@@ -31,12 +31,6 @@ public class EmpleadoDAO {
     private static final String UPDATE_EMPLEADO =
             "UPDATE Empleado SET fecha_contratacion = ?, cargo = ?, salario = ?, estado = ? WHERE id_empleado = ?";
 
-    // 3. Actualiza el estado del usuario (asumiendo que la tabla usuario se relaciona con id_persona o id_empleado)
-    // Usaremos una consulta de ejemplo que asume relación a través de Empleado (debe ajustarse al esquema real de Usuario)
-    private static final String UPDATE_USUARIO_ESTADO =
-            "UPDATE Usuario u JOIN Empleado e ON u.id_empleado = e.id_empleado " + // AJUSTAR ESTA CLÁUSULA JOIN SEGÚN TU ESQUEMA REAL
-                    "SET u.estado = ? WHERE e.id_empleado = ?";
-
     private static final String UPDATE_EMPLEADO_ESTADO_SIMPLE =
             "UPDATE Empleado SET estado = ? WHERE id_empleado = ?";
 
@@ -110,54 +104,6 @@ public class EmpleadoDAO {
     }
 
     /**
-     * Realiza la actualización de los datos de Empleado y Persona dentro de una transacción.
-     * @param empleado El objeto Empleado con los datos actualizados.
-     * @param conn La conexión activa para la transacción.
-     * @return true si todas las actualizaciones fueron exitosas.
-     * @throws SQLException Si falla alguna operación SQL.
-     */
-    public boolean actualizarEmpleadoCompleto(Empleado empleado, Connection conn) throws SQLException {
-        int personaRowsAffected = 0;
-        int empleadoRowsAffected = 0;
-
-        // 1. Actualizar tabla Persona (nombre y apellido)
-        try (PreparedStatement psPersona = conn.prepareStatement(UPDATE_PERSONA)) {
-            psPersona.setString(1, empleado.getNombre());
-            psPersona.setString(2, empleado.getApellido());
-            psPersona.setInt(3, empleado.getIdPersona());
-            personaRowsAffected = psPersona.executeUpdate();
-        }
-
-        // 2. Actualizar tabla Empleado (fecha_contratacion, cargo, salario, estado)
-        try (PreparedStatement psEmpleado = conn.prepareStatement(UPDATE_EMPLEADO)) {
-            psEmpleado.setDate(1, java.sql.Date.valueOf(empleado.getFechaContratacion()));
-            psEmpleado.setString(2, empleado.getCargo());
-            psEmpleado.setDouble(3, empleado.getSalario());
-            psEmpleado.setString(4, empleado.getEstado());
-            psEmpleado.setInt(5, empleado.getIdEmpleado());
-            empleadoRowsAffected = psEmpleado.executeUpdate();
-        }
-
-        // 3. Opcional: Actualizar el estado en la tabla Usuario si está activo/inactivo (Descomentar si es necesario)
-        /*
-        try (PreparedStatement psUsuario = conn.prepareStatement(UPDATE_USUARIO_ESTADO)) {
-            // Se asume que el estado del usuario es el mismo que el del empleado ("Activo"/"Inactivo")
-            psUsuario.setString(1, empleado.getEstado());
-            psUsuario.setInt(2, empleado.getIdEmpleado()); // Usamos id_empleado en la cláusula WHERE de la JOIN
-            psUsuario.executeUpdate(); // No validamos el affectedRows aquí porque el usuario puede no existir
-        }
-        */
-
-        // Devolvemos true si se actualizaron las filas necesarias (Persona y Empleado).
-        return personaRowsAffected > 0 && empleadoRowsAffected > 0;
-    }
-
-
-    // ----------------------------------------------------------------------
-    // OPERACIONES SIMPLES (LECTURA Y ESTADO)
-    // ----------------------------------------------------------------------
-
-    /**
      * Obtiene una lista de todos los empleados (Activos e Inactivos).
      * Nota: Este método se reutiliza para cargar el ChoiceBox en InformesController.
      */
@@ -204,64 +150,5 @@ public class EmpleadoDAO {
             }
         }
         return null;
-    }
-
-    /**
-     * Modifica el estado del empleado (y opcionalmente del usuario asociado)
-     * @param idEmpleado ID del empleado a modificar.
-     * @param nuevoEstado El nuevo estado (e.g., "Activo", "Inactivo").
-     * @return true si el empleado fue actualizado.
-     */
-    public boolean modificarEstado(int idEmpleado, String nuevoEstado) {
-        boolean empleadoUpdated = false;
-
-        // La operación de cambio de estado afecta a Empleado y potencialmente a Usuario.
-        // Debe ser transaccional.
-        Connection con = null;
-        try {
-            con = getConnection();
-            con.setAutoCommit(false); // Iniciar transacción
-
-            // 1. Actualizar estado en tabla Empleado
-            try (PreparedStatement psEmpleado = con.prepareStatement(UPDATE_EMPLEADO_ESTADO_SIMPLE)) {
-                psEmpleado.setString(1, nuevoEstado);
-                psEmpleado.setInt(2, idEmpleado);
-                empleadoUpdated = psEmpleado.executeUpdate() > 0;
-            }
-
-            // 2. Opcional: Actualizar estado en tabla Usuario (si aplica)
-            /*
-            try (PreparedStatement psUsuario = con.prepareStatement(UPDATE_USUARIO_ESTADO)) {
-                psUsuario.setString(1, nuevoEstado);
-                psUsuario.setInt(2, idEmpleado); // Usamos id_empleado
-                psUsuario.executeUpdate();
-            }
-            */
-
-            con.commit(); // Confirmar la transacción
-
-        } catch (SQLException e) {
-            System.err.println("Error al modificar el estado del empleado en la DB. Intentando rollback.");
-            if (con != null) {
-                try {
-                    con.rollback();
-                } catch (SQLException ex) {
-                    System.err.println("Error durante el rollback: " + ex.getMessage());
-                }
-            }
-            e.printStackTrace();
-            empleadoUpdated = false;
-
-        } finally {
-            if (con != null) {
-                try {
-                    con.setAutoCommit(true);
-                    con.close();
-                } catch (SQLException e) {
-                    System.err.println("Error al cerrar la conexión: " + e.getMessage());
-                }
-            }
-        }
-        return empleadoUpdated;
     }
 }

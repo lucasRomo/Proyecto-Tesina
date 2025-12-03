@@ -53,18 +53,6 @@ public class DetallePedido {
 
     // --- Getters y Setters ---
 
-    public int getIdDetallePedido() {
-        return idDetallePedido;
-    }
-
-    public void setIdDetallePedido(int idDetallePedido) {
-        this.idDetallePedido = idDetallePedido;
-    }
-
-    public int getIdPedido() {
-        return idPedido;
-    }
-
     public void setIdPedido(int idPedido) {
         this.idPedido = idPedido;
     }

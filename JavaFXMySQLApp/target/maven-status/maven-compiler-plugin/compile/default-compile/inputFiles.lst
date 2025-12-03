@@ -1,63 +1,61 @@
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\AsignarPedidoController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\ClienteController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\CrearPedidoController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\DetallePedidoController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\EdicionDocumentoController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\EmpleadoController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\HistorialActividadController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\HistorialActividadTableView.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\InformesController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\PedidosPrimerMenuController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\ProductoController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\ProductoMenuController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\ProveedorController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\RegistroCategoriaController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\RegistroClienteDatosEspecificosController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\RegistroController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\RegistroEmpleadoController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\RegistroInsumoController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\RegistroProveedorController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\RegistroTipoProveedorController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\SessionManager.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\StockController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\UsuarioEmpleadoTableView.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\UsuariosEmpleadoController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\VerDireccionController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\VerHistorialPedidosController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\VerPedidosController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\controller\VerProveedoresController.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\CategoriaDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\ClienteDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\ComprobantePagoDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\DetallePedidoDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\DireccionDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\EmpleadoDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\FacturaDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\HistorialActividadDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\InsumoDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\PedidoDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\PersonaDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\ProductoDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\ProveedorDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\TipoDocumentoDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\TipoProveedorDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\dao\UsuarioDAO.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\MainApp.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\AsignacionPedido.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\Categoria.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\Cliente.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\DetallePedido.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\Direccion.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\Empleado.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\Insumo.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\Pedido.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\Persona.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\Producto.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\Proveedor.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\TipoDocumento.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\TipoProveedor.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\model\Usuario.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\util\ComprobanteService.java
-C:\Users\ASUS\Desktop\Prrrr\JavaFXMySQLApp\src\main\java\app\util\TicketPDFUtil.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\AsignarPedidoController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\ClienteController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\CrearPedidoController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\DetallePedidoController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\EdicionDocumentoController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\EmpleadoController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\HistorialActividadController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\HistorialActividadTableView.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\InformesController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\IniciodeSesionController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\MenuController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\PedidosPrimerMenuController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\ProductoController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\ProductoMenuController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\ProveedorController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\RegistroCategoriaController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\RegistroClienteDatosEspecificosController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\RegistroController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\RegistroEmpleadoController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\RegistroInsumoController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\RegistroProveedorController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\RegistroTipoProveedorController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\SessionManager.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\StockController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\UsuarioEmpleadoTableView.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\UsuariosEmpleadoController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\VerDireccionController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\VerHistorialPedidosController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\VerPedidosController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\controller\VerProveedoresController.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\CategoriaDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\ClienteDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\ComprobantePagoDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\DetallePedidoDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\DireccionDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\EmpleadoDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\HistorialActividadDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\InsumoDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\PedidoDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\PersonaDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\ProductoDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\ProveedorDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\TipoDocumentoDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\TipoProveedorDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\dao\UsuarioDAO.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\MainApp.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\Categoria.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\Cliente.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\DetallePedido.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\Direccion.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\Empleado.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\Insumo.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\Pedido.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\Persona.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\Producto.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\Proveedor.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\TipoDocumento.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\TipoProveedor.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\model\Usuario.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\util\ComprobanteService.java
+D:\Isaui 2025\Programación\Tesina Terminada\JavaFXMySQLApp\src\main\java\app\util\TicketPDFUtil.java

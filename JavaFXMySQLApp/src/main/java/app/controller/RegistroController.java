@@ -40,11 +40,7 @@ public class RegistroController {
     private DireccionDAO direccionDAO = new DireccionDAO();
     private PersonaDAO personaDAO = new PersonaDAO();
 
-    private ClienteController clienteController;
 
-    public void setClienteController(ClienteController controller) {
-        this.clienteController = controller;
-    }
 
     @FXML
     public void initialize() {
@@ -117,9 +113,6 @@ public class RegistroController {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/registroClienteDatosEspecificos.fxml"));
                     Parent root = loader.load();
                     RegistroClienteDatosEspecificosController clienteDatosController = loader.getController();
-
-                    // Pasa la referencia del controlador principal al siguiente controlador
-                    clienteDatosController.setClienteController(this.clienteController);
 
                     // ¡CLAVE! Pasa la referencia de ESTE controlador para que la siguiente ventana pueda cerrarla
                     clienteDatosController.setRegistroController(this);

@@ -16,11 +16,9 @@ public class TipoProveedor {
 
     public int getId() { return idTipoProveedor.get(); }
     public void setId(int id) { this.idTipoProveedor.set(id); }
-    public IntegerProperty idTipoProveedorProperty() { return idTipoProveedor; }
 
     public String getDescripcion() { return descripcion.get(); }
     public void setDescripcion(String descripcion) { this.descripcion.set(descripcion); }
-    public StringProperty descripcionProperty() { return descripcion; }
 
     @Override
     public String toString() {

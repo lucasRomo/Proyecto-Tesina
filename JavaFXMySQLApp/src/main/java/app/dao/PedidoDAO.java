@@ -218,30 +218,6 @@ public class PedidoDAO {
         }
     }
 
-    /**
-     * Modifica únicamente el monto total de un pedido existente.
-     * @param idPedido El ID del pedido a modificar.
-     * @param nuevoMonto El nuevo monto total del pedido.
-     * @return true si la modificación fue exitosa.
-     */
-    public boolean modificarMontoTotal(int idPedido, double nuevoMonto) {
-        String sql = "UPDATE Pedido SET monto_total = ? WHERE id_pedido = ?";
-        try (Connection conn = obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setDouble(1, nuevoMonto);
-            stmt.setInt(2, idPedido);
-
-            int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
-        } catch (SQLException e) {
-            System.err.println("Error al modificar el monto total del pedido " + idPedido + ": " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
     // ----------------------------------------------------------------------------------
     // MÉTODOS DE CONSULTA
     // ----------------------------------------------------------------------------------
@@ -370,51 +346,6 @@ public class PedidoDAO {
         }
         return pedidos;
     }
-
-    /**
-     * Obtiene todos los detalles (productos, cantidad, precio) de un pedido específico.
-     * Mapea directamente las columnas de la tabla DetallePedido.
-     * @param idPedido El ID del pedido a buscar.
-     * @return Una lista de objetos DetallePedido.
-     */
-    public List<DetallePedido> getDetallesPorPedido(int idPedido) {
-        List<DetallePedido> detalles = new ArrayList<>();
-        // Consulta que trae todos los campos necesarios directamente de DetallePedido.
-        // Se hace un JOIN con Producto para obtener el nombre real.
-        String SQL = "SELECT dp.id_detalle, dp.id_pedido, dp.id_producto, dp.cantidad, dp.precio_unitario, dp.subtotal, " +
-                "p.nombre AS descripcion_producto " +
-                "FROM DetallePedido dp " +
-                "JOIN Producto p ON dp.id_producto = p.id_producto " +
-                "WHERE dp.id_pedido = ?";
-
-        try (Connection conn = obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(SQL)) {
-
-            stmt.setInt(1, idPedido);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    DetallePedido detalle = new DetallePedido(
-                            rs.getInt("id_detalle"),
-                            rs.getInt("id_pedido"),
-                            rs.getInt("id_producto"),
-                            // Usamos el alias 'descripcion_producto' del JOIN
-                            rs.getString("descripcion_producto"),
-                            rs.getInt("cantidad"),
-                            rs.getDouble("precio_unitario"),
-                            rs.getDouble("subtotal")
-                    );
-                    detalles.add(detalle);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al obtener detalles del pedido con ID " + idPedido + ": " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return detalles;
-    }
-
 
     public double getTotalVentasPorRango(java.time.LocalDate inicio, java.time.LocalDate fin) {
         String sql = "SELECT SUM(monto_total) FROM Pedido WHERE fecha_creacion >= ? AND fecha_creacion < ?";
@@ -626,101 +557,6 @@ public class PedidoDAO {
             e.printStackTrace();
         }
         return empleados;
-    }
-
-    public List<Pedido> getAllPedidos() {
-        return getPedidosPorEmpleado(0);
-    }
-
-    public boolean actualizarPedidos(ObservableList<Pedido> pedidos) {
-        // Este método aún no tiene implementación.
-        return false;
-    }
-
-    // ----------------------------------------------------------------------------------
-// MÉTODOS DE CONSULTA DE EMPLEADOS (CORREGIDOS)
-// ----------------------------------------------------------------------------------
-
-    /**
-     * Obtiene una lista de todos los empleados activos, devolviendo objetos Empleado.
-     * Esto es necesario para que el stream en VerPedidosController compile.
-     */
-    public List<Empleado> getEmpleadosEnPedidos() {
-        List<Empleado> empleados = new ArrayList<>();
-        // Consulta que junta Empleado con Persona para obtener nombre y apellido
-        String sql = "SELECT e.id_empleado, p.nombre, p.apellido " +
-                "FROM Empleado e " +
-                "JOIN Persona p ON e.id_persona = p.id_persona " +
-                "WHERE e.estado = 'Activo'"; // Solo empleados activos
-
-        try (Connection conn = obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                // Mapeo a la clase Empleado usando el constructor vacío y setters
-                Empleado empleado = new Empleado();
-                empleado.setIdEmpleado(rs.getInt("id_empleado"));
-                empleado.setNombre(rs.getString("nombre"));
-                empleado.setApellido(rs.getString("apellido"));
-
-                // Los demás campos (fechaContratacion, cargo, etc.) quedan en null/default
-                // ya que no son necesarios para el filtro, pero el constructor por defecto lo permite.
-
-                empleados.add(empleado);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return empleados;
-    }
-
-    /**
-     * Cuenta el número de pedidos con estado 'Retirado' asignados a un empleado
-     * en un rango de fechas, basándose en la fecha de finalización.
-     *
-     * @param idEmpleado El ID del empleado.
-     * @param inicio La fecha de inicio del rango (inclusive).
-     * @param fin La fecha de fin del rango (inclusive).
-     * @return El número de pedidos retirados.
-     */
-    public int contarPedidosRetiradosPorEmpleado(int idEmpleado, java.time.LocalDate inicio, java.time.LocalDate fin) {
-        // La consulta ahora usa '<' y compara contra el día siguiente al final (fin.plusDays(1)).
-        String sql = "SELECT COUNT(p.id_pedido) " +
-                "FROM Pedido p " +
-                "JOIN AsignacionPedido ap ON p.id_pedido = ap.id_pedido " +
-                "WHERE p.estado = 'Retirado' " +
-                "AND ap.id_empleado = ? " +
-                "AND p.fecha_finalizacion >= ? " +
-                "AND p.fecha_finalizacion < ?"; // <--- CAMBIO CLAVE: Cambiamos <= por <
-
-        int count = 0;
-
-        try (Connection conn = obtenerConexion();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            // 1. Asignar el ID del empleado.
-            ps.setInt(1, idEmpleado);
-
-            // 2. Asignar la fecha de inicio (desde la medianoche de ese día).
-            ps.setTimestamp(2, java.sql.Timestamp.valueOf(inicio.atStartOfDay()));
-
-            // 3. Asignar la fecha de FIN: Usamos el día siguiente (fin.plusDays(1))
-            //    y el operador '<' para incluir todas las horas del día 'fin'.
-            java.time.LocalDate diaSiguiente = fin.plusDays(1);
-            ps.setTimestamp(3, java.sql.Timestamp.valueOf(diaSiguiente.atStartOfDay())); // <--- CAMBIO CLAVE
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    count = rs.getInt(1);
-                }
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error al contar pedidos retirados por empleado: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return count;
     }
 
     public Map<String, Integer> getPedidosCompletadosPorEmpleado(LocalDate inicio, LocalDate fin) {

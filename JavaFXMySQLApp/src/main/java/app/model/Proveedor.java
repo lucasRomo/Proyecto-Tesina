@@ -74,10 +74,6 @@ public class Proveedor {
     }
 
     // Propiedades
-    public IntegerProperty idProveedorProperty() {
-        return idProveedor;
-    }
-
     public StringProperty nombreProperty() {
         return nombre;
     }
@@ -94,22 +90,11 @@ public class Proveedor {
         return estado;
     }
 
-    public IntegerProperty idDireccionProperty() {
-        return idDireccion;
-    }
-
-    public IntegerProperty idTipoProveedorProperty() {
-        return idTipoProveedor;
-    }
-
     public StringProperty descripcionTipoProveedorProperty() {
         return descripcionTipoProveedor;
     }
 
     // Setters
-    public void setIdProveedor(int idProveedor) {
-        this.idProveedor.set(idProveedor);
-    }
 
     public void setNombre(String nombre) {
         this.nombre.set(nombre);

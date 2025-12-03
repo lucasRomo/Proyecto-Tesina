@@ -22,7 +22,6 @@ app\controller\HistorialActividadController.class
 app\controller\PedidosPrimerMenuController.class
 app\controller\VerHistorialPedidosController$1.class
 app\controller\DetallePedidoController$CurrencyTableCell.class
-app\model\AsignacionPedido.class
 app\model\Direccion.class
 app\controller\SessionManager.class
 app\model\Cliente.class
@@ -48,7 +47,6 @@ app\controller\VerPedidosController$1.class
 app\controller\VerPedidosController$3.class
 app\util\ComprobanteService.class
 app\controller\VerHistorialPedidosController$5.class
-app\dao\FacturaDAO.class
 app\controller\DetallePedidoController.class
 app\controller\VerHistorialPedidosController$4.class
 app\model\Persona.class

@@ -76,7 +76,6 @@ public class ProveedorController {
     private List<TipoProveedor> tiposProveedor;
 
     // Set para rastrear todos los proveedores que tienen cambios pendientes de guardar en DB
-    private Set<Proveedor> proveedoresPendientesDeGuardar = new HashSet<>();
 
     public ProveedorController() {
         this.proveedorDAO = new ProveedorDAO();

@@ -60,35 +60,6 @@ public class CategoriaDAO {
     }
 
     /**
-     * Busca una categoría por su ID.
-     * @param id ID de la categoría a buscar.
-     * @return Objeto Categoria o null si no se encuentra.
-     */
-    public Categoria getCategoriaById(int id) {
-        String sql = "SELECT " + COL_ID + ", " + COL_NOMBRE + ", " + COL_DESCRIPCION +
-                " FROM " + TABLE_NAME + " WHERE " + COL_ID + " = ?";
-
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, id);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return new Categoria(
-                            rs.getInt(COL_ID),
-                            rs.getString(COL_NOMBRE),
-                            rs.getString(COL_DESCRIPCION)
-                    );
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error al obtener categoría por ID: " + e.getMessage());
-        }
-        return null;
-    }
-
-    /**
      * Obtiene un mapa de ID de Categoría a Nombre.
      * Es crucial para mostrar los nombres en la TableView y para el filtro.
      * @return Map<Integer, String> donde la clave es el ID y el valor es el nombre.

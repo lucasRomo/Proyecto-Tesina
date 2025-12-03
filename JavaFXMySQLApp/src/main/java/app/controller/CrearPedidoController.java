@@ -35,7 +35,6 @@ public class CrearPedidoController implements Initializable {
     @FXML private TextArea instruccionesArea;
 
     private final PedidoDAO pedidoDAO = new PedidoDAO();
-    private Stage dialogStage;
 
     /**
      * Inicializa el controlador. Se llama automáticamente después de que se carga el FXML.
@@ -86,9 +85,6 @@ public class CrearPedidoController implements Initializable {
     /**
      * Establece el escenario (Stage) de este diálogo (usado solo si se abre como modal).
      */
-    public void setDialogStage(Stage dialogStage) {
-        this.dialogStage = dialogStage;
-    }
 
 
     /**

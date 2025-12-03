@@ -73,6 +73,4 @@ public class Cliente extends Persona {
 
     // TIPO DOCUMENTO NOMBRE
     public String getTipoDocumentoNombre() { return tipoDocumentoNombre.get(); }
-    public void setTipoDocumentoNombre(String nombre) { this.tipoDocumentoNombre.set(nombre); }
-    public StringProperty tipoDocumentoNombreProperty() { return tipoDocumentoNombre; }
 }

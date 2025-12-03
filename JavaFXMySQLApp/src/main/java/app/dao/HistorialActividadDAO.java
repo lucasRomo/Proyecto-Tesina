@@ -44,20 +44,6 @@ public class HistorialActividadDAO {
                     "LEFT JOIN persona p ON u.id_persona = p.id_persona " +
                     "ORDER BY ra.fecha_modificacion DESC";
 
-    // Consulta para insertar un nuevo registro de actividad.
-    private static final String INSERT_REGISTRO =
-            "INSERT INTO RegistroActividad (id_usuario_responsable, fecha_modificacion, tabla_afectada, " +
-                    "id_registro_modificado, columna_afectada, dato_previo_modificacion, dato_modificado) " +
-                    "VALUES (?, NOW(), ?, ?, ?, ?, ?)";
-
-    // -------------------------------------------------------------------------
-    // --- MÉTODOS DAO
-    // -------------------------------------------------------------------------
-
-    // =========================================================================
-    // MODIFICACIÓN #1: Nueva sobrecarga para la transacción (Usa la conexión recibida)
-    // =========================================================================
-
 
     public boolean insertarRegistro(int idUsuarioResponsable, String tabla, String columna,
                                     int idRegistro, String valorAnterior, String valorNuevo,

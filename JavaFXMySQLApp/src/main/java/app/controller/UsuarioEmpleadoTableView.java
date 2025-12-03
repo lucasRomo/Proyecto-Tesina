@@ -109,52 +109,12 @@ public class UsuarioEmpleadoTableView {
 
     public void setIdDireccion (int idDireccion) {this.idDireccion.set(idDireccion);}
 
-    public String getNumeroDocumento() { return numeroDocumento.get(); }
-
-    public StringProperty numeroDocumentoProperty() { return numeroDocumento; }
-
-    public IntegerProperty idUsuarioProperty() {
-        return this.idUsuario;
-    }
-
-    public StringProperty usuarioProperty() {
-        return this.usuario;
-    }
-
-    public StringProperty contrasenaProperty() {
-        return this.contrasena;
-    }
-
-    public StringProperty nombreProperty() {
-        return this.nombre;
-    }
-
-    public StringProperty apellidoProperty() {
-        return this.apellido;
-    }
-
-    public DoubleProperty salarioProperty() {
-        return this.salario;
-    }
-
-    public StringProperty estadoProperty() {
-        return this.estado;
-    }
-
-    public IntegerProperty idPersonaProperty() {
-        return this.idPersona;
-    }
-
     public int getIdTipoUsuario() {
         return this.idTipoUsuario.get();
     }
 
     public void setIdTipoUsuario(int idTipoUsuario) {
         this.idTipoUsuario.set(idTipoUsuario);
-    }
-
-    public IntegerProperty idTipoUsuarioProperty() {
-        return this.idTipoUsuario;
     }
 
 }

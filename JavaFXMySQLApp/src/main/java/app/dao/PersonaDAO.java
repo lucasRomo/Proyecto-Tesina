@@ -13,11 +13,6 @@ public class PersonaDAO {
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
-    private static final String SELECT_PERSONA_BY_ID =
-            "SELECT id_persona, nombre, apellido, id_tipo_documento, numero_documento, " +
-                    "id_direccion, telefono, email " +
-                    "FROM Persona WHERE id_persona = ?";
-
     private static final String UPDATE_PERSONA =
             "UPDATE Persona SET nombre = ?, apellido = ?, id_tipo_documento = ?, numero_documento = ?, " +
                     "id_direccion = ?, telefono = ?, email = ? WHERE id_persona = ?";
@@ -106,23 +101,6 @@ public class PersonaDAO {
         return false;
     }
 
-    public boolean verificarSiDocumentoExiste(String numeroDocumento, int idPersonaExcluir) {
-        String sql = "SELECT COUNT(*) FROM Persona WHERE numero_documento = ? AND id_persona != ?";
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, numeroDocumento);
-            stmt.setInt(2, idPersonaExcluir);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    return true;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     // =========================================================================
     // NUEVO MÉTODO DE VALIDACIÓN: Incluye tipo de documento y excluye a la persona actual
     // Este método es el que usará EdicionDocumentoController
@@ -148,23 +126,6 @@ public class PersonaDAO {
         return false;
     }
     // =========================================================================
-
-    public boolean verificarSiMailExisteParaOtro(String email, int idPersonaActual) {
-        String sql = "SELECT COUNT(*) FROM Persona WHERE email = ? AND id_persona != ?";
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, email);
-            stmt.setInt(2, idPersonaActual);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-                    return true;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 
     public Persona obtenerPersonaPorId(int idPersona, Connection conn) throws SQLException {
         String sql = "SELECT id_persona, nombre, apellido, numero_documento, telefono, email " +
@@ -239,25 +200,6 @@ public class PersonaDAO {
         }
         // Nota: No se maneja el catch aquí, la excepción se propaga al controlador.
     }
-    // =========================================================================
-
-
-    /**
-     * Modifica los datos de una persona (Versión original sin transacciones).
-     * Ahora utiliza el método sobrecargado con su propia conexión.
-     * @param persona El objeto Persona con los datos actualizados.
-     * @return true si la modificación fue exitosa.
-     */
-    public boolean modificarPersona(Persona persona) {
-        try (Connection con = getConnection()) {
-            return modificarPersona(persona, con);
-        } catch (SQLException e) {
-            System.err.println("Error al modificar persona: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     // =========================================================================
     // NUEVO MÉTODO DE MODIFICACIÓN: Modifica solo Tipo y Número de Documento
     // Este método es el que usará EdicionDocumentoController

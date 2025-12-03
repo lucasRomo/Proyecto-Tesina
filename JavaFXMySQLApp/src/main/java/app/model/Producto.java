@@ -67,10 +67,6 @@ public class Producto {
         return stock;
     }
 
-    public IntegerProperty idCategoriaProperty() {
-        return idCategoria;
-    }
-
     // --- Getters para valores primitivos ---
     public int getIdProducto() {
         return idProducto.get();

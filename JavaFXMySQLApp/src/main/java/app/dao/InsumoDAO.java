@@ -124,6 +124,4 @@ public class InsumoDAO {
             return false;
         }
     }
-
-    // Puedes agregar más métodos como insertarInsumo o eliminarInsumo si los necesitas.
 }

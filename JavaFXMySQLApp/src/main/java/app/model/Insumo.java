@@ -23,9 +23,6 @@ public class Insumo {
     }
 
     // Getters para las propiedades de JavaFX
-    public IntegerProperty idInsumoProperty() {
-        return idInsumo;
-    }
 
     public StringProperty nombreInsumoProperty() {
         return nombreInsumo;
@@ -35,28 +32,14 @@ public class Insumo {
         return descripcion;
     }
 
-    public IntegerProperty stockMinimoProperty() {
-        return stockMinimo;
-    }
-
-    public IntegerProperty stockActualProperty() {
-        return stockActual;
-    }
-
     public StringProperty estadoProperty() {
         return estado;
-    }
-
-    public IntegerProperty idTipoProveedorProperty() {
-        return idTipoProveedor;
     }
 
     // Getters y Setters
     public int getIdInsumo() {
         return idInsumo.get();
     }
-
-    public void setIdInsumo(int idInsumo) { this.idInsumo.set(idInsumo); }
 
     public String getNombreInsumo() { return nombreInsumo.get(); }
 

@@ -246,29 +246,6 @@ public class ProductoDAO {
         return false;
     }
 
-
-    /**
-     * Elimina un producto de la base de datos por su ID.
-     * @param id ID del producto a eliminar.
-     * @return true si la eliminación fue exitosa, false en caso contrario.
-     */
-    public boolean deleteProducto(int id) {
-        String sql = "DELETE FROM " + TABLE_NAME + " WHERE " + COL_ID + " = ?";
-
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, id);
-
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error al eliminar producto: " + e.getMessage());
-        }
-        return false;
-    }
-
     // ----------------------------------------------------------------------------------
     // MÉTODOS DE ESTADÍSTICAS (PARA InformesController) - CORREGIDOS
     // ----------------------------------------------------------------------------------
@@ -318,75 +295,5 @@ public class ProductoDAO {
             System.err.println("Error al obtener unidades vendidas por categoría: " + e.getMessage());
         }
         return data;
-    }
-
-    /**
-     * Obtiene el total de ingresos (monto total) de los pedidos FINALIZADOS
-     * por rango de fecha.
-     *
-     * @param fechaDesde La fecha de inicio del rango.
-     * @param fechaHasta La fecha de fin del rango.
-     * @return El monto total de los pedidos finalizados en el rango.
-     */
-    public double getTotalIngresosPorRango(LocalDate fechaDesde, LocalDate fechaHasta) {
-        double totalIngresos = 0.0;
-
-        // La consulta suma el monto_total solo para pedidos finalizados en el rango de fecha_finalizacion
-        String sql = "SELECT SUM(monto_total) AS total " +
-                "FROM Pedido " +
-                "WHERE estado = 'Finalizado' AND fecha_finalizacion BETWEEN ? AND ?";
-
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setTimestamp(1, Timestamp.valueOf(fechaDesde.atStartOfDay()));
-            pstmt.setTimestamp(2, Timestamp.valueOf(fechaHasta.atTime(23, 59, 59)));
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    totalIngresos = rs.getDouble("total");
-                }
-            }
-
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error al obtener ingresos totales por rango.", e);
-            System.err.println("Error en la consulta de ingresos totales: " + e.getMessage());
-        }
-        return totalIngresos;
-    }
-
-    /**
-     * Obtiene el total de pedidos por estado en un rango de fechas.
-     *
-     * @param fechaDesde La fecha de inicio del rango (usa fecha_creacion).
-     * @param fechaHasta La fecha de fin del rango (usa fecha_creacion).
-     * @return Un mapa donde la clave es el estado (String) y el valor es la cantidad de pedidos (Integer).
-     */
-    public Map<String, Integer> getPedidosPorEstadoPorRango(LocalDate fechaDesde, LocalDate fechaHasta) {
-        Map<String, Integer> resultados = new HashMap<>();
-
-        String sql = "SELECT estado, COUNT(id_pedido) AS total_pedidos " +
-                "FROM Pedido " +
-                "WHERE fecha_creacion BETWEEN ? AND ? " +
-                "GROUP BY estado";
-
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setTimestamp(1, Timestamp.valueOf(fechaDesde.atStartOfDay()));
-            pstmt.setTimestamp(2, Timestamp.valueOf(fechaHasta.atTime(23, 59, 59)));
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    String estado = rs.getString("estado");
-                    int total = rs.getInt("total_pedidos");
-                    resultados.put(estado, total);
-                }
-            }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error al obtener pedidos por estado por rango.", e);
-            System.err.println("Error en la consulta de pedidos por estado: " + e.getMessage());
-        }
-        return resultados;
     }
 }

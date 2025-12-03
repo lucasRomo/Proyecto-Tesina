@@ -45,10 +45,6 @@ public class Categoria {
         return descripcion.get();
     }
 
-    public StringProperty nombreProperty() {
-        return nombre;
-    }
-
     @Override
     public String toString() {
         return nombre.get();
